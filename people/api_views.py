@@ -549,7 +549,9 @@ class SignatureViewSet(viewsets.ModelViewSet):
                 # Send notification to HR manager
                 send_completed_email_to_hr_manager(pr)
                 # Create new Performance Review for employee
-                pr.create_next_review_for_employee()
+                # NOTE: We don't currently do this, but just wait for the
+                # next review export from Caselle
+                # pr.create_next_review_for_employee()
         
         serialized_signature = SignatureSerializer(new_signature,
             context={'request': request})

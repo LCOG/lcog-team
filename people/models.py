@@ -988,6 +988,9 @@ class PerformanceReview(models.Model):
                 signatures.append(["Executive Director", None, None, ed.pk, ready_to_sign])
         return signatures
 
+    # NOTE: Not currently used, as we just wait for the next review to be
+    # created in Caselle and exported. In the future, we may want to have
+    # this app be the single source of truth for performance reviews.
     def create_next_review_for_employee(self):
         PerformanceReview.objects.create(
             employee=self.employee,
