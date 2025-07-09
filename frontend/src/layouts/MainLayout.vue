@@ -243,6 +243,7 @@ function emplayeeName(): string {
   return userStore['getEmployeeProfile'].name
 }
 
+// Configured with Microsoft Entra ID
 function loginWithMicrosoft(): void {
   myMSALObj.loginPopup(loginRequest)
     .then(() => {
