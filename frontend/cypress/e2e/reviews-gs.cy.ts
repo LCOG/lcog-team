@@ -5,7 +5,7 @@ import {
 // Cypress clears localstorage between tests, so use this to store data
 const LOCAL_STORAGE_MEMORY: { [key: string]: string } = {}
 
-describe('GS employee performance review process', () => {
+describe('PR: Review Process', () => {
 it('GS employee performance review process', () => {
     
   cy.step('Create a review', () => {
