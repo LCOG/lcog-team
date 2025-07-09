@@ -4,7 +4,7 @@ import datetime
 from django.core.management.base import BaseCommand
 from django.core.exceptions import MultipleObjectsReturned
 
-from people.models import Employee, PerformanceReview
+from people.models import Employee, PerformanceReview, PRForm
 
 
 class Command(BaseCommand):
@@ -82,16 +82,20 @@ class Command(BaseCommand):
             existing_reviews = PerformanceReview.objects.filter(employee=employee, period_start_date=review_date).exists()
             if not existing_reviews:
                 # review_range = next_review_date - review_date
+                # TODO: Implement other review forms once we have them
                 if len(rows) > 1:
                     evaluation_type = PerformanceReview.ANNUAL_EVALUATION
+                    form = PRForm.objects.get(name='All - 180 - Annual PR')
                 else:
                     evaluation_type = PerformanceReview.PROBATIONARY_EVALUATION
+                    form = PRForm.objects.get(name='EA - 90 - Probationary PR')
                 PerformanceReview.objects.create(
                     employee=employee,
                     period_start_date=review_date,
                     period_end_date=next_review_date,
                     effective_date=next_review_date + datetime.timedelta(days=1),
-                    evaluation_type=evaluation_type
+                    evaluation_type=evaluation_type,
+                    form=form
                 )
                 self.stdout.write(
                     'Created review for employee {} {} for period {} - {}'.format(employee.user.first_name, employee.user.last_name, review_date, next_review_date)
