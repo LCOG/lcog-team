@@ -28,7 +28,8 @@ from people.models import (
 )
 from people.serializers import (
     EmployeeSerializer, EmployeeEmailSerializer, GroupSerializer,
-    JobTitleSerializer, PerformanceReviewSerializer, ReviewNoteSerializer,
+    JobTitleSerializer, PerformanceReviewSerializer,
+    PerformanceReviewSimpleSerializer, ReviewNoteSerializer,
     SignatureSerializer, SimpleEmployeeSerializer,
     TeleworkApplicationFileUploadSerializer, TeleworkApplicationSerializer,
     TeleworkSignatureSerializer, UnitSerializer, UserSerializer,
@@ -269,7 +270,7 @@ class PerformanceReviewPermission(BasePermission):
 
 class PerformanceReviewViewSet(viewsets.ModelViewSet):
     queryset = PerformanceReview.objects.all()
-    serializer_class = PerformanceReviewSerializer
+    serializer_class = PerformanceReviewSimpleSerializer
     permission_classes = [PerformanceReviewPermission]
 
     def get_queryset(self):
@@ -280,7 +281,8 @@ class PerformanceReviewViewSet(viewsets.ModelViewSet):
         user = self.request.user
         if user.is_authenticated:
             if user.is_superuser:
-                queryset = PerformanceReview.objects.all()
+                queryset = PerformanceReview.objects.all()\
+                    .order_by('period_end_date')
             else:
                 employee = self.request.query_params.get('employee', None)
                 manager = self.request.query_params.get('manager', None)
@@ -295,11 +297,14 @@ class PerformanceReviewViewSet(viewsets.ModelViewSet):
                     is_hrm = employee.is_hr_manager if employee else False
                     if is_ed or is_hrm:
                         # Superusers, EDs, and HR managers can see all reviews
-                        queryset = PerformanceReview.objects.all()
+                        queryset = PerformanceReview.objects.all()\
+                            .order_by('period_end_date')
                     else:
-                        # All PRs managed by a given employee, as well as for all
-                        # direct reports down the chain.
-                        manager_employee = Employee.objects.get(pk=int(manager))
+                        # All PRs managed by a given employee, as well as for
+                        # all direct reports down the chain.
+                        manager_employee = Employee.objects.get(
+                            pk=int(manager)
+                        )
                         descendant_employees = manager_employee.\
                             get_direct_reports_descendants(include_self=False)
                         queryset = PerformanceReview.objects.filter(

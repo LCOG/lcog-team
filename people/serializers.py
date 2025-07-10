@@ -261,7 +261,41 @@ class EmployeeEmailSerializer(serializers.ModelSerializer):
         return employee.user.email
 
 
-class PerformanceReviewSerializer(serializers.HyperlinkedModelSerializer):
+class PerformanceReviewBaseSerializer(serializers.ModelSerializer):
+    employee_name = serializers.CharField(
+        source='employee.name', required=False, read_only=True
+    )
+    days_until_review = serializers.SerializerMethodField()
+    employee_action_required = serializers.SerializerMethodField()
+    status = serializers.CharField(source='get_status_display', required=False)
+
+    @staticmethod
+    def get_days_until_review(pr):
+        today = datetime.date.today()
+        delta = pr.period_end_date - today
+        return delta.days
+    
+    def get_employee_action_required(self, pr):
+        user = None
+        request = self.context.get('request')
+        if request and hasattr(request, 'user'):
+            user = request.user
+        if user and hasattr(user, 'employee'):
+            return pr.employee_action_required(user.employee)
+        return False
+
+
+class PerformanceReviewSimpleSerializer(PerformanceReviewBaseSerializer):
+    class Meta:
+        model = PerformanceReview
+        fields = [
+            'url', 'pk', 'employee_name', 'period_start_date',
+            'period_end_date', 'days_until_review', 'status',
+            'employee_action_required'
+        ]
+
+
+class PerformanceReviewSerializer(PerformanceReviewBaseSerializer):
     form = serializers.SerializerMethodField()
     form_pk = serializers.PrimaryKeyRelatedField(
         source='form', queryset=PRForm.objects.all(), allow_null=True,
@@ -274,9 +308,6 @@ class PerformanceReviewSerializer(serializers.HyperlinkedModelSerializer):
         queryset=Employee.objects.all(),
         write_only=True
     )
-    employee_name = serializers.CharField(
-        source='employee.name', required=False, read_only=True
-    )
     employee_division = serializers.SerializerMethodField()
     employee_unit_or_program = serializers.SerializerMethodField()
     employee_job_title = serializers.CharField(
@@ -288,12 +319,9 @@ class PerformanceReviewSerializer(serializers.HyperlinkedModelSerializer):
     manager_name = serializers.CharField(
         source='employee.manager.name', required=False, read_only=True
     )
-    days_until_review = serializers.SerializerMethodField()
-    status = serializers.CharField(source='get_status_display', required=False)
     all_required_signatures = serializers.SerializerMethodField()
     position_description_link = serializers.SerializerMethodField()
     signed_position_description = serializers.FileField(required=False)
-    employee_action_required = serializers.SerializerMethodField()
 
     class Meta:
         model = PerformanceReview
@@ -363,12 +391,6 @@ class PerformanceReviewSerializer(serializers.HyperlinkedModelSerializer):
             return pr.employee.unit_or_program.name
         else:
             return ''
-
-    @staticmethod
-    def get_days_until_review(pr):
-        today = datetime.date.today()
-        delta = pr.period_end_date - today
-        return delta.days
     
     @staticmethod
     def get_evaluation(pr):
@@ -391,15 +413,6 @@ class PerformanceReviewSerializer(serializers.HyperlinkedModelSerializer):
     @staticmethod
     def get_all_required_signatures(pr):
         return pr.all_required_signatures()
-    
-    def get_employee_action_required(self, pr):
-        user = None
-        request = self.context.get('request')
-        if request and hasattr(request, 'user'):
-            user = request.user
-        if user and hasattr(user, 'employee'):
-            return pr.employee_action_required(user.employee)
-        return False
 
 
 class PerformanceReviewFileUploadSerializer(
