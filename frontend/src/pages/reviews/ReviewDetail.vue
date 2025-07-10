@@ -133,6 +133,18 @@
     </h5>
     <div v-if="currentUserIsEmployee()">
       <!-- EMPLOYEE -->
+      <div>
+      <div>Responding to these questions can help you prepare for your performance evaluation. As you read each question, think about performance; your progress; and your plans for future growth.</div>
+      <ol>
+        <li>What were my specific accomplishments during this evaluation period? Give examples.</li>
+        <li>How could my supervisor help me do a better job?</li>
+        <li>How are my relationships and communications with peers/clients/providers? Are there areas for improvement? What behaviors or style changes do I need to work on to improve my performance?</li>
+        <li>What abilities does my job require?</li>
+        <li>Do I need more experience or training in any aspect of my current job? How could this be accomplished? What would I like to improve, change, or learn to improve my job performance?</li>
+        <li>What are my goals for the coming year?</li>
+        <li>What do I expect to be doing five years from now?</li>
+      </ol>
+      </div>
       <div
         v-if="employeeHasSigned() || props.print"
         class="read-only-text-area" v-html="evaluationCommentsEmployee"
