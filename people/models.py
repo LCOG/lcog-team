@@ -293,19 +293,23 @@ class Employee(models.Model):
                 return None
 
     def save(self, *args, **kwargs):
-        # is_hr_manager can only apply to ONE Employee
+        # is_hr_manager can only apply to ONE Employee PER Organization
         if self.is_hr_manager:
             try:
-                old_manager = Employee.objects.get(is_hr_manager=True)
+                old_manager = Employee.objects.get(
+                    is_hr_manager=True, organization=self.organization
+                )
                 if self != old_manager:
                     old_manager.is_hr_manager = False
                     old_manager.save()
             except Employee.DoesNotExist:
                 pass
-        # is_executive_director can only apply to ONE Employee
+        # is_executive_director can only apply to ONE Employee PER Organization
         if self.is_executive_director:
             try:
-                old_director = Employee.objects.get(is_executive_director=True)
+                old_director = Employee.objects.get(
+                    is_executive_director=True, organization=self.organization
+                )
                 if self != old_director:
                     old_director.is_executive_director = False
                     old_director.save()
