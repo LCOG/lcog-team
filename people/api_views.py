@@ -288,17 +288,17 @@ class PerformanceReviewViewSet(viewsets.ModelViewSet):
                 manager = self.request.query_params.get('manager', None)
                 if employee is not None:
                     # All PRs for a given employee
-                    queryset = PerformanceReview.objects.filter(
-                        employee__pk=int(employee)
-                    )
+                    employee = Employee.objects.get(pk=int(employee))
+                    queryset = PerformanceReview.objects\
+                        .for_employee(employee).filter(employee=employee)
                 elif manager is not None:
                     employee = user.employee if user.is_authenticated else None
                     is_ed = employee.is_executive_director if employee else False
                     is_hrm = employee.is_hr_manager if employee else False
                     if is_ed or is_hrm:
                         # Superusers, EDs, and HR managers can see all reviews
-                        queryset = PerformanceReview.objects.all()\
-                            .order_by('period_end_date')
+                        queryset = PerformanceReview.objects\
+                            .for_employee(employee).order_by('period_end_date')
                     else:
                         # All PRs managed by a given employee, as well as for
                         # all direct reports down the chain.
@@ -307,9 +307,9 @@ class PerformanceReviewViewSet(viewsets.ModelViewSet):
                         )
                         descendant_employees = manager_employee.\
                             get_direct_reports_descendants(include_self=False)
-                        queryset = PerformanceReview.objects.filter(
-                            employee__in=descendant_employees
-                        )
+                        queryset = PerformanceReview.objects\
+                            .for_employee(employee)\
+                            .filter(employee__in=descendant_employees)
                 
                 # Filter to either complete or incomplete reviews
                 complete = self.request.query_params.get('complete', None)
@@ -333,7 +333,11 @@ class PerformanceReviewViewSet(viewsets.ModelViewSet):
         if not user.is_authenticated:
             return Response(status=403)
 
-        queryset = PerformanceReview.objects.all()
+        if employee and employee.organization is not None:
+            queryset = PerformanceReview.objects.for_employee(employee)
+        else:
+            queryset = PerformanceReview.objects.all()
+        
         pr = get_object_or_404(queryset, pk=pk)
 
         if user.is_superuser:

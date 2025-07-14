@@ -11,7 +11,9 @@ from mainsite.helpers import (
     send_signature_email_to_executive_director,
     send_signature_email_to_hr_manager
 )
-from mainsite.models import ActiveManager, SecurityMessage
+from mainsite.models import (
+    ActiveManager, OrganizationObjectsManager, SecurityMessage
+)
 
 
 SHOW_REVIEW_TO_MANAGER_DAYS_BEFORE_DUE = 60
@@ -660,7 +662,7 @@ class PerformanceReview(models.Model):
         return reverse("performance_review_detail", kwargs={"pk": self.pk})
 
     # Managers for filtering PRs
-    objects = models.Manager()
+    objects = OrganizationObjectsManager()
     manager_upcoming_reviews = ManagerUpcomingReviewsManager()
 
     NEEDS_EVALUATION = 'N'
