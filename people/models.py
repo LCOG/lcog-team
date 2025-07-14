@@ -389,42 +389,6 @@ class Employee(models.Model):
                     reviews.append(review)
         return sorted(reviews, key=lambda review: review.period_end_date)
     
-    def manager_upcoming_reviews_action_required(self):
-        reviews = []
-        for review in self.manager_upcoming_reviews():
-            if review.status == PerformanceReview.NEEDS_EVALUATION:
-                reviews.append(review)
-        return reviews
-    
-    def manager_upcoming_reviews_no_action_required(self):
-        reviews = []
-        for review in self.manager_upcoming_reviews():
-            if review.status != PerformanceReview.NEEDS_EVALUATION:
-                reviews.append(review)
-        return reviews
-
-    def signature_all_relevant_upcoming_reviews(self):
-        # Returns all upcoming reviews for a manager's direct reports and their
-        # descendants. For detail views.
-        reviews = []
-        for employee in self.get_direct_reports():
-            employee_reviews = employee.performancereview_set.all()
-            for review in employee_reviews:
-                if (
-                    review.days_until_due() < \
-                        SHOW_REVIEW_TO_MANAGER_DAYS_BEFORE_DUE
-                ):
-                    reviews.append(review)
-        for employee in self.get_direct_reports_descendants():
-            employee_reviews = employee.performancereview_set.all()
-            for review in employee_reviews:
-                if (
-                    review.days_until_due() < \
-                        SHOW_REVIEW_TO_MANAGER_DAYS_BEFORE_DUE  
-                ):
-                    reviews.append(review)
-        return sorted(reviews, key=lambda review: review.period_end_date)
-    
     def signature_upcoming_reviews(self):
         # Returns all upcoming reviews for a manager's direct reports.
         # HR Manager and Executive Director should see upcoming reviews for all
@@ -445,46 +409,6 @@ class Employee(models.Model):
                 ):
                     reviews.append(review)
         return sorted(reviews, key=lambda review: review.period_end_date)
-    
-    def signature_upcoming_reviews_action_required(self):
-        # Returns all upcoming reviews for a manager's direct reports which
-        # require action from the manager to proceed. For list views.
-        reviews = []
-        for review in self.signature_upcoming_reviews():
-            if self.is_executive_director:
-                if all([
-                    review.status == PerformanceReview.EVALUATION_HR_PROCESSED,
-                    review.signature_set.filter(employee=self).count() == 0
-                ]):
-                    reviews.append(review)
-            elif self.is_hr_manager:
-                if all([
-                    review.status == PerformanceReview.EVALUATION_APPROVED,
-                    review.signature_set.filter(employee=self).count() == 0
-                ]):
-                    reviews.append(review)
-            else:
-                direct_report = review.employee
-                while direct_report.manager != self:
-                    direct_report = direct_report.manager
-                if all([
-                    review.status == PerformanceReview.EVALUATION_WRITTEN,
-                    review.signature_set.filter(
-                        employee=direct_report
-                    ).count() == 1,
-                    review.signature_set.filter(employee=self).count() == 0
-                ]):
-                    reviews.append(review)
-        return reviews
-    
-    def signature_upcoming_reviews_no_action_required(self):
-        # Returns all upcoming reviews for a manager's direct reports which do
-        # not require action from the manager to proceed. For list views.
-        reviews = []
-        for review in self.signature_upcoming_reviews():
-            if review.signature_set.filter(employee=self.pk).count() > 0:
-                reviews.append(review)
-        return reviews
 
     def telework_applications_signature_required(self):
         # Returns all telework applications requiring a user's signature.
@@ -702,46 +626,6 @@ class ManagerUpcomingReviewsManager(models.Manager):
         return queryset
 
 
-class ManagerUpcomingReviewsActionRequiredManager(models.Manager):
-    def get_queryset(self, user):
-        queryset = super().get_queryset()
-        desired_pks = [pr.pk for pr in user.employee.manager_upcoming_reviews_action_required()]
-        queryset = queryset.filter(pk__in=desired_pks)
-        return queryset
-
-
-class ManagerUpcomingReviewsNoActionRequiredManager(models.Manager):
-    def get_queryset(self, user):
-        queryset = super().get_queryset()
-        desired_pks = [pr.pk for pr in user.employee.manager_upcoming_reviews_no_action_required()]
-        queryset = queryset.filter(pk__in=desired_pks)
-        return queryset
-
-
-class SignatureAllRelevantUpcomingReviewsManager(models.Manager):
-    def get_queryset(self, user):
-        queryset = super().get_queryset()
-        desired_pks = [pr.pk for pr in user.employee.signature_all_relevant_upcoming_reviews()]
-        queryset = queryset.filter(pk__in=desired_pks)
-        return queryset
-
-
-class SignatureUpcomingReviewsActionRequiredManager(models.Manager):
-    def get_queryset(self, user):
-        queryset = super().get_queryset()
-        desired_pks = [pr.pk for pr in user.employee.signature_upcoming_reviews_action_required()]
-        queryset = queryset.filter(pk__in=desired_pks)
-        return queryset
-
-
-class SignatureUpcomingReviewsNoActionRequiredManager(models.Manager):
-    def get_queryset(self, user):
-        queryset = super().get_queryset()
-        desired_pks = [pr.pk for pr in user.employee.signature_upcoming_reviews_no_action_required()]
-        queryset = queryset.filter(pk__in=desired_pks)
-        return queryset
-
-
 ######################
 ### PR Base Models ###
 ######################
@@ -778,11 +662,6 @@ class PerformanceReview(models.Model):
     # Managers for filtering PRs
     objects = models.Manager()
     manager_upcoming_reviews = ManagerUpcomingReviewsManager()
-    manager_upcoming_reviews_action_required = ManagerUpcomingReviewsActionRequiredManager()
-    manager_upcoming_reviews_no_action_required = ManagerUpcomingReviewsNoActionRequiredManager()
-    signature_all_relevant_upcoming_reviews = SignatureAllRelevantUpcomingReviewsManager()
-    signature_upcoming_reviews_action_required = SignatureUpcomingReviewsActionRequiredManager()
-    signature_upcoming_reviews_no_action_required = SignatureUpcomingReviewsNoActionRequiredManager()
 
     NEEDS_EVALUATION = 'N'
     EVALUATION_WRITTEN = 'EW'
