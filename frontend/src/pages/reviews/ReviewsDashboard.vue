@@ -54,6 +54,7 @@
   </div>
   <ReviewTable
     :employeePk="userStore.getEmployeeProfile.employee_pk"
+    :incomplete="true"
   />
 </div>
 

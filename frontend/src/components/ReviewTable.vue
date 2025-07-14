@@ -270,7 +270,11 @@ let reviewsLoaded = ref(false)
 function performanceReviews(): Array<ReviewRetrieve> {
   let prs = [] as Array<ReviewRetrieve>
   if (props.employeePk) {
-    prs = reviewStore.employeePRs
+    if (props.complete && props.complete === true) {
+      prs = reviewStore.employeePRs.filter(pr => pr.complete === true)
+    } else if (props.incomplete && props.incomplete === true) {
+      prs = reviewStore.employeePRs.filter(pr => pr.complete === false)
+    }
   } else if (props.managerPk) {
     if (props.complete && props.complete === true) {
       prs = reviewStore.completePRs

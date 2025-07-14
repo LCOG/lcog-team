@@ -286,13 +286,19 @@ class PerformanceReviewBaseSerializer(serializers.ModelSerializer):
 
 
 class PerformanceReviewSimpleSerializer(PerformanceReviewBaseSerializer):
+    complete = serializers.SerializerMethodField()
+    
     class Meta:
         model = PerformanceReview
         fields = [
             'url', 'pk', 'employee_name', 'period_start_date',
             'period_end_date', 'days_until_review', 'status',
-            'employee_action_required'
+            'employee_action_required', 'complete'
         ]
+    
+    @staticmethod
+    def get_complete(pr):
+        return pr.status == PerformanceReview.EVALUATION_ED_APPROVED
 
 
 class PerformanceReviewSerializer(PerformanceReviewBaseSerializer):
