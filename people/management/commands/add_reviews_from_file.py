@@ -78,23 +78,33 @@ class Command(BaseCommand):
         # Get the most recent review information
         review_date = datetime.datetime.strptime(most_recent_row[4], '%m/%d/%Y')
         next_review_date = datetime.datetime.strptime(most_recent_row[9], '%m/%d/%Y')
-        try:   
+        try:
             existing_reviews = PerformanceReview.objects.filter(employee=employee, period_start_date=review_date).exists()
             if not existing_reviews:
                 # review_range = next_review_date - review_date
-                # TODO: Implement other review forms once we have them
-                if len(rows) > 1:
-                    evaluation_type = PerformanceReview.ANNUAL_EVALUATION
-                    form = PRForm.objects.get(name='All - 180 - Annual PR')
-                else:
+                if employee.is_sds_employee and len(rows) < 2:
                     evaluation_type = PerformanceReview.PROBATIONARY_EVALUATION
-                    form = PRForm.objects.get(name='EA - 90 - Probationary PR')
+                    probationary_evaluation_type = PerformanceReview.SEIU_PROBATIONARY_EVALUATION
+                    form = PRForm.objects.get(name='SEIU - 60 - Probation Feedback')
+                elif employee.is_sds_employee and len(rows) < 3:
+                    evaluation_type = PerformanceReview.PROBATIONARY_EVALUATION
+                    probationary_evaluation_type = PerformanceReview.SEIU_PROBATIONARY_EVALUATION
+                    form = PRForm.objects.get(name='SEIU - 120 - Probation Progress')
+                elif not employee.is_sds_employee and len(rows) < 2:
+                    evaluation_type = PerformanceReview.PROBATIONARY_EVALUATION
+                    probationary_evaluation_type = PerformanceReview.NON_SEIU_PROBATIONARY_EVALUATION
+                    form = PRForm.objects.get(name='EA - 90 - Probation Progress')
+                else:
+                    evaluation_type = PerformanceReview.ANNUAL_EVALUATION
+                    probationary_evaluation_type = None
+                    form = PRForm.objects.get(name='All - 180 - Annual PR')
                 PerformanceReview.objects.create(
                     employee=employee,
                     period_start_date=review_date,
                     period_end_date=next_review_date,
                     effective_date=next_review_date + datetime.timedelta(days=1),
                     evaluation_type=evaluation_type,
+                    probationary_evaluation_type=probationary_evaluation_type,
                     form=form
                 )
                 self.stdout.write(
