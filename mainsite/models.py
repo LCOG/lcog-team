@@ -39,6 +39,25 @@ class Organization(models.Model, ActiveMixin):
     active = models.BooleanField(default=True) # Define explicitly here in order to filter in admin
 
 
+class OrganizationObjectsQuerySet(models.QuerySet):
+    def for_organization(self, organization):
+        return self.filter(employee__organization=organization)
+    
+    def for_employee(self, employee):
+        return self.filter(employee__organization=employee.organization)
+
+
+class OrganizationObjectsManager(models.Manager):
+    def get_queryset(self):
+        return OrganizationObjectsQuerySet(self.model, using=self._db)
+    
+    def for_organization(self, organization):
+        return self.get_queryset().for_organization(organization)
+
+    def for_employee(self, employee):
+        return self.get_queryset().for_employee(employee)
+
+
 class ImageUpload(models.Model):
     description = models.CharField(_("description"), max_length=255)
     image = models.ImageField(upload_to="uploads/image-upload")

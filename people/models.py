@@ -11,7 +11,9 @@ from mainsite.helpers import (
     send_signature_email_to_executive_director,
     send_signature_email_to_hr_manager
 )
-from mainsite.models import ActiveManager, SecurityMessage
+from mainsite.models import (
+    ActiveManager, OrganizationObjectsManager, SecurityMessage
+)
 
 
 SHOW_REVIEW_TO_MANAGER_DAYS_BEFORE_DUE = 60
@@ -293,19 +295,23 @@ class Employee(models.Model):
                 return None
 
     def save(self, *args, **kwargs):
-        # is_hr_manager can only apply to ONE Employee
+        # is_hr_manager can only apply to ONE Employee PER Organization
         if self.is_hr_manager:
             try:
-                old_manager = Employee.objects.get(is_hr_manager=True)
+                old_manager = Employee.objects.get(
+                    is_hr_manager=True, organization=self.organization
+                )
                 if self != old_manager:
                     old_manager.is_hr_manager = False
                     old_manager.save()
             except Employee.DoesNotExist:
                 pass
-        # is_executive_director can only apply to ONE Employee
+        # is_executive_director can only apply to ONE Employee PER Organization
         if self.is_executive_director:
             try:
-                old_director = Employee.objects.get(is_executive_director=True)
+                old_director = Employee.objects.get(
+                    is_executive_director=True, organization=self.organization
+                )
                 if self != old_director:
                     old_director.is_executive_director = False
                     old_director.save()
@@ -385,42 +391,6 @@ class Employee(models.Model):
                     reviews.append(review)
         return sorted(reviews, key=lambda review: review.period_end_date)
     
-    def manager_upcoming_reviews_action_required(self):
-        reviews = []
-        for review in self.manager_upcoming_reviews():
-            if review.status == PerformanceReview.NEEDS_EVALUATION:
-                reviews.append(review)
-        return reviews
-    
-    def manager_upcoming_reviews_no_action_required(self):
-        reviews = []
-        for review in self.manager_upcoming_reviews():
-            if review.status != PerformanceReview.NEEDS_EVALUATION:
-                reviews.append(review)
-        return reviews
-
-    def signature_all_relevant_upcoming_reviews(self):
-        # Returns all upcoming reviews for a manager's direct reports and their
-        # descendants. For detail views.
-        reviews = []
-        for employee in self.get_direct_reports():
-            employee_reviews = employee.performancereview_set.all()
-            for review in employee_reviews:
-                if (
-                    review.days_until_due() < \
-                        SHOW_REVIEW_TO_MANAGER_DAYS_BEFORE_DUE
-                ):
-                    reviews.append(review)
-        for employee in self.get_direct_reports_descendants():
-            employee_reviews = employee.performancereview_set.all()
-            for review in employee_reviews:
-                if (
-                    review.days_until_due() < \
-                        SHOW_REVIEW_TO_MANAGER_DAYS_BEFORE_DUE  
-                ):
-                    reviews.append(review)
-        return sorted(reviews, key=lambda review: review.period_end_date)
-    
     def signature_upcoming_reviews(self):
         # Returns all upcoming reviews for a manager's direct reports.
         # HR Manager and Executive Director should see upcoming reviews for all
@@ -441,46 +411,6 @@ class Employee(models.Model):
                 ):
                     reviews.append(review)
         return sorted(reviews, key=lambda review: review.period_end_date)
-    
-    def signature_upcoming_reviews_action_required(self):
-        # Returns all upcoming reviews for a manager's direct reports which
-        # require action from the manager to proceed. For list views.
-        reviews = []
-        for review in self.signature_upcoming_reviews():
-            if self.is_executive_director:
-                if all([
-                    review.status == PerformanceReview.EVALUATION_HR_PROCESSED,
-                    review.signature_set.filter(employee=self).count() == 0
-                ]):
-                    reviews.append(review)
-            elif self.is_hr_manager:
-                if all([
-                    review.status == PerformanceReview.EVALUATION_APPROVED,
-                    review.signature_set.filter(employee=self).count() == 0
-                ]):
-                    reviews.append(review)
-            else:
-                direct_report = review.employee
-                while direct_report.manager != self:
-                    direct_report = direct_report.manager
-                if all([
-                    review.status == PerformanceReview.EVALUATION_WRITTEN,
-                    review.signature_set.filter(
-                        employee=direct_report
-                    ).count() == 1,
-                    review.signature_set.filter(employee=self).count() == 0
-                ]):
-                    reviews.append(review)
-        return reviews
-    
-    def signature_upcoming_reviews_no_action_required(self):
-        # Returns all upcoming reviews for a manager's direct reports which do
-        # not require action from the manager to proceed. For list views.
-        reviews = []
-        for review in self.signature_upcoming_reviews():
-            if review.signature_set.filter(employee=self.pk).count() > 0:
-                reviews.append(review)
-        return reviews
 
     def telework_applications_signature_required(self):
         # Returns all telework applications requiring a user's signature.
@@ -698,46 +628,6 @@ class ManagerUpcomingReviewsManager(models.Manager):
         return queryset
 
 
-class ManagerUpcomingReviewsActionRequiredManager(models.Manager):
-    def get_queryset(self, user):
-        queryset = super().get_queryset()
-        desired_pks = [pr.pk for pr in user.employee.manager_upcoming_reviews_action_required()]
-        queryset = queryset.filter(pk__in=desired_pks)
-        return queryset
-
-
-class ManagerUpcomingReviewsNoActionRequiredManager(models.Manager):
-    def get_queryset(self, user):
-        queryset = super().get_queryset()
-        desired_pks = [pr.pk for pr in user.employee.manager_upcoming_reviews_no_action_required()]
-        queryset = queryset.filter(pk__in=desired_pks)
-        return queryset
-
-
-class SignatureAllRelevantUpcomingReviewsManager(models.Manager):
-    def get_queryset(self, user):
-        queryset = super().get_queryset()
-        desired_pks = [pr.pk for pr in user.employee.signature_all_relevant_upcoming_reviews()]
-        queryset = queryset.filter(pk__in=desired_pks)
-        return queryset
-
-
-class SignatureUpcomingReviewsActionRequiredManager(models.Manager):
-    def get_queryset(self, user):
-        queryset = super().get_queryset()
-        desired_pks = [pr.pk for pr in user.employee.signature_upcoming_reviews_action_required()]
-        queryset = queryset.filter(pk__in=desired_pks)
-        return queryset
-
-
-class SignatureUpcomingReviewsNoActionRequiredManager(models.Manager):
-    def get_queryset(self, user):
-        queryset = super().get_queryset()
-        desired_pks = [pr.pk for pr in user.employee.signature_upcoming_reviews_no_action_required()]
-        queryset = queryset.filter(pk__in=desired_pks)
-        return queryset
-
-
 ######################
 ### PR Base Models ###
 ######################
@@ -772,13 +662,8 @@ class PerformanceReview(models.Model):
         return reverse("performance_review_detail", kwargs={"pk": self.pk})
 
     # Managers for filtering PRs
-    objects = models.Manager()
+    objects = OrganizationObjectsManager()
     manager_upcoming_reviews = ManagerUpcomingReviewsManager()
-    manager_upcoming_reviews_action_required = ManagerUpcomingReviewsActionRequiredManager()
-    manager_upcoming_reviews_no_action_required = ManagerUpcomingReviewsNoActionRequiredManager()
-    signature_all_relevant_upcoming_reviews = SignatureAllRelevantUpcomingReviewsManager()
-    signature_upcoming_reviews_action_required = SignatureUpcomingReviewsActionRequiredManager()
-    signature_upcoming_reviews_no_action_required = SignatureUpcomingReviewsNoActionRequiredManager()
 
     NEEDS_EVALUATION = 'N'
     EVALUATION_WRITTEN = 'EW'
@@ -803,7 +688,7 @@ class PerformanceReview(models.Model):
     SEIU_PROBATIONARY_EVALUATION = 'S'
     NON_SEIU_PROBATIONARY_EVALUATION = 'N'
     PROBATIONARY_EVALUATION_TYPE_CHOICE = [
-        (NON_SEIU_PROBATIONARY_EVALUATION, 'SEIU (180 day)'),
+        (SEIU_PROBATIONARY_EVALUATION, 'SEIU (180 day)'),
         (NON_SEIU_PROBATIONARY_EVALUATION, 'Non-SEIU (6 month)'),
     ]
 
@@ -883,7 +768,8 @@ class PerformanceReview(models.Model):
         # Manager might need to complete review
         if all([
             self.status == PerformanceReview.NEEDS_EVALUATION,
-            self.employee.manager == employee
+            self.employee.manager == employee,
+            self.days_until_due() <= 30
         ]):
             return True, "Review is ready for completion"
         # Employee might need to complete self-evaluation
@@ -987,6 +873,9 @@ class PerformanceReview(models.Model):
                 signatures.append(["Executive Director", None, None, ed.pk, ready_to_sign])
         return signatures
 
+    # NOTE: Not currently used, as we just wait for the next review to be
+    # created in Caselle and exported. In the future, we may want to have
+    # this app be the single source of truth for performance reviews.
     def create_next_review_for_employee(self):
         PerformanceReview.objects.create(
             employee=self.employee,

@@ -7,7 +7,10 @@ function employeeIDViewAndEdit() {
   const employeeIDSelect = cy.get('select[name="employee-id"]')
   const employeeIDInput = employeeIDSelect.siblings('input')
   employeeIDInput.click()
-  cy.get('.q-menu > .q-virtual-scroll__content > .q-item > .q-item__section > .q-item__label').first().click()
+  cy.get(
+    '.q-menu > .q-virtual-scroll__content > .q-item > .q-item__section > ' +
+    '.q-item__label'
+  ).first().click()
   employeeIDSelect.get('option').first().should('have.value', 'CLSD')
   const employeeNumber = cy.get('input[name="employee-number"]')
   employeeNumber.type('1234')
@@ -32,7 +35,10 @@ function salaryViewAndEdit() {
   salaryRange.should('not.have.attr', 'readonly', 'readonly')
   const salaryStep = cy.get('#salary-step input').should('exist')
   salaryStep.click()
-  cy.get('.q-menu > .q-virtual-scroll__content > .q-item > .q-item__section > .q-item__label').first().click()
+  cy.get(
+    '.q-menu > .q-virtual-scroll__content > .q-item > .q-item__section > ' +
+    '.q-item__label'
+  ).first().click()
 }
 
 function salaryNotView() {
@@ -120,7 +126,8 @@ function otherFieldsViewAndEdit() {
   cy.get('#computer-repurposed').should('have.attr', 'aria-checked', 'true')
   const computerDescription = randomString(10)
   cy.get('input[name="computer-description"]').clear().type(computerDescription)
-  cy.get('input[name="computer-description"]').should('have.value', computerDescription)
+  cy.get('input[name="computer-description"]')
+    .should('have.value', computerDescription)
   const phoneNumber = '555-555-1234'
   cy.get('input[name="phone-number"]').clear().type(phoneNumber)
   cy.get('input[name="phone-number"]').should('have.value', '(555) 555-1234')
@@ -128,7 +135,8 @@ function otherFieldsViewAndEdit() {
   cy.get('.q-menu > .q-virtual-scroll__content > .q-item').eq(3).click()
   const phoneRequestData = 'Machiavelli'
   cy.get('input[name="phone-request-data"]').clear().type(phoneRequestData)
-  cy.get('input[name="phone-request-data"]').should('have.value', phoneRequestData)
+  cy.get('input[name="phone-request-data"]')
+    .should('have.value', phoneRequestData)
   const loadCode = '21421'
   cy.get('input[name="load-code"]').clear().type(loadCode)
   cy.get('input[name="load-code"]').should('have.value', loadCode)
@@ -190,7 +198,8 @@ function otherFieldsViewNotEdit() {
   // TODO: Prox card returned (exit only)
   // TODO: Show access emails (exit only)
   // TODO: Access emails (exit only)
-  cy.get('textarea[name="special-instructions"]').should('have.attr', 'readonly')
+  cy.get('textarea[name="special-instructions"]')
+    .should('have.attr', 'readonly')
   cy.get('button[name="save-button"]').should('not.exist')
 }
 
@@ -208,9 +217,10 @@ function sendSDSButtonExists() {
   cy.get('button[name="send-stn-button"]').should('not.exist')
 }
 
-describe('Fill out new employee form', () => {
+describe('WF: Transition Form', () => {
+it('Fill out new employee form', () => {
 
-  it('Completed and deleted workflows load', () => {
+  cy.step('Completed and deleted workflows load', () => {
     loginUser(Cypress.env('users').sdsmanager).then(() => {
       visitUrl(Cypress.env('workflows_complete_path'))
       cy.get('.q-table__container').should('exist')
@@ -219,7 +229,7 @@ describe('Fill out new employee form', () => {
     })
   })
 
-  it('Submitter logs in, creates a new employee workflow, and submits it', () => {
+  cy.step('Submitter creates a new employee workflow and submits it', () => {
     // Create a new employee workflow
     loginUser(Cypress.env('users').sdsmanager).then(() => {
       visitUrl(Cypress.env('workflows_dashboard_path'))
@@ -263,7 +273,7 @@ describe('Fill out new employee form', () => {
     })
   })
 
-  it('Another manager can view the workflow but not edit certain fields', () => {
+  cy.step('Another manager can view workflow but not edit some fields', () => {
     const pk = LOCAL_STORAGE_MEMORY['workflowPK']
     loginUser(Cypress.env('users').gsmanager).then(() => {
       visitUrl(`/wf/${pk}/transition`)
@@ -281,7 +291,7 @@ describe('Fill out new employee form', () => {
     })
   })
 
-  it('Hiring Manager can view the workflow and edit certain fields', () => {
+  cy.step('Hiring Manager can view workflow and edit certain fields', () => {
     const pk = LOCAL_STORAGE_MEMORY['workflowPK']
     loginUser(Cypress.env('users').hiringmanager).then(() => {
       visitUrl(`/wf/${pk}/transition`)
@@ -299,7 +309,7 @@ describe('Fill out new employee form', () => {
     })
   })
 
-  it ('SDS Hiring Lead can view the workflow and edit certain fields', () => {
+  cy.step('SDS Hiring Lead can view workflow and edit certain fields', () => {
     const pk = LOCAL_STORAGE_MEMORY['workflowPK']
     loginUser(Cypress.env('users').sdshiringlead).then(() => {
       visitUrl(`/wf/${pk}/transition`)
@@ -317,7 +327,7 @@ describe('Fill out new employee form', () => {
     })
   })
 
-  it('Fiscal can view the workflow and edit certain fields', () => {
+  cy.step('Fiscal can view the workflow and edit certain fields', () => {
     const pk = LOCAL_STORAGE_MEMORY['workflowPK']
     loginUser(Cypress.env('users').fiscalemployee).then(() => {
       visitUrl(`/wf/${pk}/transition`)
@@ -335,7 +345,7 @@ describe('Fill out new employee form', () => {
     })
   })
 
-  it('HR can view the workflow and edit certain fields', () => {
+  cy.step('HR can view the workflow and edit certain fields', () => {
     const pk = LOCAL_STORAGE_MEMORY['workflowPK']
     loginUser(Cypress.env('users').hremployee).then(() => {
       visitUrl(`/wf/${pk}/transition`)
@@ -353,7 +363,7 @@ describe('Fill out new employee form', () => {
     })
   })
 
-  it('Non-qualified users cannot view the workflow', () => {
+  cy.step('Non-qualified users cannot view the workflow', () => {
     const pk = LOCAL_STORAGE_MEMORY['workflowPK']
     loginUser(Cypress.env('users').employee).then(() => {
       visitUrl(Cypress.env('workflows_dashboard_path')).then(() => {
@@ -365,7 +375,7 @@ describe('Fill out new employee form', () => {
     })
   })
 
-  it('Deletes the workflow', () => {
+  cy.step('Deletes the workflow', () => {
     const pk = LOCAL_STORAGE_MEMORY['workflowPK']
     loginSuperuser().then(() => {
       const token = localStorage.getItem('user-token')
@@ -383,4 +393,6 @@ describe('Fill out new employee form', () => {
       }
     })
   })
+
+})
 })

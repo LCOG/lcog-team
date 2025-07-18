@@ -38,6 +38,11 @@
 
 import { visitUrl } from '../support/helpers'
 
+Cypress.Commands.add('step', (description, fn) => {
+  cy.log(`🔄🔄🔄 ${description} 🔄🔄🔄`)
+  return fn()
+})
+
 Cypress.Commands.add('loginEmployeeWithUI', () => {
   visitUrl('/auth/login')
   cy.get('#username')

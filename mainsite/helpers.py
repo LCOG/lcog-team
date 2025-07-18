@@ -123,7 +123,7 @@ def send_evaluation_written_email_to_employee(employee, review):
     # Notification #5
     SignatureReminder = apps.get_model('people.SignatureReminder')
     current_site = Site.objects.get_current()
-    url = current_site.domain + '/dashboard'
+    url = current_site.domain + '/pr/' + str(review.pk)
     send_email(
         employee.user.email,
         f'Signature required: {review.employee.manager.name} has completed your performance evaluation',
