@@ -270,8 +270,12 @@ class PerformanceReviewPermission(BasePermission):
 
 class PerformanceReviewViewSet(viewsets.ModelViewSet):
     queryset = PerformanceReview.objects.all()
-    serializer_class = PerformanceReviewSimpleSerializer
     permission_classes = [PerformanceReviewPermission]
+
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return PerformanceReviewSimpleSerializer
+        return PerformanceReviewSerializer
 
     def get_queryset(self):
         """
