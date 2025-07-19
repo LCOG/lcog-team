@@ -6,11 +6,6 @@ from django.db import models
 from django.urls import reverse
 from django.utils.translation import gettext as _
 
-from mainsite.helpers import (
-    send_completed_email_to_hr_manager,
-    send_signature_email_to_executive_director,
-    send_signature_email_to_hr_manager
-)
 from mainsite.models import (
     ActiveManager, OrganizationObjectsManager, SecurityMessage
 )
