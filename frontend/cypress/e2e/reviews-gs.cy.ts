@@ -24,7 +24,7 @@ it('GS employee performance review process', () => {
             form_pk: 1,
             period_start_date: '2024-06-30',
             period_end_date: '2025-06-30',
-            effective_date: '2024-07-01',
+            effective_date: '2025-07-01',
           },
         }).then((resp) => {
           const reviewPK = resp.body.pk
@@ -93,7 +93,9 @@ it('GS employee performance review process', () => {
         visitUrl(Cypress.env('reviews_dashboard_path'))
         cy.contains('Needs evaluation').siblings().last().find('button').first()
           .click()
-        cy.get('#step-increase').siblings().first().click()
+        cy.get('#step-increase').should('be.visible').should('not.be.disabled')
+          .siblings().first().should('be.visible').should('not.be.disabled')
+          .click()
         cy.get('#top-step-bonus').siblings().first().click()
         // Self-evaluation should be present
         cy.contains(LOCAL_STORAGE_MEMORY['selfEvaluation'])
