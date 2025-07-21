@@ -69,7 +69,7 @@ class EmployeeAdmin(admin.ModelAdmin):
         "active", "organization", "unit_or_program__division",
         "unit_or_program"
     )
-    search_fields = ("user__username", )
+    search_fields = ("user__username", "job_title__name")
     inlines = [WorkflowOptionsInline]
 
 
@@ -96,6 +96,7 @@ class SignatureInline(admin.TabularInline):
 @admin.register(PerformanceReview)
 class PerformanceReviewAdmin(admin.ModelAdmin):
     list_display = ("username", "status", "form", "effective_date")
+    list_filter = ("status", "form", "employee")
     search_fields = ("employee__user__username", )
     inlines = (SignatureInline, SignatureReminderInline)
     # inlines = (SignatureInline, SignatureReminderInline, SelfEvaluationInline)
@@ -164,6 +165,7 @@ class PRFactorResponseSetAdmin(admin.ModelAdmin):
 @admin.register(ReviewNote)
 class ReviewNoteAdmin(admin.ModelAdmin):
     list_display = ("author", "employee", "created_at")
+    list_filter = ("employee", "author")
     readonly_fields = ("created_at",)
 
     def get_form(self, request, obj=None, **kwargs):

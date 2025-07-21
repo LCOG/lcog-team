@@ -4,6 +4,16 @@
 
 export const releases = [
   {
+    version: '0.50.0',
+    date: new Date(2025, 6, 21),
+    changes: [
+      {
+        type: 'improved',
+        description: 'Many improvements to Performance Reviews module.'
+      },
+    ]
+  },
+  {
     version: '0.49.2',
     date: new Date(2025, 5, 24),
     changes: [

@@ -257,6 +257,7 @@ export interface ReviewRetrieve {
   manager_name: string
   days_until_review: number
   status: string
+  complete: boolean
   period_start_date: Date
   period_end_date: Date
   effective_date: Date

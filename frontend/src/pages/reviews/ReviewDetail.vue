@@ -133,12 +133,25 @@
     </h5>
     <div v-if="currentUserIsEmployee()">
       <!-- EMPLOYEE -->
+      <div>
+      <div>Responding to these questions can help you prepare for your performance evaluation. As you read each question, think about performance; your progress; and your plans for future growth.</div>
+      <ol>
+        <li>What were my specific accomplishments during this evaluation period? Give examples.</li>
+        <li>How could my supervisor help me do a better job?</li>
+        <li>How are my relationships and communications with peers/clients/providers? Are there areas for improvement? What behaviors or style changes do I need to work on to improve my performance?</li>
+        <li>What abilities does my job require?</li>
+        <li>Do I need more experience or training in any aspect of my current job? How could this be accomplished? What would I like to improve, change, or learn to improve my job performance?</li>
+        <li>What are my goals for the coming year?</li>
+        <li>What do I expect to be doing five years from now?</li>
+      </ol>
+      </div>
       <div
         v-if="employeeHasSigned() || props.print"
         class="read-only-text-area" v-html="evaluationCommentsEmployee"
       ></div>
       <div v-else>
         <q-editor
+          id="employee-self-evaluation"
           v-model="evaluationCommentsEmployee"
           :toolbar="editorToolbar"
         />
@@ -203,40 +216,41 @@
     </div>
 
     <!-- Multiple choice performance factors -->
-    <!-- TODO: Make generic -->
-    <h5 class="text-uppercase text-center text-bold q-mb-sm q-mt-lg"><u>Rating Scale</u></h5>
-    <div class="rating-grid-container">
-      <div class="rating-box">
-        <span class="text-bold">(1)*</span> Needs Improvement
+    <div v-if="form.factorsResponseSet.indexOf('Needs Improvement') != -1">
+      <h5 class="text-uppercase text-center text-bold q-mb-sm q-mt-lg"><u>Rating Scale</u></h5>
+      <div class="rating-grid-container">
+        <div class="rating-box">
+          <span class="text-bold">(1)*</span> Needs Improvement
+        </div>
+        <div class="rating-box">
+          The employee’s work performance does not consistently meet the standards
+          of the position. Serious effort is needed to improve performance.
+        </div>
+        <div class="rating-box">
+          <span class="text-bold">(2)</span> Meets Job Requirments
+        </div>
+        <div class="rating-box">
+          The employee’s work performance consistently meets the standards of the
+          position.
+        </div>
+        <div class="rating-box">
+          <span class="text-bold">(3)</span> Exceeds Job Requirments
+        </div>
+        <div class="rating-box">
+          The employee’s work performance is frequently or consistently above the
+          level of a satisfactory employee.
+        </div>
+        <div class="rating-box">
+          <span class="text-bold">(N/A)</span> Not Applicable
+        </div>
+        <div class="rating-box">
+          Does not pertain to the employee’s actual job duties.
+        </div>
       </div>
-      <div class="rating-box">
-        The employee’s work performance does not consistently meet the standards
-        of the position. Serious effort is needed to improve performance.
+      <div>
+        *Factors rated <span class="text-bold">(1)</span> Needs improvement must
+        be addressed with a plan for improvement.
       </div>
-      <div class="rating-box">
-        <span class="text-bold">(2)</span> Meets Job Requirments
-      </div>
-      <div class="rating-box">
-        The employee’s work performance consistently meets the standards of the
-        position.
-      </div>
-      <div class="rating-box">
-        <span class="text-bold">(3)</span> Exceeds Job Requirments
-      </div>
-      <div class="rating-box">
-        The employee’s work performance is frequently or consistently above the
-        level of a satisfactory employee.
-      </div>
-      <div class="rating-box">
-        <span class="text-bold">(N/A)</span> Not Applicable
-      </div>
-      <div class="rating-box">
-        Does not pertain to the employee’s actual job duties.
-      </div>
-    </div>
-    <div>
-      *Factors rated <span class="text-bold">(1)</span> Needs improvement must
-      be addressed with a plan for improvement.
     </div>
 
     <h5 class="text-uppercase text-bold q-my-md">
@@ -301,6 +315,7 @@
           v-for="response in form.factorsResponseSet"
           :key="form.factorsResponseSet.indexOf(response)"
           class="factors-radio-box"
+          :class="`factors-radio-box-${response ? response.toLowerCase().replace(/\s+/g, '-') : 'na'}`"
         >
           <q-radio
             v-model="formData[factor.name]"
@@ -311,7 +326,10 @@
             :disable="!currentUserIsManagerOfEmployee() || employeeHasSigned()"
           />
         </div>
-        <div class="factors-radio-box">
+        <div
+          v-if="form.anyNotApplicable"
+          class="factors-radio-box factors-radio-box-na"
+        >
           <q-radio
             v-if="factor.notApplicableOption"
             v-model="formData[factor.name]"
@@ -339,6 +357,7 @@
       ></div>
       <q-editor
         v-else
+        class="long-response-editor"
         :model-value="formData[response[0]] || ''"
         @update:model-value="(val: string) => {
           formData[response[0]] = val
@@ -528,7 +547,7 @@
   display: grid;
   justify-content: space-between;
   align-items: center;
-  grid-template-columns: auto auto auto auto;
+  grid-template-columns: repeat(var(--factors-response-count, 4), auto);
 }
 .eval-box-full-1-probationary {
   display: grid;
@@ -564,7 +583,8 @@
   background-color: black;
   padding: 2px;
   grid-gap: 2px;
-  grid-template-columns: auto 115px 115px 115px 115px;
+  /* Use a CSS variable for dynamic columns */
+  grid-template-columns: auto repeat(var(--factors-response-count, 4), 115px);
 }
 .factors-header-mobile {
   display: none;
@@ -615,7 +635,7 @@
     justify-content: start;
   }
   .factors-grid-container {
-    grid-template-columns: auto 66px 66px 66px 65px;
+    grid-template-columns: auto repeat(var(--factors-response-count, 4), 65px);
   }
   .factors-header-desktop {
     display: none;
@@ -724,7 +744,7 @@
     padding-bottom: 0;
   }
   .factors-grid-container {
-    grid-template-columns: auto 72px 72px 72px 72px;
+    grid-template-columns: auto repeat(var(--factors-response-count, 4), 72px);
   }
   #position-description-section {
     display: none;
@@ -740,7 +760,7 @@
 
 <script setup lang="ts">
 import { scroll, useQuasar } from 'quasar'
-import { onMounted, ref, Ref } from 'vue'
+import { onMounted, ref, Ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import { readableDate } from 'src/filters'
@@ -925,7 +945,6 @@ function retrievePerformanceReview() {
 
           prPk.value = pr.pk.toString()
           form.value = pr.form
-          console.log('FORM:', form.value)
           
           employeeName.value = pr.employee_name
           managerName.value = pr.manager_name
@@ -1011,8 +1030,8 @@ function updatePerformanceReview() {
         showErrorButton.value = true
       }
 
-      reviewStore.getAllPerformanceReviewsActionRequired()
-      reviewStore.getAllPerformanceReviewsActionNotRequired()
+      // reviewStore.getAllPerformanceReviewsActionRequired()
+      // reviewStore.getAllPerformanceReviewsActionNotRequired()
 
       resolve('Updated')
     })
@@ -1049,8 +1068,8 @@ function signPerformanceReview(): void {
       updatePerformanceReview()
         .then(() => {
           retrievePerformanceReview()
-          reviewStore.getAllPerformanceReviewsActionRequired()
-          reviewStore.getAllPerformanceReviewsActionNotRequired()
+          // reviewStore.getAllPerformanceReviewsActionRequired()
+          // reviewStore.getAllPerformanceReviewsActionNotRequired()
           showPRSignedAndCompleteDialog.value = true
         })
         .catch(e => {
@@ -1082,11 +1101,24 @@ function clickedErrorItem(item: [string, string]) {
 }
 
 function returnToDashboard(): void {
-  router.push('/')
+  router.push('/reviews/dashboard')
     .catch(e => {
       console.error('Error navigating to dashboard:', e)
     })
 }
+
+function setFactorsResponseCount() {
+  let count = form.value.factorsResponseSet.length || 4 // fallback to 4
+  console.log("COUNT", count)
+  if (form.value.anyNotApplicable) { count += 1 }
+  console.log("COUNT", count)
+  const container = document.querySelector('.factors-grid-container')
+  
+  if (container) {
+    container.style.setProperty('--factors-response-count', count.toString())
+  }
+}
+
 
 onMounted(() => {
   retrievePerformanceReview()
@@ -1094,10 +1126,13 @@ onMounted(() => {
       if (props.print) {
         window.print()
       }
+      setFactorsResponseCount()
     })
     .catch(e => {
       console.error('Error retrieving PR on PR detail page mount:', e)
       returnToDashboard()
     })
 })
+
+watch(() => form.value.factorsResponseSet, () => { setFactorsResponseCount() })
 </script>
