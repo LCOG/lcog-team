@@ -25,6 +25,7 @@
         :fooBar="100"
       />
       <q-editor
+        id="review-note-editor"
         v-model="note"
         :toolbar="editorToolbar"
         class="q-my-md"

@@ -123,7 +123,7 @@ def send_evaluation_written_email_to_employee(employee, review):
     # Notification #5
     SignatureReminder = apps.get_model('people.SignatureReminder')
     current_site = Site.objects.get_current()
-    url = current_site.domain + '/dashboard'
+    url = current_site.domain + '/pr/' + str(review.pk)
     send_email(
         employee.user.email,
         f'Signature required: {review.employee.manager.name} has completed your performance evaluation',
@@ -151,20 +151,28 @@ def send_signature_email_to_manager(employee, review):
 
 def send_signature_email_to_hr_manager(review):
     # Notification #13
-    hr_manager = apps.get_model('people.Employee').objects.get(is_hr_manager=True)
+    hr_manager = apps.get_model('people.Employee').objects.get(
+        organization=review.employee.organization, is_hr_manager=True
+    )
     send_signature_email_to_manager(hr_manager, review)
 
 
 def send_signature_email_to_executive_director(review):
     # Notification #16
-    executive_director = apps.get_model('people.Employee').objects.get(is_executive_director=True)
+    executive_director = apps.get_model('people.Employee').objects.get(
+        organization=review.employee.organization, is_executive_director=True
+    )
     send_signature_email_to_manager(executive_director, review)
 
 
 def send_completed_email_to_hr_manager(review):
     # Notification #19
-    hr_manager = apps.get_model('people.Employee').objects.get(is_hr_manager=True)
-    executive_director = apps.get_model('people.Employee').objects.get(is_executive_director=True)
+    hr_manager = apps.get_model('people.Employee').objects.get(
+        organization=review.employee.organization, is_hr_manager=True
+    )
+    executive_director = apps.get_model('people.Employee').objects.get(
+        organization=review.employee.organization, is_executive_director=True
+    )
     current_site = Site.objects.get_current()
     url = current_site.domain + '/print/pr/' + str(review.pk)
     send_email(
@@ -176,6 +184,7 @@ def send_completed_email_to_hr_manager(review):
 
 
 def send_pr_reminder_emails():
+    # TODO: Won't work with multiple executive directors. This needs to loop thru all organizations.
     current_site = Site.objects.get_current()
     Employee = apps.get_model('people.Employee')
     PerformanceReview = apps.get_model('people.PerformanceReview')

@@ -3,9 +3,10 @@ import { loginSuperuser, loginUser, visitUrl } from '../support/helpers'
 // Cypress clears localstorage between tests, so use this to store data
 const LOCAL_STORAGE_MEMORY: { [key: string]: string } = {}
 
-describe('New SDS employee workflow check assignments', () => {
+describe('WF: Transition Form', () => {
+it('New SDS employee workflow check assignments', () => {
 
-  it('Submitter logs in, creates a new employee workflow, and submits it', () => {
+  cy.step('Submitter creates a new employee workflow and submits it', () => {
     // Create a new employee workflow
     loginUser(Cypress.env('users').sdsmanager).then(() => {
       visitUrl(Cypress.env('workflows_dashboard_path'))
@@ -32,22 +33,24 @@ describe('New SDS employee workflow check assignments', () => {
         managerInput.type('Hiring M')
         cy.wait(500) // Wait for the title to be selected
         managerInput.type('{downArrow}{enter}')
-        const officeInput = cy.get('select[name="office-location"]').siblings('input').click()
+        cy.get('select[name="office-location"]').siblings('input').click()
         cy.get('span').contains('Cottage Grove').click()
         // Save the form
         cy.get('button[name="save-button"]').click()
         // Cannot reassign
         cy.get('button[name="reassign-button"]').should('have.attr', 'disabled')
-        cy.get('button[name="reassign-button"]').contains('Status: Not submitted')
+        cy.get('button[name="reassign-button"]')
+          .contains('Status: Not submitted')
         // Submit the form
         cy.get('button[name="send-sds-button"]').click()
         cy.get('button[name="send-sds-dialog-button"]').click()
-        cy.get('button[name="reassign-button"]').contains('Assigned to: Hiring Lead')
+        cy.get('button[name="reassign-button"]')
+          .contains('Assigned to: Hiring Lead')
       })
     })
   })
 
-  it ('SDS Hiring Lead sends to fiscal', () => {
+  cy.step('SDS Hiring Lead sends to fiscal', () => {
     const pk = LOCAL_STORAGE_MEMORY['workflowPK']
     loginUser(Cypress.env('users').sdshiringlead).then(() => {
       visitUrl(`/wf/${pk}/transition`)
@@ -62,7 +65,7 @@ describe('New SDS employee workflow check assignments', () => {
     })
   })
 
-  it('Fiscal reassigns back to SDS Hiring Lead', () => {
+  cy.step('Fiscal reassigns back to SDS Hiring Lead', () => {
     const pk = LOCAL_STORAGE_MEMORY['workflowPK']
     loginUser(Cypress.env('users').fiscalemployee).then(() => {
       visitUrl(`/wf/${pk}/transition`)
@@ -74,15 +77,17 @@ describe('New SDS employee workflow check assignments', () => {
       reassignButton.click()
       cy.get('button[name="reassign-dialog-assignee-dropdown"]').click()
       cy.get('.q-menu > .q-list > .q-item').eq(1).click()
-      cy.get('textarea[name="reassign-extra-message"]').type('Reassigning to SDS Hiring Lead')
+      cy.get('textarea[name="reassign-extra-message"]')
+        .type('Reassigning to SDS Hiring Lead')
       cy.get('button[name="reassign-dialog-button"]').click()
       // Now cannot reassign
       cy.get('button[name="reassign-button"]').should('have.attr', 'disabled')
-      cy.get('button[name="reassign-button"]').contains('Assigned to: Hiring Lead')
+      cy.get('button[name="reassign-button"]')
+        .contains('Assigned to: Hiring Lead')
     })
   })
 
-  it ('SDS Hiring Lead sends to fiscal a second time', () => {
+  cy.step('SDS Hiring Lead sends to fiscal a second time', () => {
     const pk = LOCAL_STORAGE_MEMORY['workflowPK']
     loginUser(Cypress.env('users').sdshiringlead).then(() => {
       visitUrl(`/wf/${pk}/transition`)
@@ -97,7 +102,7 @@ describe('New SDS employee workflow check assignments', () => {
     })
   })
 
-  it('Fiscal sends to HR', () => {
+  cy.step('Fiscal sends to HR', () => {
     const pk = LOCAL_STORAGE_MEMORY['workflowPK']
     loginUser(Cypress.env('users').fiscalemployee).then(() => {
       visitUrl(`/wf/${pk}/transition`)
@@ -112,7 +117,7 @@ describe('New SDS employee workflow check assignments', () => {
     })
   })
 
-  it('HR sends to STN', () => {
+  cy.step('HR sends to STN', () => {
     const pk = LOCAL_STORAGE_MEMORY['workflowPK']
     loginUser(Cypress.env('users').hremployee).then(() => {
       visitUrl(`/wf/${pk}/transition`)
@@ -127,7 +132,7 @@ describe('New SDS employee workflow check assignments', () => {
     })
   })
 
-  it('Deletes the workflow', () => {
+  cy.step('Deletes the workflow', () => {
     const pk = LOCAL_STORAGE_MEMORY['workflowPK']
     loginSuperuser().then(() => {
       const token = localStorage.getItem('user-token')
@@ -145,4 +150,6 @@ describe('New SDS employee workflow check assignments', () => {
       }
     })
   })
+
+})  
 })

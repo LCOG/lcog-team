@@ -1,5 +1,6 @@
 <template>
 <q-select
+  class="employee-select"
   v-model="selectedEmployee"
   :options="employees()"
   option-value="pk"

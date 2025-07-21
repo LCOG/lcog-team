@@ -10,7 +10,7 @@
       @click="showHelp = true"
     />
   </div>
-  <div class="q-my-md">
+  <div class="q-my-md" v-if="hasMultipleRoles()">
     <q-btn-group rounded>
       <q-btn
         v-if="isExpenseSubmitter()"
@@ -76,7 +76,7 @@
       </q-btn>
     </q-btn-group>  
   </div>
-  <div v-if="route.meta.allowMonthNav" class="q-gutter-md">
+  <div v-if="route.meta.allowMonthNav" class="q-gutter-md q-pt-sm">
     <q-btn @click="purchaseStore.setThisMonth()">This Month</q-btn>
     <q-btn-group>
       <q-btn
@@ -179,6 +179,15 @@ function isDirector() {
 
 function isFiscal() {
   return userStore.isFiscal
+}
+
+function hasMultipleRoles(): boolean {
+  let sum = 0
+  if (userStore.isExpenseSubmitter) sum++
+  if (userStore.isExpenseApprover) sum++
+  if (userStore.isDivisionDirector) sum++
+  if (userStore.isFiscal) sum++
+  return sum > 1
 }
 
 function numEMsToResubmit(): number {
