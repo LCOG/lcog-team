@@ -38,7 +38,8 @@ class Command(BaseCommand):
                     'putting her in for this pay period (as of 6/2/19) as a 2-step increase, and I am asking Payroll to process retroactive pay for her for the period of 1/1/18 to 12/31/18 (which includes a COLA at 7/1/18) at Step 6 and for the period 1/1/19 to 6/1/19 at Step 7.\n\n06/12/2019 05:57 PM - clid1559',
                     '4.\n10/26/2024 12:15 PM - clid1559',
                     '2024\n04/12/2024 03:10 PM - clid1559',
-                    'received.\n\n03/17/2024 01:33 PM - clid1559'
+                    'received.\n\n03/17/2024 01:33 PM - clid1559',
+                    'Principal Attorney position is being moved retroactively from GSAM Range 31 to GSAM Range 37.\n\nEffective this pay period (May 26 – June 8, 2024), James Chaney (2088) has been reclassified from GSAM Range 31 to Range 37.  At his last review, on 3/16/24, he received a step increase, to go from GSAM Range 31 Step 9 to Range 31 Step 10.  Since you now are asking that he retroactively be moved from GSAM Range 31 to GSAM Range 37, I put him in this pay period for GSAM Range 37 Step 4 (the dollar equivalent of GSAM Range 31 Step 10).  There is no change in pay connected to this; this is just for your documentation and the auditors.\n\nJosh\n\n06/09/2024 12:03 PM - clid1559'
                 ]:
                     continue
                 if row[0]:

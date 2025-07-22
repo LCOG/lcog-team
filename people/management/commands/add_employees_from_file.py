@@ -258,7 +258,7 @@ class Command(BaseCommand):
             if manager_last_name:
                 try:
                     if manager_last_name == 'Moore':
-                        manager = Employee.objects.get(is_executive_director=True)
+                        manager = Employee.objects.get(organization__name="LCOG", is_executive_director=True)
                     elif manager_last_name == 'Johnson':
                         manager = Employee.objects.get(user__last_name=manager_last_name, user__first_name='Lynn')
                     elif manager_last_name == 'Goodman':
