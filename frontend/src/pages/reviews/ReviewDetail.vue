@@ -1109,9 +1109,9 @@ function returnToDashboard(): void {
 
 function setFactorsResponseCount() {
   let count = form.value.factorsResponseSet.length || 4 // fallback to 4
-  console.log("COUNT", count)
+  console.log('COUNT', count)
   if (form.value.anyNotApplicable) { count += 1 }
-  console.log("COUNT", count)
+  console.log('COUNT', count)
   const container = document.querySelector('.factors-grid-container')
   
   if (container) {
