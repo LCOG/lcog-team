@@ -770,7 +770,8 @@ class PerformanceReview(models.Model):
         # Employee might need to complete self-evaluation
         if all([
             self.evaluation_comments_employee == "",
-            self.employee == employee
+            self.employee == employee,
+            self.days_until_due() <= 30
         ]):
             return True, "Please complete your self-evaluation"
         # Anyone might need to sign the review
