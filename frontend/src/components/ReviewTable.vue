@@ -253,9 +253,8 @@ interface QuasarReviewTableRowClickActionProps {
 const props = defineProps<{
   // Provide either employeePk or managerPk
   employeePk?: number, // If provided, show PRs for this employee
-  
   managerPk?: number, // If provided, show direct report PRs for this manager
-  // If managerPk is provided, provide either complete or incomplere
+  // Provide either complete or incomplete
   complete?: boolean, // Show only completed PRs
   incomplete?: boolean, // Show only incomplete PRs
 }>()
