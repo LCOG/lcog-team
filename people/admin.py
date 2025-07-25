@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.forms import ModelForm
 from django.urls import reverse
 from django.utils.safestring import mark_safe
 
@@ -29,7 +30,9 @@ class EmployeeInline(admin.TabularInline):
             args=[instance.pk]
         )
         if instance.pk:
-            return mark_safe(u'<a href="{u}">edit</a>'.format(u=url))
+            return mark_safe(
+                u'<a href="{u}">{name}</a>'.format(u=url, name=instance.name)
+            )
         else:
             return ''
 
@@ -44,6 +47,15 @@ class DivisionAdmin(admin.ModelAdmin):
     list_display = ("name",)
     list_filter = ("organization",)
     inlines = (UnitOrProgramInline,)
+    readonly_fields = ("employees_list",)
+
+    def employees_list(self, obj):
+        return mark_safe(
+            '<br>'.join(
+                [f'<a href="{reverse("admin:people_employee_change", args=[e.pk])}">{e.name}</a>'
+                 for e in obj.employees]
+            )
+        )
 
 
 @admin.register(JobTitle)
@@ -59,6 +71,16 @@ class WorkflowOptionsInline(admin.TabularInline):
     extra = 0
 
 
+class EmployeeForm(ModelForm):
+    """Employee unit/program should be limited to the employee's organization"""
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance and self.instance.pk:
+            self.fields["unit_or_program"].queryset = UnitOrProgram.objects.filter(
+                division__organization=self.instance.organization
+            )
+
+
 @admin.register(Employee)
 class EmployeeAdmin(admin.ModelAdmin):
     list_display = (
@@ -71,6 +93,7 @@ class EmployeeAdmin(admin.ModelAdmin):
     )
     search_fields = ("user__username", "job_title__name")
     inlines = [WorkflowOptionsInline]
+    form = EmployeeForm
 
 
 # class SelfEvaluationInline(EditLinkToInlineObject, admin.StackedInline):
