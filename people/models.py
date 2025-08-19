@@ -32,6 +32,15 @@ class Division(models.Model):
 
     def __str__(self):
         return self.name
+    
+    @property
+    def employees(self):
+        if self.pk:
+            return Employee.objects.filter(
+                unit_or_program__division=self
+            ).order_by("user__username")
+        else:
+            return Employee.objects.none()
 
 
 class UnitOrProgram(models.Model):
@@ -770,7 +779,8 @@ class PerformanceReview(models.Model):
         # Employee might need to complete self-evaluation
         if all([
             self.evaluation_comments_employee == "",
-            self.employee == employee
+            self.employee == employee,
+            self.days_until_due() <= 30
         ]):
             return True, "Please complete your self-evaluation"
         # Anyone might need to sign the review
