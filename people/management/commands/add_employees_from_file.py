@@ -130,7 +130,11 @@ class Command(BaseCommand):
             if len(department_col_pieces) == 1:
                 department = row[5]
             else:
-                department = " ".join(department_col_pieces[0:-1])
+                if department_col_pieces[1] == 'Panduro' and department_col_pieces[2] == 'Melendez':
+                    # Deal with two last names
+                    department = " ".join(department_col_pieces[0:-2])
+                else:
+                    department = " ".join(department_col_pieces[0:-1])
             department = department.strip()
             if department in ['Technology Services']:
                 unit_or_program = UnitOrProgram.objects.get(name='Technology Services')
@@ -251,7 +255,11 @@ class Command(BaseCommand):
             if department_col_pieces[-1] == 'Admin':
                 department_col_pieces = department_col_pieces[0:-1]
             if len(department_col_pieces) > 1:
-                manager_last_name = department_col_pieces[-1]
+                if (department_col_pieces[1] == 'Panduro' and department_col_pieces[2] == 'Melendez'):
+                    # Deal with two last names
+                    manager_last_name = " ".join(department_col_pieces[-2:])
+                else:
+                    manager_last_name = department_col_pieces[-1]
             else:
                 manager_last_name = None
 
@@ -289,7 +297,7 @@ class Command(BaseCommand):
                         manager = Employee.objects.get(user__last_name='Wilson', user__first_name='Daniel')
                     else:
                         try:
-                            manager = Employee.objects.get(user__last_name=manager_last_name)
+                            manager = Employee.active_objects.get(user__last_name=manager_last_name)
                         except Employee.MultipleObjectsReturned:
                             self.stdout.write("vvvvvvvvvvvv EXCEPTION vvvvvvvvvvv")
                             self.stdout.write(
