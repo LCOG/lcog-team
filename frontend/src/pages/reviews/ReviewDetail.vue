@@ -216,7 +216,7 @@
     </div>
 
     <!-- Multiple choice performance factors -->
-    <div v-if="form.factorsResponseSet.indexOf('Needs Improvement') != -1">
+    <div v-if="form.factorsResponseSet?.indexOf('Needs Improvement') != -1">
       <h5 class="text-uppercase text-center text-bold q-mb-sm q-mt-lg"><u>Rating Scale</u></h5>
       <div class="rating-grid-container">
         <div class="rating-box">
@@ -1108,12 +1108,9 @@ function returnToDashboard(): void {
 }
 
 function setFactorsResponseCount() {
-  let count = form.value.factorsResponseSet.length || 4 // fallback to 4
-  console.log('COUNT', count)
+  let count = form.value.factorsResponseSet?.length || 4 // fallback to 4
   if (form.value.anyNotApplicable) { count += 1 }
-  console.log('COUNT', count)
   const container = document.querySelector('.factors-grid-container')
-  
   if (container) {
     container.style.setProperty('--factors-response-count', count.toString())
   }

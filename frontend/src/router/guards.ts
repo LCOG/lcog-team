@@ -119,7 +119,7 @@ export function isAuthenticated() {
     return true
   } else {
     console.info(
-      'User cannot view Meals on Wheels routes. Redirecting to dashboard.'
+      'User is not logged in. Redirecting to dashboard.'
     )
     return false
   }

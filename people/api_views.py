@@ -325,7 +325,8 @@ class PerformanceReviewViewSet(viewsets.ModelViewSet):
                 elif is_true_string(incomplete):
                     queryset = queryset.exclude(
                         status=PerformanceReview.EVALUATION_ED_APPROVED
-                    )
+                    ).exclude(period_end_date__gte=\
+                              timezone.now() + timedelta(days=60))
         else:
             queryset = PerformanceReview.objects.none()
         return queryset

@@ -253,9 +253,8 @@ interface QuasarReviewTableRowClickActionProps {
 const props = defineProps<{
   // Provide either employeePk or managerPk
   employeePk?: number, // If provided, show PRs for this employee
-  
   managerPk?: number, // If provided, show direct report PRs for this manager
-  // If managerPk is provided, provide either complete or incomplere
+  // Provide either complete or incomplete
   complete?: boolean, // Show only completed PRs
   incomplete?: boolean, // Show only incomplete PRs
 }>()
@@ -300,9 +299,17 @@ function performanceReviews(): Array<ReviewRetrieve> {
 
 function columns() {
   if (props.managerPk) {
-    return managerColumns
+    if (props.complete && props.complete === true) {
+      return managerCompleteColumns
+    } else {
+      return managerColumns
+    }
   } else {
-    return employeeColumns
+    if (props.complete && props.complete === true) {
+      return employeeCompleteColumns
+    } else {
+      return employeeColumns
+    }
   }
 }
 
@@ -326,6 +333,18 @@ const managerColumns: QTableProps['columns'] = [
   { name: 'actions', label: 'Actions', align: 'center', field: ''},
 ]
 
+const managerCompleteColumns: QTableProps['columns'] = [
+  {
+    name: 'employeeName', label: 'Employee', align: 'center',
+    field: 'employee_name', sortable: true
+  },
+  {
+    name: 'performancePeriod', align: 'center', label: 'Performance Period',
+    field: 'performance_period'
+  },
+  { name: 'actions', label: 'Actions', align: 'center', field: ''},
+]
+
 const employeeColumns: QTableProps['columns'] = [
   {
     name: 'performancePeriod', align: 'center', label: 'Performance Period',
@@ -338,6 +357,14 @@ const employeeColumns: QTableProps['columns'] = [
   {
     name: 'status', align: 'center', label: 'Status', field: 'status',
     sortable: true
+  },
+  { name: 'actions', label: 'Actions', align: 'center', field: ''},
+]
+
+const employeeCompleteColumns: QTableProps['columns'] = [
+  {
+    name: 'performancePeriod', align: 'center', label: 'Performance Period',
+    field: 'performance_period'
   },
   { name: 'actions', label: 'Actions', align: 'center', field: ''},
 ]
