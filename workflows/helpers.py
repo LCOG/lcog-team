@@ -474,7 +474,7 @@ def create_process_instances(transition):
     returning_processes_start_sds = []
     name_change_processes_start = ['IS Name Change']
     name_change_processes_start_sds = ['Name Change SDS Sub Admin']
-    changing_processes_start = []
+    changing_processes_start = ['IS Changing']
     changing_processes_start_sds = ['SDS Changing', 'SDS Phone Changing']
     exiting_processes_start = ['IS Exiting']
     exiting_processes_start_sds = []
