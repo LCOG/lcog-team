@@ -34,9 +34,19 @@ class ImageUploadAdmin(admin.ModelAdmin):
 
 @admin.register(SecurityMessage)
 class SecurityMessageAdmin(admin.ModelAdmin):
-    list_display = ("date", "description", "num_viewed", "percent_viewed", "active")
-    fields = ("active", "date", "description", "content", "num_active_employees", "num_viewed", "percent_viewed", "viewed_by", "unviewed_by")
-    readonly_fields = ("num_viewed", "percent_viewed", "viewed_by", "unviewed_by")
+    list_display = (
+        "date", "organization", "description", "num_viewed", "percent_viewed",
+        "active"
+    )
+    list_filter = ("active", "organization")
+    fields = (
+        "active", "date", "organization", "description", "content",
+        "num_active_employees", "num_viewed", "percent_viewed", "viewed_by",
+        "unviewed_by"
+    )
+    readonly_fields = (
+        "num_viewed", "percent_viewed", "viewed_by", "unviewed_by"
+    )
 
 
 @admin.register(TrustedIPAddress)
