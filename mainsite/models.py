@@ -74,7 +74,10 @@ class SecurityMessage(models.Model):
     description = models.CharField(_("description"), max_length=255)
     date = models.DateField(default=timezone.now)
     content = RichTextField()
-    num_active_employees = models.IntegerField(_("number of active employees at time of creation"), default=0)
+    num_active_employees = models.IntegerField(
+        _("number of active employees at time of creation"), default=0
+    )
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
 
     @property
     def num_viewed(self):
@@ -83,7 +86,9 @@ class SecurityMessage(models.Model):
     @property
     def percent_viewed(self):
         if self.num_active_employees:
-            return f'{round(self.num_viewed / self.num_active_employees * 100, 2)}%'
+            return f'{
+                round(self.num_viewed / self.num_active_employees * 100, 2)
+            }%'
         else:
             return '0%'
 
@@ -93,18 +98,30 @@ class SecurityMessage(models.Model):
     def save(self, *args, **kwargs):
         if not self.num_active_employees:
             from people.models import Employee # Avoid circular import
-            self.num_active_employees = Employee.objects.filter(active=True).count()
+            self.num_active_employees = Employee.objects.filter(
+                active=True, temporary=False, organization=self.organization
+            ).count()
         super().save(*args, **kwargs)
     
     @property
     def viewed_by(self):
-        viewed = list(self.viewedsecuritymessage_set.all().values_list('employee__user__first_name', 'employee__user__last_name'))
+        viewed = list(self.viewedsecuritymessage_set.all().values_list(
+            'employee__user__first_name', 'employee__user__last_name'
+        ))
         return ', '.join([f'{name} {last}' for name, last in viewed])
     
     @property
     def unviewed_by(self):
         from people.models import Employee # Avoid circular import
-        unviewed = list(Employee.objects.filter(active=True).exclude(viewedsecuritymessage__security_message=self).values_list('user__first_name', 'user__last_name'))
+        unviewed = list(
+            Employee.objects\
+                .filter(
+                    active=True, temporary=False,
+                    organization=self.organization
+                )\
+                .exclude(viewedsecuritymessage__security_message=self)\
+                .values_list('user__first_name', 'user__last_name')
+        )
         return ', '.join([f'{name} {last}' for name, last in unviewed])
 
 
