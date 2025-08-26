@@ -86,9 +86,7 @@ class SecurityMessage(models.Model):
     @property
     def percent_viewed(self):
         if self.num_active_employees:
-            return f'{
-                round(self.num_viewed / self.num_active_employees * 100, 2)
-            }%'
+            return f'{round(self.num_viewed / self.num_active_employees * 100, 2)}%'
         else:
             return '0%'
 
