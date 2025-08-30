@@ -15,7 +15,7 @@ from rest_framework.response import Response
 from mainsite.api_views import LargeResultsSetPagination
 from mainsite.models import SecurityMessage
 from mainsite.helpers import (
-    is_true_string, send_completed_email_to_hr_manager,
+    is_true_string, record_error, send_completed_email_to_hr_manager,
     send_evaluation_written_email_to_employee,
     send_signature_email_to_executive_director,
     send_signature_email_to_hr_manager, send_signature_email_to_manager
@@ -306,14 +306,18 @@ class PerformanceReviewViewSet(viewsets.ModelViewSet):
                     else:
                         # All PRs managed by a given employee, as well as for
                         # all direct reports down the chain.
+                        record_error("Fetching manager employee for performance reviews")
                         manager_employee = Employee.objects.get(
                             pk=int(manager)
                         )
+                        record_error("Fetching descendant employees for performance reviews", other_info=manager_employee)
                         descendant_employees = manager_employee.\
                             get_direct_reports_descendants(include_self=False)
+                        record_error("Fetching performance reviews for descendant employees", other_info=descendant_employees)
                         queryset = PerformanceReview.objects\
                             .for_employee(employee)\
                             .filter(employee__in=descendant_employees)
+                        record_error("Completed fetching performance reviews for descendant employees", other_info=queryset)
                 
                 # Filter to either complete or incomplete reviews
                 complete = self.request.query_params.get('complete', None)
