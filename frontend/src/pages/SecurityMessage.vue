@@ -2,13 +2,13 @@
 <q-page class="q-pa-md">
   <div v-html="message"></div>
   <form>
-    <div class="row items-center q-gutter-sm">
-      <q-checkbox v-model="acknowledge" :disable="hasViewedCurrentSecurityMessage()" />
+    <div class="row items-center q-gutter-sm" v-if="!hasViewedCurrentSecurityMessage()">
+      <q-checkbox v-model="acknowledge" />
       <span>I acknowledge I have read and understood this notification</span>
     </div>
     <div class="row items-center q-gutter-sm">
-      <q-btn :disabled="!acknowledge || hasViewedCurrentSecurityMessage()" @click="submitAcknowledgement()">Submit</q-btn>
-      <span class="thanks q-ml-sm q-mt-sm" :hidden="!hasViewedCurrentSecurityMessage()"><strong>Thank you! Your response has been recorded.</strong></span>
+      <q-btn v-if="!hasViewedCurrentSecurityMessage()" :disabled="!acknowledge" @click="submitAcknowledgement()">Submit</q-btn>
+      <span class="thanks q-ml-sm q-mt-sm" :hidden="!hasViewedCurrentSecurityMessage()"><strong>Thank you! Your response has already been recorded.</strong></span>
     </div>
   </form>
 </q-page>

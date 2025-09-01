@@ -377,6 +377,50 @@ def send_step_completion_email(si, old_si=None):
         to_addresses, [], subject, plaintext_message, html_message
     )
 
+def send_weekly_step_reminders():
+    # Every week on Monday, send reminders to all employees who have
+    # steps assigned to them that are not yet complete.
+    current_site = Site.objects.get_current()
+    url = current_site.domain + '/wf/%s/processes'
+    profile_url = current_site.domain + '/profile'
+
+    subject = 'Weekly Workflow Reminders'
+
+    html_template = \
+        '../templates/email/workflows/weekly-step-reminders.html'
+    
+    incomplete_workflow_instances = WorkflowInstance.objects.filter(
+        active=True, complete=False
+    ).prefetch_related('pis')
+    employees = {}
+    for wfi in incomplete_workflow_instances:
+        for pi in wfi.pis.all():
+            for assignee in pi.current_step_instance.step.role.members.all() if pi.current_step_instance.step.role else []:
+                if assignee not in employees:
+                    employees[assignee] = []
+                employees[assignee].append({
+                    'step': pi.current_step_instance.step.name,
+                    'process': pi.process.name,
+                    'days_assigned': pi.current_step_instance.duration.days,
+                    'pi_url': url % wfi.pk
+                })
+
+    sent_emails = 0
+    for employee, steps in employees.items():
+        if not employee.should_receive_email_of_type('workflows', 'processes'):
+            continue
+
+        html_message = render_to_string(html_template, {
+            'steps': steps,
+            'profile_url': profile_url
+        })
+        plaintext_message = strip_tags(html_message)
+
+        send_email(employee.user.email, subject, plaintext_message, html_message)
+        sent_emails += 1
+    
+    return sent_emails
+
 def send_employee_transition_report():
     current_site = Site.objects.get_current()
     workflows_url = current_site.domain + '/workflows/dashboard'
