@@ -4,6 +4,24 @@
 
 export const releases = [
   {
+    version: '0.51.0',
+    date: new Date(2025, 8, 1),
+    changes: [
+      {
+        type: 'improved',
+        description: 'Update Django 4.2 -> 5.2.'
+      },
+      {
+        type: 'improved',
+        description: 'Updates to security messages.'
+      },
+      {
+        type: 'improved',
+        description: 'Send weekly reminders for workflow steps.'
+      },
+    ]
+  },
+  {
     version: '0.50.0',
     date: new Date(2025, 6, 21),
     changes: [
