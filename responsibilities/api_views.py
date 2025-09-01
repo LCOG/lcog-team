@@ -103,10 +103,11 @@ class TagViewSet(viewsets.ModelViewSet):
         if user.is_authenticated:
             employee = self.request.query_params.get('employee', None)
             if employee is not None and employee.isdigit():
-                queryset = Tag.objects.all()
+                queryset = Tag.objects.all().order_by('name')
         else:
             queryset = Tag.objects.none()
-        return queryset if 'queryset' in locals() else Tag.objects.all()
+        return queryset if 'queryset' in locals() else \
+            Tag.objects.all().order_by('name')
 
     # A simple list of employees for populating dropdowns
     @action(detail=False, methods=['get'])

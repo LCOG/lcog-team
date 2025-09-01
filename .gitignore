@@ -29,3 +29,5 @@ old-dbs
 # Caselle import files
 people/management/employees.csv
 people/management/reviews.csv
+
+.python-version

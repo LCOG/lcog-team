@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    </head>
+    <body style="margin: 15px;">
+        <p>Good morning,</p>
+        <p>You have the following steps to complete:</p>
+        <ul>
+          {% for step in steps %}
+            <li>{{ step.step }} as part of {{ step.process }} was assigned to you {{ step.days_assigned }} days ago: <a href="{{ step.pi_url }}">View Step</a></li>
+          {% endfor %}
+        </ul>
+        <p>View and update your email preferences: <a href="{{ profile_url }}">{{ profile_url }}</a></p>
+    </body>
+</html>
