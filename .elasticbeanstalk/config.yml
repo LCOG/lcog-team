@@ -1,19 +1,11 @@
 branch-defaults:
   production:
-    environment: lcog-team-env
+    environment: lcog-team-production
   staging:
     environment: lcog-team-staging-2
-  staging-with-prs:
-    environment: lcog-team-staging-1
 environment-defaults:
-  lcog-team-env:
+  lcog-team-production:
     branch: production
-    repository: null
-  lcog-team-staging:
-    branch: staging
-    repository: null
-  lcog-team-staging-1:
-    branch: staging
     repository: null
   lcog-team-staging-2:
     branch: staging
