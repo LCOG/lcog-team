@@ -304,16 +304,19 @@ class PerformanceReviewViewSet(viewsets.ModelViewSet):
                         queryset = PerformanceReview.objects\
                             .for_employee(employee).order_by('period_end_date')
                     else:
-                        # All PRs managed by a given employee, as well as for
-                        # all direct reports down the chain.
+                        # All PRs managed by a given employee.
+                        # TODO: We used to also include descendants, but that
+                        # caused weird recursion issues and long load times for
+                        # people like Stephanie. Restore descendant employees?
                         manager_employee = Employee.objects.get(
                             pk=int(manager)
                         )
-                        descendant_employees = manager_employee.\
-                            get_direct_reports_descendants(include_self=False)
+                        # descendant_employees = manager_employee.\
+                        #     get_direct_reports_descendants(include_self=False)
+                        employees = manager_employee.get_direct_reports()
                         queryset = PerformanceReview.objects\
                             .for_employee(employee)\
-                            .filter(employee__in=descendant_employees)
+                            .filter(employee__in=employees)
                 
                 # Filter to either complete or incomplete reviews
                 complete = self.request.query_params.get('complete', None)
