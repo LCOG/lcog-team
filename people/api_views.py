@@ -6,7 +6,7 @@ from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 
-from rest_framework import viewsets
+from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.permissions import BasePermission, SAFE_METHODS
@@ -220,32 +220,33 @@ class EmployeeViewSet(viewsets.ModelViewSet):
     # A simple list of employees for populating dropdowns
     @action(detail=False, methods=['get'])
     def simple_list(self, request):
-        employees = Employee.active_objects.all()
+        employees = self.get_queryset()
         serializer = SimpleEmployeeSerializer(employees, many=True)
         return Response(serializer.data)
 
     # A simple list of a user's direct reports
     @action(detail=True, methods=['get'])
     def direct_reports(self, request, pk):
-        employees = Employee.active_objects.filter(
-            manager__pk=pk
-        )
+        employees = self.get_queryset().filter(manager__pk=pk)
         serializer = SimpleEmployeeSerializer(employees, many=True)
         return Response(serializer.data)
 
     # A simple list of employee emails for populating dropdowns
     @action(detail=False, methods=['get'])
     def email_list(self, request):
-        employees = Employee.active_objects.all()
+        employees = self.get_queryset()
         serializer = EmployeeEmailSerializer(employees, many=True)
         return Response(serializer.data)
     
     # Retrieve the name of an employee from pk
     @action(detail=True, methods=['get'])
     def simple_detail(self, request, pk):
-        employee = Employee.objects.get(pk=pk)
-        serializer = SimpleEmployeeSerializer(employee, many=False)
-        return Response(serializer.data)
+        employee = self.get_queryset().filter(pk=pk)
+        if not employee:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        else:
+            serializer = SimpleEmployeeSerializer(employee[0], many=False)
+            return Response(serializer.data)
 
 
 class PerformanceReviewPermission(BasePermission):
@@ -336,22 +337,14 @@ class PerformanceReviewViewSet(viewsets.ModelViewSet):
 
     def retrieve(self, request, pk=None):
         user = self.request.user
-        employee = user.employee if user.is_authenticated else None
-        # If the user is not authenticated, return an empty review
-        if not user.is_authenticated:
-            return Response(status=403)
-
-        if employee and employee.organization is not None:
-            queryset = PerformanceReview.objects.for_employee(employee)
-        else:
-            queryset = PerformanceReview.objects.all()
-        
+        queryset = self.get_queryset()
         pr = get_object_or_404(queryset, pk=pk)
 
         if user.is_superuser:
             # Superusers can see all reviews
             pass
         else:
+            employee = user.employee if user.is_authenticated else None
             if employee is None:
                 # If the user is not an employee, return 403
                 return Response(status=403)
@@ -420,14 +413,6 @@ class PerformanceReviewViewSet(viewsets.ModelViewSet):
             request.data['evaluation_comments_employee']
         pr.save()
         serialized_review = PerformanceReviewSerializer(pr,
-            context={'request': request})
-        return Response(serialized_review.data)
-
-    # TODO: Don't use this - use the ModelViewSet get
-    @action(detail=True, methods=['get'])
-    def get_a_performance_review(self, request, pk=None):
-        review = PerformanceReview.objects.get(pk=pk)
-        serialized_review = PerformanceReviewSerializer(review,
             context={'request': request})
         return Response(serialized_review.data)
 
@@ -589,7 +574,9 @@ class ReviewNoteViewSet(viewsets.ModelViewSet):
         # TODO: Don't do this.
         # There is an issue where the detail view doesn't have the user
         if user.is_authenticated:
-            if user.is_anonymous:
+            if user.is_superuser:
+                return ReviewNote.objects.all()
+            elif user.is_anonymous:
                 return ReviewNote.objects.all()
             else:
                 return ReviewNote.objects.filter(author__user=user)
@@ -620,7 +607,7 @@ class ReviewNoteViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['get'])
     def notes_for_employee(self, request, pk=None):
         six_months_ago = timezone.now() - timedelta(days=180)
-        review_notes = ReviewNote.objects.filter(
+        review_notes = self.get_queryset().filter(
             employee=pk, created_at__gte=six_months_ago
         )
         serialized_notes = [ReviewNoteSerializer(note,

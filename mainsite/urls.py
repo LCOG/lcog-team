@@ -17,6 +17,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
+from django.views.generic import TemplateView
 from django.views.generic.base import RedirectView
 
 from mainsite.views import health_check_view
@@ -28,6 +29,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('django.contrib.auth.urls')),
     path('favicon.ico', RedirectView.as_view(url='%sfavicon.ico' % settings.STATIC_URL)),
+    path('robots.txt', TemplateView.as_view(template_name="robots.txt", content_type="text/plain")),
     # Elastic beanstalk ELB requires trailing slash for health check
     path('health/', health_check_view, name='health_check_view'),
     # Material icons
