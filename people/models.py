@@ -355,8 +355,16 @@ class Employee(models.Model):
         return self.performancereview_set.all().order_by("period_end_date")\
             .first()
 
-    def get_direct_reports(self):
-        return self.direct_reports.all()
+    def get_direct_reports(self, include_self=False):
+        if include_self:
+            direct_reports_ids = self.direct_reports.values_list(
+                'pk', flat=True
+            )
+            return Employee.objects.filter(
+                pk__in=list(direct_reports_ids) + [self.pk]
+            )
+        else:
+            return self.direct_reports.all()
     
     def get_descendants_of_employee(self, employee):
         employee_and_descendants = [employee]
