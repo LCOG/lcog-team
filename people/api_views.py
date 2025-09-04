@@ -297,7 +297,7 @@ class PerformanceReviewViewSet(viewsets.ModelViewSet):
                     queryset = PerformanceReview.objects\
                         .for_employee(employee).filter(employee=employee)
                 elif manager is not None:
-                    employee = user.employee if user.is_authenticated else None
+                    employee = user.employee
                     is_ed = employee.is_executive_director if employee else False
                     is_hrm = employee.is_hr_manager if employee else False
                     if is_ed or is_hrm:
@@ -318,6 +318,14 @@ class PerformanceReviewViewSet(viewsets.ModelViewSet):
                         queryset = PerformanceReview.objects\
                             .for_employee(employee)\
                             .filter(employee__in=employees)
+                else:
+                    # All PRs for the current user and their direct reports
+                    employees = user.employee.get_direct_reports(
+                        include_self=True
+                    )
+                    queryset = PerformanceReview.objects.filter(
+                        employee__in=employees
+                    )
                 
                 # Filter to either complete or incomplete reviews
                 complete = self.request.query_params.get('complete', None)
