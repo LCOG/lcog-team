@@ -82,7 +82,7 @@ let deleteDialogNoteText = ref('')
 let rowPkToDelete = ref(-1)
 
 function editNote(props: QuasarReviewNoteTableRowClickActionProps): void {
-  router.push(`note/${ props.row.pk }`)
+  router.push(`/note/${ props.row.pk }`)
     .catch(e => {
       console.error('Error navigating to note detail', e)
     })
