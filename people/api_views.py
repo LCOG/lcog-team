@@ -220,7 +220,13 @@ class EmployeeViewSet(viewsets.ModelViewSet):
     # A simple list of employees for populating dropdowns
     @action(detail=False, methods=['get'])
     def simple_list(self, request):
-        employees = Employee.active_objects.all()
+        # If IP is in TrustedIPs, show all active employees
+        TrustedIP = apps.get_model('mainsite.TrustedIPAddress')
+        trusted_ips = TrustedIP.objects.values_list('address', flat=True)
+        if request.META['REMOTE_ADDR'] in trusted_ips:
+            employees = Employee.active_objects.all()
+        else:
+            employees = self.get_queryset()
         serializer = SimpleEmployeeSerializer(employees, many=True)
         return Response(serializer.data)
 
