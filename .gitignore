@@ -9,6 +9,7 @@ settings_local.py
 requirements_local.txt
 
 db.sqlite3
+db.sqlite3-*
 
 vetur.config.js
 
@@ -31,3 +32,4 @@ people/management/employees.csv
 people/management/reviews.csv
 
 .python-version
+.vscode
