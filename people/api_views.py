@@ -246,7 +246,10 @@ class EmployeeViewSet(viewsets.ModelViewSet):
     # A simple list of employee emails for populating dropdowns
     @action(detail=False, methods=['get'])
     def email_list(self, request):
-        employees = self.get_queryset()
+        if request.user.is_authenticated:
+            employees = Employee.active_objects.all()
+        else:
+            employees = self.get_queryset()
         serializer = EmployeeEmailSerializer(employees, many=True)
         return Response(serializer.data)
     
