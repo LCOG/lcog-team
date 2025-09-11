@@ -137,7 +137,7 @@ class EmployeeViewSet(viewsets.ModelViewSet):
         user = self.request.user
         if user.is_authenticated:
             if user.is_staff:
-                queryset = Employee.objects.all()
+                queryset = Employee.active_objects.all()
             else:
                 # Filter to just direct reports, or else them and all their
                 # descendants
@@ -145,7 +145,9 @@ class EmployeeViewSet(viewsets.ModelViewSet):
                     'direct-reports', None
                 )
                 if direct_reports is not None and direct_reports == "True":
-                    queryset = Employee.objects.filter(manager__user=user)
+                    queryset = Employee.active_objects.filter(
+                        manager__user=user
+                    )
                 else:
                     queryset = user.employee.get_direct_reports_descendants(
                         include_self=True
