@@ -1,0 +1,14 @@
+services:
+  lcogteam:
+    image: lcogteam
+    container_name: django-api
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    env_file:
+      - ".env"
+    environment:
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+    ports:
+      - 8000:8000
