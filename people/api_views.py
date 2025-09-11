@@ -253,10 +253,14 @@ class EmployeeViewSet(viewsets.ModelViewSet):
         serializer = EmployeeEmailSerializer(employees, many=True)
         return Response(serializer.data)
     
-    # Retrieve the name of an employee from pk
+    # Retrieve the name of an employee from pk. Intended to be readable by all
+    # authenticated users.
     @action(detail=True, methods=['get'])
     def simple_detail(self, request, pk):
-        employee = self.get_queryset().filter(pk=pk)
+        if request.user.is_authenticated:
+            employee = Employee.active_objects.filter(pk=pk)
+        else:
+            employee = self.get_queryset().filter(pk=pk)
         if not employee:
             return Response(status=status.HTTP_404_NOT_FOUND)
         else:
