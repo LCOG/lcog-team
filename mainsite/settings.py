@@ -282,7 +282,7 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.environ.get('SES_EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.environ.get('SES_EMAIL_HOST_PASSWORD')
-DEFAULT_FROM_EMAIL = 'noreply@lcog.org'
+DEFAULT_FROM_EMAIL = 'noreply@lcog-or.gov'
 
 # Required for django-ses
 # AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')

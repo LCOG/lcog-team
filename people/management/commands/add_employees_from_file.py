@@ -304,7 +304,7 @@ class Command(BaseCommand):
                                 'Multiple managers with last name {}'.format(manager_last_name)
                             )
                             self.stdout.write("^^^^^^^^^^^^ EXCEPTION ^^^^^^^^^^^^")
-                            manager = Employee.objects.get(user__email='dwilson@lcog.org')
+                            manager = Employee.objects.get(user__email='dwilson@lcog-or.gov')
                     if employee.manager != manager:
                         employee.manager = manager
                         employee.save()
