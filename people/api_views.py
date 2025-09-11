@@ -236,14 +236,16 @@ class EmployeeViewSet(viewsets.ModelViewSet):
         serializer = SimpleEmployeeSerializer(employees, many=True)
         return Response(serializer.data)
 
-    # A simple list of a user's direct reports
+    # A simple list of a user's direct reports. Only readable by authenticated
+    # users and only ever include that user's direct reports.
     @action(detail=True, methods=['get'])
     def direct_reports(self, request, pk):
         employees = self.get_queryset().filter(manager__pk=pk)
         serializer = SimpleEmployeeSerializer(employees, many=True)
         return Response(serializer.data)
 
-    # A simple list of employee emails for populating dropdowns
+    # A simple list of employee emails for populating dropdowns. Intended to be
+    # readable by all authenticated users.
     @action(detail=False, methods=['get'])
     def email_list(self, request):
         if request.user.is_authenticated:
