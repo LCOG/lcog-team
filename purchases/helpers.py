@@ -100,7 +100,7 @@ def send_submitter_monthly_expenses_reminders(sending_user: User):
         plaintext_message = strip_tags(html_message)
         send_email_multiple(
             [recipient[0]],
-            ['payadmin@lcog.org'],
+            ['payadmin@lcog-or.gov'],
             f'Time to enter { curr_month_name } expenses',
             plaintext_message,
             html_message

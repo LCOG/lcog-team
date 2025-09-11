@@ -13,13 +13,13 @@ from people.models import Employee, PerformanceReview, Signature, SignatureRemin
 
 class BaseEmailRemindersTestCase(TestCase):
     def setUp(self):
-        employee_user = User.objects.create(username="employee", first_name="Employee", last_name="Person", email="employee@lcog.org")
-        manager_user = User.objects.create(username="manager", first_name="Manager", last_name="Person", email="manager@lcog.org")
-        program_manager_user = User.objects.create(username="programmanager", first_name="Program", last_name="Manager", email="programmanager@lcog.org")
-        deputy_director_user = User.objects.create(username="deputydirector", first_name="Deputy", last_name="Director", email="deputydirector@lcog.org")
-        division_director_user = User.objects.create(username="divisiondirector", first_name="Division", last_name="Director", email="divisiondirector@lcog.org")
-        hr_manager_user = User.objects.create(username="hrmanager", first_name="HR", last_name="Manager", email="hrmanager@lcog.org")
-        executive_director_user = User.objects.create(username="executivedirector", first_name="Executive", last_name="Director", email="executivedirector@lcog.org")
+        employee_user = User.objects.create(username="employee", first_name="Employee", last_name="Person", email="employee@lcog-or.gov")
+        manager_user = User.objects.create(username="manager", first_name="Manager", last_name="Person", email="manager@lcog-or.gov")
+        program_manager_user = User.objects.create(username="programmanager", first_name="Program", last_name="Manager", email="programmanager@lcog-or.gov")
+        deputy_director_user = User.objects.create(username="deputydirector", first_name="Deputy", last_name="Director", email="deputydirector@lcog-or.gov")
+        division_director_user = User.objects.create(username="divisiondirector", first_name="Division", last_name="Director", email="divisiondirector@lcog-or.gov")
+        hr_manager_user = User.objects.create(username="hrmanager", first_name="HR", last_name="Manager", email="hrmanager@lcog-or.gov")
+        executive_director_user = User.objects.create(username="executivedirector", first_name="Executive", last_name="Director", email="executivedirector@lcog-or.gov")
 
         self.employee_employee = Employee.objects.create(user=employee_user)
         self.manager_employee = Employee.objects.create(user=manager_user)

@@ -1998,7 +1998,7 @@ function suggestEmail(): void {
   }
   if (employeeLastName.value) {
     suggestedEmail =
-    `${firstChar}${employeeLastName.value.toLowerCase()}@lcog.org`
+    `${firstChar}${employeeLastName.value.toLowerCase()}@lcog-or.gov`
   } else {
     return
   }
@@ -2009,7 +2009,7 @@ function suggestEmail(): void {
     if (employeeMiddleInitial.value) {
       const mi = employeeMiddleInitial.value.toLowerCase()
       const ln = employeeLastName.value.toLowerCase()
-      suggestedEmail = `${firstChar}${mi}${ln}@lcog.org`
+      suggestedEmail = `${firstChar}${mi}${ln}@lcog-or.gov`
     } else {
       return
     }

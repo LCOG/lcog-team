@@ -158,7 +158,7 @@
             <div>
               <div><strong>Daniel Wilson</strong></div>
               <div>Principal Web Developer</div>
-              <div><a href="mailto:dwilson@lcog.org">dwilson@lcog.org</a></div>
+              <div><a href="mailto:dwilson@lcog-or.gov">dwilson@lcog-or.gov</a></div>
             </div>
           </div>
         </q-card-section>
@@ -173,14 +173,14 @@
             <div>
               <div><strong>Heidi Leyba</strong></div>
               <div>Chief Technology Officer</div>
-              <div><a href="mailto:hleyba@lcog.org">hleyba@lcog.org</a></div>
+              <div><a href="mailto:hleyba@lcog-or.gov">hleyba@lcog-or.gov</a></div>
             </div>
           </div>
         </q-card-section>
 
         <q-card-section>
           <div class="text-center">More information about Lane Council of</div>
-          <div class="text-center">Governments can be found at <a href="https://lcog.org">lcog.org</a></div>
+          <div class="text-center">Governments can be found at <a href="https://lcog-or.gov">lcog-or.gov</a></div>
         </q-card-section>
 
       </q-card>

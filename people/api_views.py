@@ -137,7 +137,7 @@ class EmployeeViewSet(viewsets.ModelViewSet):
         user = self.request.user
         if user.is_authenticated:
             if user.is_staff:
-                queryset = Employee.objects.all()
+                queryset = Employee.active_objects.all()
             else:
                 # Filter to just direct reports, or else them and all their
                 # descendants
@@ -145,7 +145,9 @@ class EmployeeViewSet(viewsets.ModelViewSet):
                     'direct-reports', None
                 )
                 if direct_reports is not None and direct_reports == "True":
-                    queryset = Employee.objects.filter(manager__user=user)
+                    queryset = Employee.active_objects.filter(
+                        manager__user=user
+                    )
                 else:
                     queryset = user.employee.get_direct_reports_descendants(
                         include_self=True
@@ -217,37 +219,50 @@ class EmployeeViewSet(viewsets.ModelViewSet):
             context={'request': request})
         return Response(serialized_review.data)
     
-    # A simple list of employees for populating dropdowns
+    # A simple list of employees for populating dropdowns. Intended to be
+    # readable by all authenticated users as well as from trusted IPs.
     @action(detail=False, methods=['get'])
     def simple_list(self, request):
         # If IP is in TrustedIPs, show all active employees
         TrustedIP = apps.get_model('mainsite.TrustedIPAddress')
         trusted_ips = TrustedIP.objects.values_list('address', flat=True)
-        if request.META['REMOTE_ADDR'] in trusted_ips:
+        if any([
+            request.META['REMOTE_ADDR'] in trusted_ips,
+            request.user.is_authenticated
+        ]):
             employees = Employee.active_objects.all()
         else:
             employees = self.get_queryset()
         serializer = SimpleEmployeeSerializer(employees, many=True)
         return Response(serializer.data)
 
-    # A simple list of a user's direct reports
+    # A simple list of a user's direct reports. Only readable by authenticated
+    # users and only ever include that user's direct reports.
     @action(detail=True, methods=['get'])
     def direct_reports(self, request, pk):
         employees = self.get_queryset().filter(manager__pk=pk)
         serializer = SimpleEmployeeSerializer(employees, many=True)
         return Response(serializer.data)
 
-    # A simple list of employee emails for populating dropdowns
+    # A simple list of employee emails for populating dropdowns. Intended to be
+    # readable by all authenticated users.
     @action(detail=False, methods=['get'])
     def email_list(self, request):
-        employees = self.get_queryset()
+        if request.user.is_authenticated:
+            employees = Employee.active_objects.all()
+        else:
+            employees = self.get_queryset()
         serializer = EmployeeEmailSerializer(employees, many=True)
         return Response(serializer.data)
     
-    # Retrieve the name of an employee from pk
+    # Retrieve the name of an employee from pk. Intended to be readable by all
+    # authenticated users.
     @action(detail=True, methods=['get'])
     def simple_detail(self, request, pk):
-        employee = self.get_queryset().filter(pk=pk)
+        if request.user.is_authenticated:
+            employee = Employee.active_objects.filter(pk=pk)
+        else:
+            employee = self.get_queryset().filter(pk=pk)
         if not employee:
             return Response(status=status.HTTP_404_NOT_FOUND)
         else:
