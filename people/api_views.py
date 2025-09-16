@@ -221,18 +221,24 @@ class EmployeeViewSet(viewsets.ModelViewSet):
     
     # A simple list of employees for populating dropdowns. Intended to be
     # readable by all authenticated users as well as from trusted IPs.
+    # TODO: We have this endpoint open because we couldn't get the employee
+    # dropdown in the desk reservation app to work, but we should solve the
+    # problem and lock it down again.
     @action(detail=False, methods=['get'])
     def simple_list(self, request):
-        # If IP is in TrustedIPs, show all active employees
-        TrustedIP = apps.get_model('mainsite.TrustedIPAddress')
-        trusted_ips = TrustedIP.objects.values_list('address', flat=True)
-        if any([
-            request.META['REMOTE_ADDR'] in trusted_ips,
-            request.user.is_authenticated
-        ]):
-            employees = Employee.active_objects.all()
-        else:
-            employees = self.get_queryset()
+        # # If IP is in TrustedIPs, show all active employees
+        # TrustedIP = apps.get_model('mainsite.TrustedIPAddress')
+        # trusted_ips = TrustedIP.objects.values_list('address', flat=True)
+        # if any([
+        #     request.META['REMOTE_ADDR'] in trusted_ips,
+        #     request.user.is_authenticated
+        # ]):
+        #     employees = Employee.active_objects.all()
+        # else:
+        #     employees = self.get_queryset()
+        # serializer = SimpleEmployeeSerializer(employees, many=True)
+        # return Response(serializer.data)
+        employees = Employee.active_objects.all()
         serializer = SimpleEmployeeSerializer(employees, many=True)
         return Response(serializer.data)
 
