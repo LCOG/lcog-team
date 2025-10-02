@@ -85,6 +85,26 @@
       <div><span class="text-bold">Submitter:</span> {{ submitterName }}</div>
     </div>
 
+    <!-- SPECIAL INSTRUCTIONS -->
+    <div class="text-h6 transition-form-section-heading">
+      Notes/Special Instructions
+    </div>
+    <div class="row">
+      <div
+        v-if="props.print"
+        class="print-text-area"
+        v-html="specialInstructions"
+      ></div>
+      <q-input
+        v-else
+        name="special-instructions"
+        v-model="specialInstructions"
+        autogrow
+        style="width:100%"
+        :readonly="!canEditOtherFields()"
+      />
+    </div>
+
     <!-- EMPLOYEE DETAILS -->
     <div class="text-h6 transition-form-section-heading">
       {{ workerLabel() }} Details
@@ -673,26 +693,6 @@
           />
         </div>
       </div>
-    </div>
-
-    <!-- SPECIAL INSTRUCTIONS -->
-    <div class="text-h6 transition-form-section-heading">
-      Special Instructions
-    </div>
-    <div class="row">
-      <div
-        v-if="props.print"
-        class="print-text-area"
-        v-html="specialInstructions"
-      ></div>
-      <q-input
-        v-else
-        name="special-instructions"
-        v-model="specialInstructions"
-        autogrow
-        style="width:100%"
-        :readonly="!canEditOtherFields()"
-      />
     </div>
 
     <!-- FISCAL USE ONLY -->
