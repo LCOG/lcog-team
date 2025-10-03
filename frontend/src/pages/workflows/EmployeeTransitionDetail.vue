@@ -269,6 +269,23 @@
         state-mandated sick leave of 1 hour for every 30 hours worked.
       </div>
       <div v-if="workerType == 'Employee'" class="row">
+        <q-select
+          v-model="unionAffiliation"
+          :options="['Non-Represented','EA', 'SEIU', 'Senior Meals', 'Management']"
+          label="Salary Schedule/Union Affiliation"
+          id="union-affiliation"
+          class="q-mr-md"
+          :disable="!canEditOtherFields()"
+          style="width: 275px;"
+        >
+          <template v-if="unionAffiliation" v-slot:append>
+            <q-icon
+              name="cancel"
+              @click.stop="unionAffiliation=''"
+              class="cursor-pointer"
+            />
+          </template>
+        </q-select>
         <q-input
           v-if="canViewSalaryFields()"
           v-model="salaryRange"
@@ -287,26 +304,9 @@
           name="salary-step"
           :options="Array.from({length:10}, (x, i) => i+1)"
           label="Salary Step"
-          class="q-mr-md"
           style="width: 131px;"
           clearable
         />
-        <q-select
-          v-model="unionAffiliation"
-          :options="['Non-Represented','EA', 'SEIU', 'Management']"
-          label="Union Affiliation"
-          id="union-affiliation"
-          :disable="!canEditOtherFields()"
-          style="width: 172px;"
-        >
-          <template v-if="unionAffiliation" v-slot:append>
-            <q-icon
-              name="cancel"
-              @click.stop="unionAffiliation=''"
-              class="cursor-pointer"
-            />
-          </template>
-        </q-select>
       </div>
       <div v-else-if="['Intern', 'Volunteer', 'Contractor'].indexOf(workerType) != -1">
         <q-input

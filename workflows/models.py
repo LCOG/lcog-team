@@ -128,11 +128,13 @@ class EmployeeTransition(models.Model):
     UNION_NON_REPRESENTED = 'Non-Represented'
     UNION_EA = 'EA'
     UNION_SEIU = 'SEIU'
+    UNION_SENIOR_MEALS = 'Senior Meals'
     UNION_MANAGEMENT = 'Management'
     UNION_CHOICES = [
         (UNION_NON_REPRESENTED, UNION_NON_REPRESENTED),
         (UNION_EA, UNION_EA),
         (UNION_SEIU, UNION_SEIU),
+        (UNION_SENIOR_MEALS, UNION_SENIOR_MEALS),
         (UNION_MANAGEMENT, UNION_MANAGEMENT)
     ]
 
