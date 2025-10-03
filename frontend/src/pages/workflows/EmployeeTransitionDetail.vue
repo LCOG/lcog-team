@@ -562,7 +562,7 @@
           v-model="phoneRequest"
           :options="[
             'New number needed', 'Remove phone', 'Delete number', 'Reassign to:',
-            'Change name display to:', 'Delete voicemail box'
+            'Change name display to:', 'Delete voicemail box', 'No phone needed'
           ]"
           label="Phone Update"
           style="width: 218px;"
