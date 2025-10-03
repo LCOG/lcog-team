@@ -605,6 +605,15 @@
           :disable="!canEditOtherFields()"
         />
       </div>
+      <div v-if="['Change/Modify', 'Exit'].indexOf(type) != -1" class="row">
+        <q-checkbox
+          id="extension-remain-active"
+          v-model="extensionRemainActive"
+          label="Extension should remain active"
+          class="q-mr-md"
+          :disable="!canEditOtherFields()"
+        />
+      </div>
       <div v-if="type=='Exit'" class="row">
         <q-checkbox
           id="delete"
@@ -1309,6 +1318,8 @@ let cellPhoneCurrentVal = ref(false)
 let cellPhone = ref(false)
 let shouldDeleteCurrentVal = ref(false)
 let shouldDelete = ref(false)
+let extensionRemainActiveCurrentVal = ref(false)
+let extensionRemainActive = ref(false)
 let reassignToCurrentVal = ref('')
 let reassignTo = ref('')
 let gasPINNeededCurrentVal = ref(false)
@@ -1527,6 +1538,8 @@ function retrieveEmployeeTransition() {
     cellPhoneCurrentVal.value = cellPhone.value
     shouldDelete.value = t.should_delete
     shouldDeleteCurrentVal.value = shouldDelete.value
+    extensionRemainActive.value = t.extension_remain_active
+    extensionRemainActiveCurrentVal.value = extensionRemainActive.value
     reassignTo.value = t.reassign_to
     reassignToCurrentVal.value = reassignTo.value
     gasPINNeeded.value = t.gas_pin_needed
@@ -1630,6 +1643,7 @@ function valuesAreChanged(): boolean {
     loadCode.value == loadCodeCurrentVal.value &&
     cellPhone.value == cellPhoneCurrentVal.value &&
     shouldDelete.value == shouldDeleteCurrentVal.value &&
+    extensionRemainActive.value == extensionRemainActiveCurrentVal.value &&
     reassignTo.value == reassignToCurrentVal.value &&
     gasPINNeeded.value == gasPINNeededCurrentVal.value &&
     oregonAccess.value == oregonAccessCurrentVal.value &&
@@ -1726,6 +1740,7 @@ function updateTransition() {
       load_code: loadCode.value,
       cell_phone: cellPhone.value,
       should_delete: shouldDelete.value,
+      extension_remain_active: extensionRemainActive.value,
       reassign_to: reassignTo.value,
       gas_pin_needed: gasPINNeeded.value,
       oregon_access: oregonAccess.value,
@@ -1790,6 +1805,7 @@ function updateTransition() {
       loadCodeCurrentVal.value = t.load_code
       cellPhoneCurrentVal.value = t.cell_phone
       shouldDeleteCurrentVal.value = t.should_delete
+      extensionRemainActiveCurrentVal.value = t.extension_remain_active
       reassignToCurrentVal.value = t.reassign_to
       gasPINNeededCurrentVal.value = t.gas_pin_needed
       oregonAccessCurrentVal.value = t.oregon_access

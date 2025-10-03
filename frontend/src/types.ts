@@ -979,6 +979,7 @@ export interface EmployeeTransition extends EmployeeTransitionBase {
   load_code: string
   cell_phone: boolean
   should_delete: boolean
+  extension_remain_active: boolean
   reassign_to: string
   gas_pin_needed: boolean
   oregon_access: string
@@ -1032,6 +1033,7 @@ export interface EmployeeTransitionUpdate extends EmployeeTransitionBase {
   load_code?: string
   cell_phone?: boolean
   should_delete?: boolean
+  extension_remain_active?: boolean
   reassign_to?: string
   gas_pin_needed?: boolean
   oregon_access?: string

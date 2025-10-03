@@ -194,10 +194,11 @@ class EmployeeTransitionSerializer(serializers.ModelSerializer):
             'cubicle_number', 'union_affiliation', 'teleworking',
             'computer_type', 'computer_gl', 'computer_description',
             'phone_number', 'phone_request', 'phone_request_data', 'load_code',
-            'cell_phone', 'should_delete', 'reassign_to', 'gas_pin_needed',
-            'oregon_access', 'business_cards', 'prox_card_needed',
-            'mailbox_needed', 'access_emails_pk', 'access_emails_name',
-            'special_instructions', 'fiscal_field', 'assignee', 'changes'
+            'cell_phone', 'should_delete', 'extension_remain_active',
+            'reassign_to', 'gas_pin_needed', 'oregon_access', 'business_cards',
+            'prox_card_needed', 'mailbox_needed', 'access_emails_pk',
+            'access_emails_name', 'special_instructions', 'fiscal_field',
+            'assignee', 'changes'
         ]
 
     @staticmethod
@@ -295,9 +296,10 @@ class EmployeeTransitionRedactedSerializer(EmployeeTransitionSerializer):
             'union_affiliation', 'teleworking', 'computer_type', 'computer_gl',
             'computer_description', 'phone_number', 'phone_request',
             'phone_request_data', 'load_code', 'cell_phone', 'should_delete',
-            'reassign_to', 'gas_pin_needed', 'oregon_access', 'business_cards',
-            'prox_card_needed', 'mailbox_needed', 'access_emails_pk',
-            'access_emails_name', 'special_instructions', 'changes'
+            'extension_remain_active', 'reassign_to', 'gas_pin_needed',
+            'oregon_access', 'business_cards', 'prox_card_needed',
+            'mailbox_needed', 'access_emails_pk', 'access_emails_name',
+            'special_instructions', 'changes'
         ]
 
 class WorkflowInstanceBaseSerializer(serializers.ModelSerializer):
