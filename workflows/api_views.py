@@ -311,6 +311,7 @@ class EmployeeTransitionViewSet(viewsets.ModelViewSet):
 
             t.fte = request.data['fte']
             t.hours_per_week = request.data['hours_per_week']
+            t.hourly_rate = request.data['hourly_rate']
 
             # Only the submitter, hiring manager, HR, fiscal, and SDS hiring leads
             # can edit salary fields.

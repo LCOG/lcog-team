@@ -318,6 +318,19 @@
           clearable
         />
       </div>
+      <div v-else-if="workerType == 'Temp Non-Agency'">
+        <q-input
+          v-if="canViewSalaryFields()"
+          v-model="hourlyRate"
+          name="hourly-rate"
+          label="Hourly Rate"
+          class="q-mr-md"
+          style="width: 150px;"
+          :rules="
+            [ val => val === null || !isNaN(val) || 'Please enter a number']
+          "
+        />
+      </div>
       <div class="row items-center">
         <EmployeeSelect
           name="manager"
@@ -1240,6 +1253,8 @@ let fteCurrentVal = ref('')
 let fte = ref('')
 let hoursPerWeekCurrentVal = ref('')
 let hoursPerWeek = ref('')
+let hourlyRateCurrentVal = ref(null) as Ref<number | null>
+let hourlyRate = ref(null) as Ref<number | null>
 let salaryRangeCurrentVal = ref(null) as Ref<number | null>
 let salaryRange = ref(null) as Ref<number | null>
 let salaryStepCurrentVal = ref(null) as Ref<number | null>
@@ -1448,6 +1463,8 @@ function retrieveEmployeeTransition() {
     fteCurrentVal.value = fte.value
     hoursPerWeek.value = t.hours_per_week
     hoursPerWeekCurrentVal.value = hoursPerWeek.value
+    hourlyRate.value = t.hourly_rate
+    hourlyRateCurrentVal.value = hourlyRate.value
     salaryRange.value = t.salary_range
     salaryRangeCurrentVal.value = salaryRange.value
     salaryStep.value = t.salary_step
@@ -1562,6 +1579,7 @@ function valuesAreChanged(): boolean {
     title.value.pk == titleCurrentVal.value.pk &&
     fte.value == fteCurrentVal.value &&
     hoursPerWeek.value == hoursPerWeekCurrentVal.value &&
+    hourlyRate.value == hourlyRateCurrentVal.value &&
     salaryRange.value == salaryRangeCurrentVal.value &&
     salaryStep.value == salaryStepCurrentVal.value &&
     stipend.value == stipendCurrentVal.value &&
@@ -1681,6 +1699,7 @@ function updateTransition() {
       title_pk: title.value.pk,
       fte: fte.value,
       hours_per_week: hoursPerWeek.value,
+      hourly_rate: hourlyRate.value,
       salary_range: salaryRange.value,
       salary_step: salaryStep.value,
       stipend: stipend.value,
@@ -1740,6 +1759,7 @@ function updateTransition() {
       titleCurrentVal.value = {pk: t.title_pk, name: t.title_name}
       fteCurrentVal.value = t.fte
       hoursPerWeekCurrentVal.value = t.hours_per_week
+      hourlyRateCurrentVal.value = t.hourly_rate
       // We need to set salaryRange because integers are set as decimals
       salaryRange.value = t.salary_range
       salaryRangeCurrentVal.value = t.salary_range

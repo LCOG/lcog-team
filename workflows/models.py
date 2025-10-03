@@ -229,6 +229,9 @@ class EmployeeTransition(models.Model):
     )
     fte = models.FloatField(blank=True, default=1.0)
     hours_per_week = models.FloatField(blank=True, default=0)
+    hourly_rate = models.DecimalField(
+        blank=True, null=True, max_digits=10, decimal_places=2
+    )
     salary_range = models.DecimalField(
         blank=True, null=True, max_digits=10, decimal_places=2
     )

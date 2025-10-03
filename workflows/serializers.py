@@ -186,18 +186,18 @@ class EmployeeTransitionSerializer(serializers.ModelSerializer):
             'employee_first_name', 'employee_middle_initial',
             'employee_last_name', 'employee_preferred_name', 'employee_number',
             'employee_id', 'employee_email', 'title_pk', 'title_name', 'fte',
-            'hours_per_week', 'salary_range', 'salary_step', 'stipend',
-            'bilingual', 'second_language', 'manager_pk', 'manager_name',
-            'unit_pk', 'unit_name', 'transition_date', 'system_change_date',
-            'schedule', 'lwop', 'lwop_details', 'preliminary_hire',
-            'delete_profile', 'office_location', 'cubicle_number',
-            'union_affiliation', 'teleworking', 'computer_type', 'computer_gl',
-            'computer_description', 'phone_number', 'phone_request',
-            'phone_request_data', 'load_code', 'cell_phone', 'should_delete',
-            'reassign_to', 'gas_pin_needed', 'oregon_access', 'business_cards',
-            'prox_card_needed', 'mailbox_needed', 'access_emails_pk',
-            'access_emails_name', 'special_instructions', 'fiscal_field',
-            'assignee', 'changes'
+            'hours_per_week', 'hourly_rate', 'salary_range', 'salary_step',
+            'stipend', 'bilingual', 'second_language', 'manager_pk',
+            'manager_name', 'unit_pk', 'unit_name', 'transition_date',
+            'system_change_date', 'schedule', 'lwop', 'lwop_details',
+            'preliminary_hire', 'delete_profile', 'office_location',
+            'cubicle_number', 'union_affiliation', 'teleworking',
+            'computer_type', 'computer_gl', 'computer_description',
+            'phone_number', 'phone_request', 'phone_request_data', 'load_code',
+            'cell_phone', 'should_delete', 'reassign_to', 'gas_pin_needed',
+            'oregon_access', 'business_cards', 'prox_card_needed',
+            'mailbox_needed', 'access_emails_pk', 'access_emails_name',
+            'special_instructions', 'fiscal_field', 'assignee', 'changes'
         ]
 
     @staticmethod
@@ -277,8 +277,8 @@ class EmployeeTransitionSerializer(serializers.ModelSerializer):
 
 class EmployeeTransitionRedactedSerializer(EmployeeTransitionSerializer):
     """
-    Same as the regular serializer but leave out sensitive fields: salary_range
-    and salary_step.
+    Same as the regular serializer but leave out sensitive fields: hourly_rate,
+    salary_range, and salary_step.
     """
     class Meta:
         model = EmployeeTransition
