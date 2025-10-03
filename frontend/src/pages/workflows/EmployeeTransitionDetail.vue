@@ -596,7 +596,7 @@
           :readonly="!canEditOtherFields()"
         />
       </div>
-      <div>
+      <div v-if="type !== 'Exit'" class="row">
         <q-checkbox
           id="cell-phone-needed"
           v-model="cellPhone"
