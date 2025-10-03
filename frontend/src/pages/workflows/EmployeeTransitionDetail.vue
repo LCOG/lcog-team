@@ -611,9 +611,8 @@
           v-model="shouldDelete"
           label="Delete?"
           :disable="!canEditOtherFields()"
+          class="q-mr-md"
         />
-      </div>
-      <div v-if="type=='Exit'" class="row">
         <q-input
           name="reassign-to"
           v-model="reassignTo"
