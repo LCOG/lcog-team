@@ -511,7 +511,7 @@
               id="computer-repurposed"
               v-model="computerType"
               val="Repurposed"
-              label="Repurposed"
+              label="Existing Equipment"
               :disable="!canEditOtherFields()"
             />
           </div>
