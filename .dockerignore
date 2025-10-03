@@ -39,8 +39,10 @@ README.md
 # Team App virtual environments
 **/env*
 
-# Do not copy the local sqlite databse onto the image
+# Do not copy the local sqlite database onto the image
 **/*.sqlite
 
 # Do not include the frontend folder on the image
 ./frontend
+
+**/.aws/*
