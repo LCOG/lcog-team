@@ -85,6 +85,29 @@
       <div><span class="text-bold">Submitter:</span> {{ submitterName }}</div>
     </div>
 
+    <!-- SPECIAL INSTRUCTIONS -->
+    <div class="text-h6 transition-form-section-heading">
+      Notes/Special Instructions
+    </div>
+    <div class="row">
+      <div
+        v-if="props.print"
+        class="print-text-area"
+        v-html="specialInstructions"
+      ></div>
+      <q-input
+        v-else
+        name="special-instructions"
+        v-model="specialInstructions"
+        autogrow
+        style="width:100%"
+        :readonly="!canEditOtherFields()"
+        :hint="employeeID == 'CLSD' ?
+          'Please include which employee you would like this modeled after' :
+          ''"
+      />
+    </div>
+
     <!-- EMPLOYEE DETAILS -->
     <div class="text-h6 transition-form-section-heading">
       {{ workerLabel() }} Details
@@ -249,6 +272,23 @@
         state-mandated sick leave of 1 hour for every 30 hours worked.
       </div>
       <div v-if="workerType == 'Employee'" class="row">
+        <q-select
+          v-model="unionAffiliation"
+          :options="['Non-Represented','EA', 'SEIU', 'Senior Meals', 'Management']"
+          label="Salary Schedule/Union Affiliation"
+          id="union-affiliation"
+          class="q-mr-md"
+          :disable="!canEditOtherFields()"
+          style="width: 275px;"
+        >
+          <template v-if="unionAffiliation" v-slot:append>
+            <q-icon
+              name="cancel"
+              @click.stop="unionAffiliation=''"
+              class="cursor-pointer"
+            />
+          </template>
+        </q-select>
         <q-input
           v-if="canViewSalaryFields()"
           v-model="salaryRange"
@@ -267,26 +307,9 @@
           name="salary-step"
           :options="Array.from({length:10}, (x, i) => i+1)"
           label="Salary Step"
-          class="q-mr-md"
           style="width: 131px;"
           clearable
         />
-        <q-select
-          v-model="unionAffiliation"
-          :options="['Non-Represented','EA', 'SEIU', 'Management']"
-          label="Union Affiliation"
-          id="union-affiliation"
-          :disable="!canEditOtherFields()"
-          style="width: 172px;"
-        >
-          <template v-if="unionAffiliation" v-slot:append>
-            <q-icon
-              name="cancel"
-              @click.stop="unionAffiliation=''"
-              class="cursor-pointer"
-            />
-          </template>
-        </q-select>
       </div>
       <div v-else-if="['Intern', 'Volunteer', 'Contractor'].indexOf(workerType) != -1">
         <q-input
@@ -296,6 +319,19 @@
           :label="workerType == 'Contractor' ? 'Contractual Maximum Compensation / Not to Exceed Amount' : 'Stipend'"
           class="q-mr-md"
           clearable
+        />
+      </div>
+      <div v-else-if="workerType == 'Temp Non-Agency'">
+        <q-input
+          v-if="canViewSalaryFields()"
+          v-model="hourlyRate"
+          name="hourly-rate"
+          label="Hourly Rate"
+          class="q-mr-md"
+          style="width: 150px;"
+          :rules="
+            [ val => val === null || !isNaN(val) || 'Please enter a number']
+          "
         />
       </div>
       <div class="row items-center">
@@ -478,7 +514,7 @@
               id="computer-repurposed"
               v-model="computerType"
               val="Repurposed"
-              label="Repurposed"
+              label="Existing Equipment"
               :disable="!canEditOtherFields()"
             />
           </div>
@@ -529,7 +565,7 @@
           v-model="phoneRequest"
           :options="[
             'New number needed', 'Remove phone', 'Delete number', 'Reassign to:',
-            'Change name display to:', 'Delete voicemail box'
+            'Change name display to:', 'Delete voicemail box', 'No phone needed'
           ]"
           label="Phone Update"
           style="width: 218px;"
@@ -563,11 +599,20 @@
           :readonly="!canEditOtherFields()"
         />
       </div>
-      <div>
+      <div v-if="type !== 'Exit'" class="row">
         <q-checkbox
           id="cell-phone-needed"
           v-model="cellPhone"
           label="Cell Phone Needed"
+          class="q-mr-md"
+          :disable="!canEditOtherFields()"
+        />
+      </div>
+      <div v-if="['Change/Modify', 'Exit'].indexOf(type) != -1" class="row">
+        <q-checkbox
+          id="extension-remain-active"
+          v-model="extensionRemainActive"
+          label="Extension should remain active"
           class="q-mr-md"
           :disable="!canEditOtherFields()"
         />
@@ -578,9 +623,8 @@
           v-model="shouldDelete"
           label="Delete?"
           :disable="!canEditOtherFields()"
+          class="q-mr-md"
         />
-      </div>
-      <div v-if="type=='Exit'" class="row">
         <q-input
           name="reassign-to"
           v-model="reassignTo"
@@ -603,7 +647,7 @@
             name="oregon-access"
             v-model="oregonAccess"
             :options="[
-              'Not needed', 'Desktop', 'Remote'
+              'Not needed', 'Desktop & Remote', 'Remote'
             ]"
             label="Oregon Access"
             style="width: 218px;"
@@ -673,26 +717,6 @@
           />
         </div>
       </div>
-    </div>
-
-    <!-- SPECIAL INSTRUCTIONS -->
-    <div class="text-h6 transition-form-section-heading">
-      Special Instructions
-    </div>
-    <div class="row">
-      <div
-        v-if="props.print"
-        class="print-text-area"
-        v-html="specialInstructions"
-      ></div>
-      <q-input
-        v-else
-        name="special-instructions"
-        v-model="specialInstructions"
-        autogrow
-        style="width:100%"
-        :readonly="!canEditOtherFields()"
-      />
     </div>
 
     <!-- FISCAL USE ONLY -->
@@ -1240,6 +1264,8 @@ let fteCurrentVal = ref('')
 let fte = ref('')
 let hoursPerWeekCurrentVal = ref('')
 let hoursPerWeek = ref('')
+let hourlyRateCurrentVal = ref(null) as Ref<number | null>
+let hourlyRate = ref(null) as Ref<number | null>
 let salaryRangeCurrentVal = ref(null) as Ref<number | null>
 let salaryRange = ref(null) as Ref<number | null>
 let salaryStepCurrentVal = ref(null) as Ref<number | null>
@@ -1295,6 +1321,8 @@ let cellPhoneCurrentVal = ref(false)
 let cellPhone = ref(false)
 let shouldDeleteCurrentVal = ref(false)
 let shouldDelete = ref(false)
+let extensionRemainActiveCurrentVal = ref(false)
+let extensionRemainActive = ref(false)
 let reassignToCurrentVal = ref('')
 let reassignTo = ref('')
 let gasPINNeededCurrentVal = ref(false)
@@ -1448,6 +1476,8 @@ function retrieveEmployeeTransition() {
     fteCurrentVal.value = fte.value
     hoursPerWeek.value = t.hours_per_week
     hoursPerWeekCurrentVal.value = hoursPerWeek.value
+    hourlyRate.value = t.hourly_rate
+    hourlyRateCurrentVal.value = hourlyRate.value
     salaryRange.value = t.salary_range
     salaryRangeCurrentVal.value = salaryRange.value
     salaryStep.value = t.salary_step
@@ -1511,6 +1541,8 @@ function retrieveEmployeeTransition() {
     cellPhoneCurrentVal.value = cellPhone.value
     shouldDelete.value = t.should_delete
     shouldDeleteCurrentVal.value = shouldDelete.value
+    extensionRemainActive.value = t.extension_remain_active
+    extensionRemainActiveCurrentVal.value = extensionRemainActive.value
     reassignTo.value = t.reassign_to
     reassignToCurrentVal.value = reassignTo.value
     gasPINNeeded.value = t.gas_pin_needed
@@ -1562,6 +1594,7 @@ function valuesAreChanged(): boolean {
     title.value.pk == titleCurrentVal.value.pk &&
     fte.value == fteCurrentVal.value &&
     hoursPerWeek.value == hoursPerWeekCurrentVal.value &&
+    hourlyRate.value == hourlyRateCurrentVal.value &&
     salaryRange.value == salaryRangeCurrentVal.value &&
     salaryStep.value == salaryStepCurrentVal.value &&
     stipend.value == stipendCurrentVal.value &&
@@ -1613,6 +1646,7 @@ function valuesAreChanged(): boolean {
     loadCode.value == loadCodeCurrentVal.value &&
     cellPhone.value == cellPhoneCurrentVal.value &&
     shouldDelete.value == shouldDeleteCurrentVal.value &&
+    extensionRemainActive.value == extensionRemainActiveCurrentVal.value &&
     reassignTo.value == reassignToCurrentVal.value &&
     gasPINNeeded.value == gasPINNeededCurrentVal.value &&
     oregonAccess.value == oregonAccessCurrentVal.value &&
@@ -1681,6 +1715,7 @@ function updateTransition() {
       title_pk: title.value.pk,
       fte: fte.value,
       hours_per_week: hoursPerWeek.value,
+      hourly_rate: hourlyRate.value,
       salary_range: salaryRange.value,
       salary_step: salaryStep.value,
       stipend: stipend.value,
@@ -1708,6 +1743,7 @@ function updateTransition() {
       load_code: loadCode.value,
       cell_phone: cellPhone.value,
       should_delete: shouldDelete.value,
+      extension_remain_active: extensionRemainActive.value,
       reassign_to: reassignTo.value,
       gas_pin_needed: gasPINNeeded.value,
       oregon_access: oregonAccess.value,
@@ -1740,6 +1776,7 @@ function updateTransition() {
       titleCurrentVal.value = {pk: t.title_pk, name: t.title_name}
       fteCurrentVal.value = t.fte
       hoursPerWeekCurrentVal.value = t.hours_per_week
+      hourlyRateCurrentVal.value = t.hourly_rate
       // We need to set salaryRange because integers are set as decimals
       salaryRange.value = t.salary_range
       salaryRangeCurrentVal.value = t.salary_range
@@ -1771,6 +1808,7 @@ function updateTransition() {
       loadCodeCurrentVal.value = t.load_code
       cellPhoneCurrentVal.value = t.cell_phone
       shouldDeleteCurrentVal.value = t.should_delete
+      extensionRemainActiveCurrentVal.value = t.extension_remain_active
       reassignToCurrentVal.value = t.reassign_to
       gasPINNeededCurrentVal.value = t.gas_pin_needed
       oregonAccessCurrentVal.value = t.oregon_access
