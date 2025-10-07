@@ -128,11 +128,13 @@ class EmployeeTransition(models.Model):
     UNION_NON_REPRESENTED = 'Non-Represented'
     UNION_EA = 'EA'
     UNION_SEIU = 'SEIU'
+    UNION_SENIOR_MEALS = 'Senior Meals'
     UNION_MANAGEMENT = 'Management'
     UNION_CHOICES = [
         (UNION_NON_REPRESENTED, UNION_NON_REPRESENTED),
         (UNION_EA, UNION_EA),
         (UNION_SEIU, UNION_SEIU),
+        (UNION_SENIOR_MEALS, UNION_SENIOR_MEALS),
         (UNION_MANAGEMENT, UNION_MANAGEMENT)
     ]
 
@@ -149,17 +151,19 @@ class EmployeeTransition(models.Model):
     PHONE_REQUEST_REASSIGN = 'Reassign to:'
     PHONE_REQUEST_CHANGE = 'Change name display to:'
     PHONE_REQUEST_DELETE_VM = 'Delete voicemail box'
+    PHONE_REQUEST_NONE_NEEDED = 'No phone needed'
     PHONE_REQUEST_CHOICES = [
         (PHONE_REQUEST_NEW, PHONE_REQUEST_NEW),
         (PHONE_REQUEST_REMOVE, PHONE_REQUEST_REMOVE),
         (PHONE_REQUEST_DELETE_NUM, PHONE_REQUEST_DELETE_NUM),
         (PHONE_REQUEST_REASSIGN, PHONE_REQUEST_REASSIGN),
         (PHONE_REQUEST_CHANGE, PHONE_REQUEST_CHANGE),
-        (PHONE_REQUEST_DELETE_VM, PHONE_REQUEST_DELETE_VM)
+        (PHONE_REQUEST_DELETE_VM, PHONE_REQUEST_DELETE_VM),
+        (PHONE_REQUEST_NONE_NEEDED, PHONE_REQUEST_NONE_NEEDED)
     ]
 
     OREGON_ACCESS_NONE = 'Not needed'
-    OREGON_ACCESS_DESKTOP = 'Desktop'
+    OREGON_ACCESS_DESKTOP = 'Desktop & Remote'
     OREGON_ACCESS_REMOTE = 'Remote'
     OREGON_ACCESS_CHOICES = [
         (OREGON_ACCESS_NONE, OREGON_ACCESS_NONE),
@@ -227,6 +231,9 @@ class EmployeeTransition(models.Model):
     )
     fte = models.FloatField(blank=True, default=1.0)
     hours_per_week = models.FloatField(blank=True, default=0)
+    hourly_rate = models.DecimalField(
+        blank=True, null=True, max_digits=10, decimal_places=2
+    )
     salary_range = models.DecimalField(
         blank=True, null=True, max_digits=10, decimal_places=2
     )
@@ -276,10 +283,11 @@ class EmployeeTransition(models.Model):
     load_code = models.CharField(max_length=50, blank=True)
     cell_phone = models.BooleanField(default=False)
     should_delete = models.BooleanField(default=False)
+    extension_remain_active = models.BooleanField(default=False)
     reassign_to = models.CharField(max_length=50, blank=True)
     gas_pin_needed = models.BooleanField(_("Gas PIN needed"), default=False)
     oregon_access = models.CharField(
-        default=OREGON_ACCESS_NONE, max_length=10,
+        default=OREGON_ACCESS_NONE, max_length=16,
         choices=OREGON_ACCESS_CHOICES
     )
     business_cards = models.BooleanField(default=False)

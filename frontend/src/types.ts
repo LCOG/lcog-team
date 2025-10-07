@@ -952,6 +952,7 @@ export interface EmployeeTransition extends EmployeeTransitionBase {
   title_name: string
   fte: string
   hours_per_week: string
+  hourly_rate: number | null
   bilingual: boolean
   second_language: string
   manager_pk: number
@@ -978,6 +979,7 @@ export interface EmployeeTransition extends EmployeeTransitionBase {
   load_code: string
   cell_phone: boolean
   should_delete: boolean
+  extension_remain_active: boolean
   reassign_to: string
   gas_pin_needed: boolean
   oregon_access: string
@@ -1007,6 +1009,7 @@ export interface EmployeeTransitionUpdate extends EmployeeTransitionBase {
   title_pk?: number
   fte?: string
   hours_per_week?: string
+  hourly_rate?: number | null
   bilingual?: boolean
   second_language?: string
   manager_pk?: number
@@ -1030,6 +1033,7 @@ export interface EmployeeTransitionUpdate extends EmployeeTransitionBase {
   load_code?: string
   cell_phone?: boolean
   should_delete?: boolean
+  extension_remain_active?: boolean
   reassign_to?: string
   gas_pin_needed?: boolean
   oregon_access?: string
