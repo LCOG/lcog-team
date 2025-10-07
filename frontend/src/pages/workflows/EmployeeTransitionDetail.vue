@@ -102,6 +102,9 @@
         autogrow
         style="width:100%"
         :readonly="!canEditOtherFields()"
+        :hint="employeeID == 'CLSD' ?
+          'Please include which employee you would like this modeled after' :
+          ''"
       />
     </div>
 
