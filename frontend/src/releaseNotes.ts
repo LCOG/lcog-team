@@ -4,6 +4,28 @@
 
 export const releases = [
   {
+    version: '0.52.0',
+    date: new Date(2025, 9, 7),
+    changes: [
+      {
+        type: 'improved',
+        description: 'Updated employee transition form.'
+      },
+      {
+        type: 'improved',
+        description: 'Security updates to API endpoints.'
+      },
+      {
+        type: 'improved',
+        description: 'Minor updates to PRs.'
+      },
+      {
+        type: 'fix',
+        description: 'Fix to PR dashboard that caused a page crash.'
+      },
+    ]
+  },
+  {
     version: '0.51.0',
     date: new Date(2025, 8, 1),
     changes: [
