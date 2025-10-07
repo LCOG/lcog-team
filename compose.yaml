@@ -10,7 +10,7 @@ services:
         source: static
         target: /app/static
     env_file:
-      - ".env"
+      - ".staging.env"
     ports:
       - 8000:8000
     
