@@ -163,7 +163,7 @@ class EmployeeTransition(models.Model):
     ]
 
     OREGON_ACCESS_NONE = 'Not needed'
-    OREGON_ACCESS_DESKTOP = 'Desktop'
+    OREGON_ACCESS_DESKTOP = 'Desktop & Remote'
     OREGON_ACCESS_REMOTE = 'Remote'
     OREGON_ACCESS_CHOICES = [
         (OREGON_ACCESS_NONE, OREGON_ACCESS_NONE),
@@ -287,7 +287,7 @@ class EmployeeTransition(models.Model):
     reassign_to = models.CharField(max_length=50, blank=True)
     gas_pin_needed = models.BooleanField(_("Gas PIN needed"), default=False)
     oregon_access = models.CharField(
-        default=OREGON_ACCESS_NONE, max_length=10,
+        default=OREGON_ACCESS_NONE, max_length=16,
         choices=OREGON_ACCESS_CHOICES
     )
     business_cards = models.BooleanField(default=False)

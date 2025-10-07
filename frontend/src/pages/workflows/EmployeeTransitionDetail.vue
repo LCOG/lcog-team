@@ -644,7 +644,7 @@
             name="oregon-access"
             v-model="oregonAccess"
             :options="[
-              'Not needed', 'Desktop', 'Remote'
+              'Not needed', 'Desktop & Remote', 'Remote'
             ]"
             label="Oregon Access"
             style="width: 218px;"
