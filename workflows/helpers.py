@@ -545,6 +545,10 @@ def create_process_instances(transition):
         transition_process_names += exiting_processes_start
         if (transition.is_sds):
             transition_process_names += exiting_processes_start_sds
+    
+    if len(transition_process_names) == 0:
+        wfi.update_percent_complete()
+
     # Create process instances for each process in the list
     for process in wfi.workflow.processes.filter(
         name__in=transition_process_names

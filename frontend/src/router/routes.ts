@@ -29,7 +29,8 @@ if (maintenanceMode) {
         {
           path: 'release-notes',
           name: 'release-notes',
-          component: () => import('src/pages/ReleaseNotes.vue')
+          component: () => import('src/pages/ReleaseNotes.vue'),
+          meta: { requiresAuth: true }
         },
         {
           path: 'help',
