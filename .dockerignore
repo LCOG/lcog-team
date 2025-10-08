@@ -40,7 +40,7 @@ README.md
 **/*env*
 
 # Do not copy the local sqlite database onto the image
-**/*.sqlite
+db.sqlite3
 
 # Do not include the frontend folder on the image
 ./frontend
