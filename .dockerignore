@@ -37,7 +37,7 @@ README.md
 **/.platform
 
 # Team App virtual environments
-**/env*
+**/*env*
 
 # Do not copy the local sqlite database onto the image
 **/*.sqlite
