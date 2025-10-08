@@ -776,7 +776,7 @@ class WorkflowInstance(HasTimeStampsMixin, HasCreatorMixin):
         pis = self.pis.all()
         total_steps = sum([pi.total_steps for pi in pis])
         if total_steps == 0:
-            self.percent_complete = 0
+            self.percent_complete = 100
         else:
             complete_steps = sum([pi.complete_steps for pi in pis])
             self.percent_complete = int((complete_steps / total_steps) * 100)
