@@ -325,26 +325,28 @@ class PerformanceReviewViewSet(viewsets.ModelViewSet):
                         .for_employee(employee).filter(employee=employee)
                 elif manager is not None:
                     employee = user.employee
-                    is_ed = employee.is_executive_director if employee else False
-                    is_hrm = employee.is_hr_manager if employee else False
-                    if is_ed or is_hrm:
-                        # Superusers, EDs, and HR managers can see all reviews
-                        queryset = PerformanceReview.objects\
-                            .for_employee(employee).order_by('period_end_date')
-                    else:
-                        # All PRs managed by a given employee.
-                        # TODO: We used to also include descendants, but that
-                        # caused weird recursion issues and long load times for
-                        # people like Stephanie. Restore descendant employees?
-                        manager_employee = Employee.objects.get(
-                            pk=int(manager)
-                        )
-                        # descendant_employees = manager_employee.\
-                        #     get_direct_reports_descendants(include_self=False)
-                        employees = manager_employee.get_direct_reports()
-                        queryset = PerformanceReview.objects\
-                            .for_employee(employee)\
-                            .filter(employee__in=employees)
+                    
+                    # TODO: Re-enable this once we have a better way to show everything
+                    # is_ed = employee.is_executive_director if employee else False
+                    # is_hrm = employee.is_hr_manager if employee else False
+                    # if is_ed or is_hrm:
+                    #     # Superusers, EDs, and HR managers can see all reviews
+                    #     queryset = PerformanceReview.objects\
+                    #         .for_employee(employee).order_by('period_end_date')
+                    
+                    # All PRs managed by a given employee.
+                    # TODO: We used to also include descendants, but that
+                    # caused weird recursion issues and long load times for
+                    # people like Stephanie. Restore descendant employees?
+                    manager_employee = Employee.objects.get(
+                        pk=int(manager)
+                    )
+                    # descendant_employees = manager_employee.\
+                    #     get_direct_reports_descendants(include_self=False)
+                    employees = manager_employee.get_direct_reports()
+                    queryset = PerformanceReview.objects\
+                        .for_employee(employee)\
+                        .filter(employee__in=employees)
                 else:
                     # All PRs for the current user and their direct reports
                     employees = user.employee.get_direct_reports(
