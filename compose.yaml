@@ -1,0 +1,38 @@
+services:
+  api:
+    image: lcogteam-backend-django
+    container_name: django-api
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    volumes:
+      - type: volume
+        source: static
+        target: /app/static
+    env_file:
+      - ".staging.env"
+    ports:
+      - 8000:8000
+    
+  nginx:
+    image: nginx:1.29.1
+    container_name: reverse-proxy
+    depends_on:
+      - api
+    configs:
+      - source: nginx_config
+        target: /etc/nginx/nginx.conf
+    volumes:
+      - type: volume
+        source: static
+        target: /var/app/static
+        read_only: true
+    ports:
+      - 8080:80
+
+configs:
+  nginx_config:
+    file: ./.nginx/nginx.conf
+
+volumes:
+  static:
