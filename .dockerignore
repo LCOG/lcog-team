@@ -45,4 +45,6 @@ db.sqlite3
 # Do not include the frontend folder on the image
 ./frontend
 
-**/.aws/*
+# Do not copy AWS or nginx files and configurations
+.aws/
+.nginx/
