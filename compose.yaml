@@ -9,6 +9,9 @@ services:
       - type: volume
         source: static
         target: /app/static
+      - type: bind
+        source: db.sqlite3
+        target: /app/db.sqlite3
     env_file:
       - ".staging.env"
     ports:
