@@ -17,6 +17,9 @@ services:
   nginx:
     image: nginx:1.29.1
     container_name: reverse-proxy
+    build:
+      context: ./.nginx
+      dockerfile: Dockerfile
     depends_on:
       - api
     configs:
