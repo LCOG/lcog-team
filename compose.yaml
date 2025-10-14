@@ -5,23 +5,49 @@ services:
     build:
       context: .
       dockerfile: ./Dockerfile
+    develop:
+      watch:
+        # Synchronize changes with running Django API container when making
+        # changes to files
+        - action: sync
+          path: ./
+          target: /app/
+          initial_sync: true
+          ignore:
+            - requirements.txt
+            - requirements-windows.txt
+        # When modifying Python packages to install, rebuild the image
+        - action: rebuild
+          path: requirements.txt
     volumes:
       - type: volume
         source: static
         target: /app/static
+      - type: bind
+        source: db.sqlite3
+        target: /app/db.sqlite3
     env_file:
-      - ".staging.env"
+      - ".env"
     ports:
       - 8000:8000
     
   nginx:
     image: nginx:1.29.1
     container_name: reverse-proxy
+    build:
+      context: ./.nginx
+      dockerfile: Dockerfile
+    develop:
+      watch:
+        # Restart nginx container when making configuration changes
+        - action: sync+restart
+          path: .nginx/nginx.conf
+          target: /etc/nginx/nginx.conf
     depends_on:
       - api
-    configs:
-      - source: nginx_config
-        target: /etc/nginx/nginx.conf
+    # configs:
+    #   - source: nginx_config
+    #     target: /etc/nginx/nginx.conf
     volumes:
       - type: volume
         source: static
@@ -30,9 +56,9 @@ services:
     ports:
       - 8080:80
 
-configs:
-  nginx_config:
-    file: ./.nginx/nginx.conf
+# configs:
+#   nginx_config:
+#     file: ./.nginx/nginx.conf
 
 volumes:
   static:
