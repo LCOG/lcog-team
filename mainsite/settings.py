@@ -33,7 +33,9 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = bool(strtobool(os.getenv('DEBUG', 'True')))
 
-SECURE_SSL_REDIRECT = bool(strtobool(os.getenv('USE_SSL', 'True')))
+# Disable SECURE_SSL_REDIRECT: the Application Load Balancer handles
+# SSL termination and communicates with the application server in HTTP
+SECURE_SSL_REDIRECT = False
 SESSION_COOKIE_SECURE = bool(strtobool(os.getenv('USE_SSL', 'True')))
 CSRF_COOKIE_SECURE = bool(strtobool(os.getenv('USE_SSL', 'True')))
 
