@@ -45,9 +45,6 @@ if ENVIRONMENT == 'STAGING':
     ALLOWED_HOSTS = [
         'app.team-staging.lcog.org', # Staging frontend
         'api.team-staging.lcog.org', # Staging backend
-        os.environ.get('EC2_PUBLIC_IP'), # Public IP of EC2 instance
-        os.environ.get('EC2_PRIVATE_IP'), # Private IP of EC2 instance
-        os.environ.get('EBS_DOMAIN'), # Domain of Elastic Beanstalk instance
     ]
     CSRF_TRUSTED_ORIGINS = ['https://api.team-staging.lcog.org']
 else:
