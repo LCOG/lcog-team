@@ -46,7 +46,6 @@ if ENVIRONMENT == 'STAGING':
         'app.team-staging.lcog.org', # Staging frontend
         'api.team-staging.lcog.org', # Staging backend
     ]
-    CSRF_TRUSTED_ORIGINS = ['https://api.team-staging.lcog.org']
 else:
     # PRODUCTION
     ALLOWED_HOSTS = [
