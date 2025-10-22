@@ -44,6 +44,7 @@ fi
 echo "Registering updated task definition in ECS"
 aws ecs register-task-definition \
 --cli-input-json "file://./$TDFILE" \
+--no-cli-pager \
 --profile $AWS_PROFILE
 
 # Update the service deployment to use the latest version of the task definition
@@ -52,4 +53,5 @@ aws ecs update-service \
 --cluster lcog-team-staging-ecs-cluster \
 --service lcog-team-staging-backend-service \
 --task-definition lcog-team-app-staging-backend-td \
+--no-cli-pager \
 --profile $AWS_PROFILE
