@@ -48,3 +48,6 @@ db.sqlite3
 # Do not copy AWS or nginx files and configurations
 .aws/
 .nginx/
+
+# Do not copy the settings_local.py file
+mainsite/settings_local.py
