@@ -63,4 +63,4 @@ aws ecs update-service \
 --profile $AWS_PROFILE
 echo "ECS service deployment started"
 
-echo "\n\nGit commit message: Update API image to version $API_VERSION"
+echo -e "\nGit commit message: Update API image to version $API_VERSION"
