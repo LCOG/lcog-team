@@ -51,3 +51,6 @@ db.sqlite3
 
 # Do not copy the settings_local.py file
 mainsite/settings_local.py
+
+# Do not copy any script files to the image
+**/*.sh
