@@ -56,6 +56,13 @@ services:
     ports:
       - 8080:80
 
+  migrations:
+     image: lcogteam-backend-django
+     container_name: run-migrations
+     command: python manage.py migrate
+
+
+
 # configs:
 #   nginx_config:
 #     file: ./.nginx/nginx.conf
