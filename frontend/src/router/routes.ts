@@ -61,7 +61,7 @@ if (maintenanceMode) {
             if (isFiscal()) {
               return { name: 'fiscal-approve-expenses' }
             } else if (isDivisionDirector()) {
-              return { name: 'director-approve-expenses' }
+              return { name: 'director-view-expenses' }
             } else if (isExpenseApprover()) {
               return { name: 'approve-expenses' }
             } else if (isExpenseSubmitter()) {
@@ -91,8 +91,8 @@ if (maintenanceMode) {
             },
             {
               path: 'director',
-              name: 'director-approve-expenses',
-              component: () => import('src/pages/purchases/DirectorApprove.vue'),
+              name: 'director-view-expenses',
+              component: () => import('src/pages/purchases/DirectorView.vue'),
               meta: {
                 requiresAuth: true, requiresDivisionDirector: true,
                 allowMonthNav: true
@@ -100,9 +100,9 @@ if (maintenanceMode) {
             },
             {
               path: 'director/:expenseMonthPK',
-              name: 'director-approve-expenses-detail',
+              name: 'director-view-expenses-detail',
               component: () => {
-                return import('src/pages/purchases/DirectorApproveDetail.vue')
+                return import('src/pages/purchases/DirectorViewDetail.vue')
               },
               meta: {
                 requiresAuth: true, requiresDivisionDirector: true,

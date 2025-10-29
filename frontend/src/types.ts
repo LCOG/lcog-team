@@ -341,8 +341,7 @@ export interface FileUploadDescriptionUploadServerResponse {
 
 interface ExpenseBase {
   status: 'draft' | 'submitted' | 'approver_approved' | 'approver_denied' |
-    'director_approved' | 'director_denied' | 'fiscal_approved' |
-    'fiscal_denied'
+    'fiscal_approved' | 'fiscal_denied'
 }
 
 export interface SimpleExpenseMonth extends ExpenseBase {
@@ -354,8 +353,6 @@ export interface SimpleExpenseMonth extends ExpenseBase {
   submitted_at: string
   denier_name: string
   approved_as_of: string
-  director_approved: boolean
-  director_approved_at: string
   fiscal_approver_name: string
   fiscal_approved_at: string
 }
@@ -366,6 +363,7 @@ export interface ExpenseMonth extends SimpleExpenseMonth {
   submitter_note: string
   director_note: string
   fiscal_note: string
+  fiscal_approver: SimpleEmployeeRetrieve
 }
 
 export interface ExpenseMonthCreate {
@@ -431,8 +429,6 @@ export interface ExpenseCard {
   assignee: SimpleEmployeeRetrieve
   display: string
   shared: boolean
-  requires_director_approval: boolean
-  director_name: string
 }
 
 interface ExpenseStatementItem {
