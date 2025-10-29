@@ -191,93 +191,10 @@
             <div>{{ em.submitter_note }}</div>
           </div>
         </div>
-        
-        <div
-          class="q-mt-sm q-gutter-md row justify-between"
-        >
-          <div>
-            <q-btn
-              :class="EMApproved(em)?'bg-green':''"
-              :disable="!directorCanApprove(em) || EMApproved(em)"
-              @click="onShowApproveDialog(em)"
-              class="q-mr-md"
-            >
-              Approve Expenses
-              <q-tooltip v-if="!directorCanApprove(em)">
-                Month not yet submitted
-              </q-tooltip>
-            </q-btn>
-            <q-btn
-              :class="EMDenied(em)?'bg-red':''"
-              :disable="!directorCanApprove(em) || EMDenied(em)"
-              @click="onShowDenyDialog(em)"
-            >
-              Deny Expenses
-              <q-tooltip v-if="!directorCanApprove(em)">
-                Month not yet submitted
-              </q-tooltip>
-            </q-btn>
-          </div>
-        </div>
       </div>
     </div>
   </div>
   <div v-else class="text-h5">No such expense month.</div>
-
-  <!-- Approve Dialog -->
-  <q-dialog v-model="showApproveDialog">
-    <q-card class="q-pa-md" style="width: 400px">
-      <div class="text-h6">
-        Approve {{ purchaseStore.monthDisplay }} expenses for
-        {{ emToApproveEmployeeName }}?
-      </div>
-      <q-form
-        @submit='onSubmitApproveDialog()'
-        class="q-gutter-md"
-      >
-        <div class="row justify-between">
-          <q-btn
-            name="approve-dialog-button"
-            label="Approve"
-            icon-right="check"
-            type="submit"
-            color="primary"
-          />
-        </div>
-      </q-form>
-    </q-card>
-  </q-dialog>
-
-  <!-- Deny ExpenseMonth Dialog -->
-  <q-dialog v-model="showDenyDialog">
-    <q-card class="q-pa-md" style="width: 400px">
-      <div class="text-h6">
-        Deny {{ purchaseStore.monthDisplay }} expenses for
-        {{ emToApproveEmployeeName }}?
-      </div>
-      <q-form
-        @submit='onSubmitDenyDialog()'
-        class="q-gutter-md"
-      >
-        <q-input
-          v-model="denyDialogMessage"
-          filled
-          type="textarea"
-          label="Message to include"
-          :rules="[ val => val && val.length > 0 || 'Must include a message']"
-        />
-        <div class="row justify-between">
-          <q-btn
-            name="deny-dialog-button"
-            label="Send"
-            icon-right="cancel"
-            type="submit"
-            color="primary"
-          />
-        </div>
-      </q-form>
-    </q-card>
-  </q-dialog>
 
 </div>
 </template>
@@ -290,7 +207,6 @@
 </style>
 
 <script setup lang="ts">
-import { useQuasar } from 'quasar'
 import { onMounted, Ref, ref } from 'vue'
 import { useRoute } from 'vue-router'
 
@@ -304,14 +220,7 @@ import { getRouteParam } from 'src/utils'
 
 
 const route = useRoute()
-const quasar = useQuasar()
 const purchaseStore = usePurchaseStore()
-
-let emToApprovePK = ref(-1)
-let emToApproveEmployeeName = ref('')
-let showApproveDialog = ref(false)
-let showDenyDialog = ref(false)
-let denyDialogMessage = ref('')
 
 let card = ref(null) as Ref<ExpenseCard | null>
 let statement = ref(null) as Ref<ExpenseStatement | null>
@@ -353,7 +262,7 @@ function tableTitleDisplay(em: ExpenseMonth): string {
 function selectedMonthCardExpenseMonths(): Array<ExpenseMonth> {
   let currentCard = null
   let currentStatement = null
-  const allEMs = purchaseStore.directorExpenseMonths.filter(em => {
+  const allEMs = purchaseStore.directorEMsDetails.filter(em => {
     return em.month === purchaseStore.monthInt &&
     em.year === purchaseStore.yearInt
   })
@@ -375,30 +284,12 @@ function selectedMonthCardExpenseMonths(): Array<ExpenseMonth> {
   return ems
 }
 
-function directorCanApprove(expenseMonth: ExpenseMonth) {
-  return expenseMonth?.card?.requires_director_approval && 
-    [
-      'approver_approved', 'director_approved', 'director_denied',
-      'fiscal_approved', 'fiscal_denied'
-    ].includes(expenseMonth.status)
-}
-
-function EMApproved(em: ExpenseMonth): boolean {
-  return em.director_approved && em.director_approved_at != null
-}
-
-function EMDenied(em: ExpenseMonth): boolean {
-  return !em.director_approved && em.director_approved_at != null
-}
-
 function retrieveExpenseMonthCardExpenseMonths(): Promise<void> {
   return new Promise((resolve, reject) => {
     if (!expenseMonthPK.value) {
       return
     }
-    purchaseStore.getDirectorExpenseMonths(
-      true, null, null, expenseMonthPK.value
-    )
+    purchaseStore.getDirectorEMDetail(expenseMonthPK.value)
       .then((ems) => {
         purchaseStore.setMonth(ems[0].month, ems[0].year)
         thisMonthLoaded.value = true
@@ -409,79 +300,6 @@ function retrieveExpenseMonthCardExpenseMonths(): Promise<void> {
         reject()
       })
   })
-}
-
-function onShowApproveDialog(em: ExpenseMonth) {
-  emToApprovePK.value = em.pk
-  emToApproveEmployeeName.value = em.purchaser.name
-  showApproveDialog.value = true
-}
-
-function onShowDenyDialog(em: ExpenseMonth) {
-  emToApprovePK.value = em.pk
-  emToApproveEmployeeName.value = em.purchaser.name
-  showDenyDialog.value = true
-}
-
-function onSubmitApproveDialog() {
-  if (emToApprovePK.value == -1) {
-    quasar.notify({
-      message: 'No expenses to approve',
-      color: 'negative',
-      icon: 'cancel'
-    })
-    return
-  } else {
-    purchaseStore.directorApproveExpenseMonth(emToApprovePK.value, true)
-      .then(() => {
-        retrieveExpenseMonthCardExpenseMonths()
-        showApproveDialog.value = false
-        quasar.notify({
-          message: 'Approved',
-          color: 'positive',
-          icon: 'send'
-        })
-      })
-      .catch(() => {
-        quasar.notify({
-          message: 'Error approving expenses',
-          color: 'negative',
-          icon: 'cancel'
-        })
-      })
-  }
-}
-
-function onSubmitDenyDialog() {
-  if (emToApprovePK.value == -1) {
-    quasar.notify({
-      message: 'No expenses to approve',
-      color: 'negative',
-      icon: 'cancel'
-    })
-    return
-  } else {
-    purchaseStore.directorApproveExpenseMonth(
-      emToApprovePK.value, false, denyDialogMessage.value
-    )
-      .then(() => {
-        retrieveExpenseMonthCardExpenseMonths()
-        showDenyDialog.value = false
-        denyDialogMessage.value = ''
-        quasar.notify({
-          message: 'Denied',
-          color: 'negative',
-          icon: 'cancel'
-        })
-      })
-      .catch(() => {
-        quasar.notify({
-          message: 'Error approving expenses',
-          color: 'negative',
-          icon: 'cancel'
-        })
-      })
-    }
 }
 
 function expenseMonthTotal(em: ExpenseMonth) {

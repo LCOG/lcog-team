@@ -92,14 +92,10 @@ class ExpenseCardSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = ExpenseCard
         fields = [
-            'pk', 'last4', 'assignee', 'shared', 'display',
-            'requires_director_approval', 'director_name'
+            'pk', 'last4', 'assignee', 'shared', 'display'
         ]
 
     display = serializers.SerializerMethodField()
-    director_name = serializers.CharField(
-        source='director.name', read_only=True
-    )
 
     @staticmethod
     def get_display(card):
@@ -139,8 +135,7 @@ class ExpenseMonthSerializer(serializers.HyperlinkedModelSerializer):
         model = ExpenseMonth
         fields = [
             'url', 'pk', 'purchaser', 'month', 'year', 'card', 'statement',
-            'expenses', 'submitter_note', 'director_approved',
-            'director_approved_at', 'director_note', 'fiscal_approver',
+            'expenses', 'submitter_note', 'fiscal_approver',
             'fiscal_approved_at', 'fiscal_note', 'status'
         ]
 
@@ -169,8 +164,7 @@ class SimpleExpenseMonthSerializer(serializers.HyperlinkedModelSerializer):
         model = ExpenseMonth
         fields = [
             'url', 'pk', 'purchaser', 'month', 'year', 'card', 'submitted_at',
-            'denier_name', 'approved_as_of', 'director_approved',
-            'director_approved_at', 'fiscal_approver_name',
+            'denier_name', 'approved_as_of', 'fiscal_approver_name',
             'fiscal_approved_at', 'status'
         ]
 

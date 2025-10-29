@@ -467,9 +467,7 @@ function progressBarSize(status: string) {
     case 'approver_denied':
       return .25
     case 'approver_approved':
-    case 'director_denied':
       return .5
-    case 'director_approved':
     case 'fiscal_denied':
       return .75
     case 'fiscal_approved':
@@ -489,10 +487,6 @@ function progressBarLabel(status: string) {
       return 'Manager Denied'
     case 'approver_approved':
       return 'Manager Approved'
-    case 'director_denied':
-      return 'Director Denied'
-    case 'director_approved':
-      return 'Director Approved'
     case 'fiscal_denied':
       return 'Fiscal Denied'
     case 'fiscal_approved':
@@ -507,12 +501,10 @@ function progressBarColor(status: string) {
     case 'draft':
     case 'submitted':
     case 'approver_denied':
-    case 'director_denied':
       return 'blue'
     case 'fiscal_denied':
       return 'red'
     case 'approver_approved':
-    case 'director_approved':
       return 'warning'
     case 'fiscal_approved':
       return 'green'
@@ -529,14 +521,10 @@ function dateLabel(row: ExpenseMonth) {
       return `Submitted on ${readableDateTime(row.submitted_at)}`
     case 'approver_denied':
       return `Denied by ${row.denier_name} on ${readableDateTime(row.approved_as_of)}`
-    case 'director_denied':
-      return `Denied on ${readableDateTime(row.director_approved_at)}`
     case 'fiscal_denied':
       return `Denied by ${row.fiscal_approver_name} on ${readableDateTime(row.fiscal_approved_at)}`
     case 'approver_approved':
       return `Approved as of ${readableDateTime(row.approved_as_of)}`
-    case 'director_approved':
-      return `Approved on ${readableDateTime(row.director_approved_at)}`
     case 'fiscal_approved':
       return `Approved by ${row.fiscal_approver_name} on ${readableDateTime(row.fiscal_approved_at)}`
     default:
@@ -562,7 +550,7 @@ function retrieveMonthEMs(year: number, month: number): Promise<void> {
         resolve()
       })
       .catch((error) => {
-        handlePromiseError(reject, 'Error retrieving fiscal expenses', error)
+        handlePromiseError(reject, 'Error retrieving fiscal EMs', error)
         reject()
       })
   })

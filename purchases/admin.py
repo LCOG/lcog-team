@@ -95,7 +95,7 @@ class ExpenseMonthAdmin(admin.ModelAdmin):
 @admin.register(ExpenseCard)
 class ExpenseCardAdmin(admin.ModelAdmin):
     list_display = (
-        'last4', 'assignee', 'shared', 'requires_director_approval', 'director'
+        'last4', 'assignee', 'shared'
     )
 
 

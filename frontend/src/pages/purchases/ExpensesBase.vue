@@ -40,12 +40,12 @@
       </q-btn>
       <q-btn
         v-if="isDirector()"
-        :to="{ name: 'director-approve-expenses' }"
+        :to="{ name: 'director-view-expenses' }"
         unelevated
         rounded
         color="primary"
         icon="library_add_check"
-        label="Director Approve"
+        label="Director View"
       >
         <q-badge
           v-if="numExpensesDirectorToApprove()"
@@ -115,7 +115,7 @@
             </div>
             <div
               v-else-if="router.currentRoute.value.name?.toString()
-                .indexOf('director-approve-expenses') != -1"
+                .indexOf('director-view-expenses') != -1"
             >
               <div>1) Approve or deny all pending expense months.</div>
               <div>Note: there may be multiple people using the same card!</div>

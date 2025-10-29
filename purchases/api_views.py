@@ -415,22 +415,16 @@ class ExpenseMonthViewSet(viewsets.ModelViewSet):
             if director:
                 if expenseMonthPK:
                     return ExpenseMonth.objects.filter(
-                        card__requires_director_approval=True,
-                        card__director=user.employee, card__pk=cardPK,
+                        card__pk=cardPK,
                         year=year, month=month
                     )
                 else:
                     if year and month:
                         return ExpenseMonth.objects.filter(
-                            card__requires_director_approval=True,
-                            card__director=user.employee,
                             year=year, month=month
                         )
                     else:
-                        return ExpenseMonth.objects.filter(
-                            card__requires_director_approval=True,
-                            card__director=user.employee
-                        )
+                        return ExpenseMonth.objects.all()
 
             # Employee getting own expense months
             if year and month:
@@ -526,29 +520,11 @@ class ExpenseMonthViewSet(viewsets.ModelViewSet):
                 em.submitted_at = None
             else:
                 if all_month_expenses_approved(em):
-                    if all([
-                        em.director_approved,
-                        em.director_approved_at is not None
-                    ]):
-                        # If expense month has been approved by director,
-                        # mark as such.
-                        em.status = ExpenseMonth.STATUS_DIRECTOR_APPROVED
-                        # Reset any fiscal approval
-                        em.fiscal_approved_at = None
-                        em.fiscal_approver = None
-                    else:
-                        # If all expenses are approved by approver,
-                        # mark as such.
-                        em.status = ExpenseMonth.STATUS_APPROVER_APPROVED
-                        # Reset any director approval
-                        em.director_approved_at = None
-                        em.director_approved = False
+                    # If all expenses are approved by approver, mark as such.
+                    em.status = ExpenseMonth.STATUS_APPROVER_APPROVED
                 else:
                     # Some expenses are not approved, mark as submitted.
                     em.status = ExpenseMonth.STATUS_SUBMITTED
-                    # Clear any director approval
-                    em.director_approved_at = None
-                    em.director_approved = False
                 em.submitter_note = note
                 em.submitted_at = timezone.now()
             em.save()
@@ -619,37 +595,6 @@ class ExpenseMonthViewSet(viewsets.ModelViewSet):
             )
 
     @action(detail=True, methods=['put'])
-    def director_approve(self, request, pk):
-        """
-        Director approves a month of expenses.
-        """
-        try:
-            em = ExpenseMonth.objects.get(pk=pk)
-            approve = request.data.get('approve', True)
-            em.director_approved = approve
-            em.director_approved_at = timezone.now()
-            if approve:
-                em.director_note = ''
-                em.status = Expense.STATUS_DIRECTOR_APPROVED
-            else:
-                em.director_note = request.data.get('deny_note', '')
-                em.status = Expense.STATUS_DIRECTOR_DENIED
-                send_submitter_denial_notification(em.purchaser)
-            em.save()
-            serialized_em = ExpenseMonthSerializer(
-                em, context={'request': request}
-            )
-            return Response(serialized_em.data)
-
-        except Exception as e:
-            message = 'Error director approving expense month.'
-            record_error(message, e, request, traceback.format_exc())
-            return Response(
-                data=message,
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-
-    @action(detail=True, methods=['put'])
     def fiscal_approve(self, request, pk):
         """
         Fiscal approves a month of expenses.
@@ -665,9 +610,6 @@ class ExpenseMonthViewSet(viewsets.ModelViewSet):
             else:
                 em.fiscal_note = request.data.get('deny_note', '')
                 em.status = Expense.STATUS_FISCAL_DENIED
-                # Reset director approval
-                em.director_approved = False
-                em.director_approved_at = None
                 send_submitter_denial_notification(em.purchaser)
             em.save()
             serialized_em = ExpenseMonthSerializer(
@@ -702,7 +644,6 @@ class ExpenseMonthViewSet(viewsets.ModelViewSet):
                 data=message,
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
-
 
 
 class ExpenseMonthLockViewSet(viewsets.ModelViewSet):
