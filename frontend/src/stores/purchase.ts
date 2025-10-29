@@ -16,7 +16,12 @@ export const usePurchaseStore = defineStore('purchase', {
     expenseMonthLocks: [] as Array<ExpenseMonthLock>,
     myExpenses: [] as Array<Expense>,
     approvalExpenseGLs: [] as Array<GL>,
-    directorExpenseMonths: [] as Array<ExpenseMonth>,
+    directorExpenseMonths: {} as {
+      [year: number]: {
+        [month: number]: Array<ExpenseMonth>
+      }
+    },
+    directorEMsDetails: [] as Array<ExpenseMonth>,
     fiscalExpenseMonths: {} as {
       [year: number]: {
         [month: number]: Array<ExpenseMonth>
@@ -445,75 +450,43 @@ export const usePurchaseStore = defineStore('purchase', {
     /// Division Director ///
     /////////////////////////
 
-    getDirectorExpenseMonths(
-      detail = true,
-      yearInt: number | null = null,
-      monthInt: number | null = null,
-      expenseMonthPK: number | null = null
+    getDirectorMonthEMs(
+      yearInt: number, monthInt: number
     ): Promise<ExpenseMonth[]> {
       return new Promise((resolve, reject) => {
-        let params = `?director=true&detail=${ detail }`
-        if (!!yearInt && !!monthInt) {
-          params += `&year=${ yearInt }&month=${ monthInt }`
-        }
-        if (!!expenseMonthPK) {
-          params += `&em=${ expenseMonthPK }`
-        }
+        const params = `?director=true&detail=false&year=${ yearInt }&month=${ monthInt }`
         axios({
           url: `${ apiURL }api/v1/expense-month${ params }`
         })
           .then(resp => {
             const ems: ExpenseMonth[] = resp.data.results
-            let emsDirectorToApprove = ems.filter(
-              em => {
-                // Count if director approval required and not approved yet
-                return em.card.requires_director_approval &&
-                  em.status == 'approver_approved' &&
-                  !em.director_approved_at
-              }
-            )
-
-            // Set active month: The first month that is not yet approved
-            emsDirectorToApprove = emsDirectorToApprove.sort(
-              (a, b) => {
-                if (a.year !== b.year) return a.year - b.year
-                return a.month - b.month
-              }
-            )
-
-            if (emsDirectorToApprove.length > 0) {
-              const activeMonth = emsDirectorToApprove[0]
-              this.setMonth(activeMonth.month, activeMonth.year)
+            if (!this.directorExpenseMonths[yearInt]) {
+              this.directorExpenseMonths[yearInt] = {}
             }
-            
-            this.directorExpenseMonths = ems
-            this.numExpensesDirectorToApprove = emsDirectorToApprove.length
+            this.directorExpenseMonths[yearInt][monthInt] = ems
             resolve(ems)
           })
           .catch(e => {
-            handlePromiseError(
-              reject, 'Error getting division director expense months', e
-            )
+            handlePromiseError(reject, 'Error getting director expense months', e)
           })
       })
     },
 
-    directorApproveExpenseMonth(
-      pk: number, approve: boolean, deny_note?: string
-    ): Promise<ExpenseMonth> {
+    getDirectorEMDetail(
+      expenseMonthPK: number | null = null
+    ): Promise<ExpenseMonth[]> {
       return new Promise((resolve, reject) => {
+        const params = `?director=true&detail=true&em=${ expenseMonthPK }`
         axios({
-          url: `${ apiURL }api/v1/expense-month/${ pk }/director_approve`,
-          method: 'PUT',
-          data: { approve, deny_note }
+          url: `${ apiURL }api/v1/expense-month${ params }`
         })
           .then(resp => {
-            resolve(resp.data)
+            const ems: ExpenseMonth[] = resp.data.results
+            this.directorEMsDetails = ems
+            resolve(ems)
           })
           .catch(e => {
-            handlePromiseError(
-              reject, 'Error director approving expense month', e
-            )
+            handlePromiseError(reject, 'Error getting director EM detail', e)
           })
       })
     },
@@ -536,14 +509,7 @@ export const usePurchaseStore = defineStore('purchase', {
             // Set active month if any ems this month are unapproved.
             const emsFiscalToApprove = ems.filter(
               em => {
-                if (em.card?.requires_director_approval) {
-                  // If director approval required, count if approved
-                  return em.director_approved &&
-                    !['fiscal_approved', 'fiscal_denied'].includes(em.status)
-                } else {
-                  // Otherwise, count if approver approved
-                  return em.status == 'approver_approved'
-                }
+                return em.status == 'approver_approved'
               }
             )
             if (emsFiscalToApprove.length > 0) {

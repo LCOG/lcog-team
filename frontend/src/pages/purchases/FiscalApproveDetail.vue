@@ -425,13 +425,8 @@ function selectedMonthCardExpenseMonths(): Array<ExpenseMonth> {
 }
 
 function fiscalCanApprove(expenseMonth: ExpenseMonth) {
-  if (expenseMonth.card?.requires_director_approval) {
-    return ['director_approved', 'fiscal_approved', 'fiscal_denied']
-      .includes(expenseMonth.status)
-  } else {
-    return ['approver_approved', 'fiscal_approved', 'fiscal_denied']
-      .includes(expenseMonth.status)
-  }
+  return ['approver_approved', 'fiscal_approved', 'fiscal_denied']
+    .includes(expenseMonth.status)
 }
 
 function EMApproved(em: ExpenseMonth): boolean {

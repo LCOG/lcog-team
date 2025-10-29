@@ -825,19 +825,9 @@ function tableTitleDisplay(): string {
   } else if (purchaseStore.selectedExpenseMonth?.status == 'fiscal_denied') {
     statusText = 'Fiscal Denied - Correct and Resubmit'
   } else if (
-    purchaseStore.selectedExpenseMonth?.status == 'director_approved'
-  ) {
-    statusText = 'Director Approved - Waiting on Fiscal'
-  } else if (purchaseStore.selectedExpenseMonth?.status == 'director_denied') {
-    statusText = 'Director Denied - Correct and Resubmit'
-  } else if (
     purchaseStore.selectedExpenseMonth?.status == 'approver_approved'
   ) {
-    if (purchaseStore.selectedExpenseMonth?.card.requires_director_approval) {
-      statusText = 'Approver(s) Approved - Waiting on Director'
-    } else {
-      statusText = 'Approver(s) Approved - Waiting on Fiscal'
-    }
+    statusText = 'Approver(s) Approved - Waiting on Fiscal'
   } else if (purchaseStore.selectedExpenseMonth?.status == 'approver_denied') {
     statusText = 'Approver(s) Denied - Correct and Resubmit'
   } else if (purchaseStore.selectedExpenseMonth?.status == 'submitted') {
@@ -877,16 +867,6 @@ function selectedMonthNotes(): Array<{
       approver: em.fiscal_approver.name,
       date,
       note: fiscalNote
-    })
-  }
-  let directorNote = em?.director_note
-  let directorDate = em ? readableDateTime(em?.director_approved_at) : ''
-  if (directorNote) {
-    notes.push({
-      type: 'director',
-      approver: em.card.director_name,
-      date: directorDate,
-      note: directorNote
     })
   }
   for (let exp of selectedMonthExpenses()) {

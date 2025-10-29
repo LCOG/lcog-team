@@ -217,46 +217,6 @@ def send_approver_weekly_approve_reminders():
     return len(recipients)
 
 
-def send_directors_weekly_approve_reminders():
-    # Every week on Friday at 3PM
-    # Director has expensemonths to approve
-    current_site = Site.objects.get_current()
-    expenses_url = current_site.domain + '/expenses/director'
-    profile_url = current_site.domain + '/profile'
-    
-    html_template = \
-        '../templates/email/expenses/' + \
-        'directors-fiscal-weekly-approve-reminder.html'
-
-    recipients = []
-    directors = Employee.objects.filter(is_division_director=True)
-    for director in directors:
-        if director.should_receive_email_of_type('expenses', ''):
-            # Do they have ExpenseMonths to approve?
-            ems = ExpenseMonth.objects.filter(
-                status=ExpenseMonth.STATUS_APPROVER_APPROVED,
-                card__requires_director_approval=True,
-                card__director=director,
-            ).exists()
-            if ems:
-                recipients.append(director.user.email)
-    for recipient in recipients:
-        html_message = render_to_string(html_template, { 'context': {
-            'expenses_url': expenses_url,
-            'profile_url': profile_url,
-            'from_email': os.environ.get('FROM_EMAIL')
-        }, })
-        plaintext_message = strip_tags(html_message)
-        send_email(
-            recipient,
-            f'Expenses to approve',
-            plaintext_message,
-            html_message
-        )
-    
-    return len(recipients)
-
-
 def send_fiscal_weekly_approve_reminders():
     # Every week on Friday at 3PM
     # Fiscal has expensemonths to approve
@@ -274,11 +234,7 @@ def send_fiscal_weekly_approve_reminders():
         if fiscal.should_receive_email_of_type('expenses', ''):
             # Do they have ExpenseMonths to approve?
             ems = ExpenseMonth.objects.filter(
-                Q(status=ExpenseMonth.STATUS_DIRECTOR_APPROVED) |
-                Q(
-                    status=ExpenseMonth.STATUS_APPROVER_APPROVED,
-                    card__requires_director_approval=False
-                )
+                status=ExpenseMonth.STATUS_APPROVER_APPROVED
             ).exists()
             if ems:
                 recipients.append(fiscal.user.email)
