@@ -605,7 +605,7 @@ class ReviewNoteViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         """
         This view should return a list of all review notes written by this
-        user.
+        user as well as all notes written about this user's direct reports.
         """
         user = self.request.user
         # TODO: Don't do this.
@@ -616,7 +616,10 @@ class ReviewNoteViewSet(viewsets.ModelViewSet):
             elif user.is_anonymous:
                 return ReviewNote.objects.all()
             else:
-                return ReviewNote.objects.filter(author__user=user)
+                return ReviewNote.objects.filter(
+                    Q(employee__manager__user=user) |
+                    Q(author__user=user)
+                )
         else:
             return ReviewNote.objects.none()
 
