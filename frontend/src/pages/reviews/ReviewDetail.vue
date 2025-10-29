@@ -174,8 +174,16 @@
         v-if="evaluationCommentsEmployee.length"
         class="read-only-text-area" v-html="evaluationCommentsEmployee"
       ></div>
-      <div v-else class="text-bold text-red text-center">
-        Employee has not yet submitted a self-evaluation.
+      <div v-else class="q-pa-md row items-center q-gutter-md">
+        <q-icon name="person" size="xl" color="primary" />
+        <div>
+          <div class="text-bold">
+            Link: <a :href="currentURL()">{{ currentURL() }}</a>
+          </div>
+          <div class="text-bold text-red">
+            Employee has not yet submitted a self-evaluation. They can complete it at this link.
+          </div>
+        </div>
       </div>
     </div>
 
@@ -862,6 +870,10 @@ function nextPersonToSign(): string {
 
 function currentUserIsEmployee(): boolean {
   return employeePk.value == currentUserPk()
+}
+
+function currentURL(): string {
+  return window.location.href
 }
 
 function peerFeedbackLink(): string {

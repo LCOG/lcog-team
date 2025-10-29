@@ -8,7 +8,7 @@
     />
     <q-table
       v-else
-      :rows="performanceReviews()"
+      :rows="performanceReviews"
       :columns="columns()"
       :dense="$q.screen.lt.lg"
       :grid="$q.screen.lt.md"
@@ -236,7 +236,7 @@
 
 <script setup lang="ts">
 import { Notify, QTable, QTableProps } from 'quasar'
-import { onMounted, onUpdated, ref, watch } from 'vue'
+import { computed, onMounted, onUpdated, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
 import useEventBus from 'src/eventBus'
@@ -266,7 +266,7 @@ let reviewsLoaded = ref(false)
 
 // let lastPk = ref(-1)
 
-function performanceReviews(): Array<ReviewRetrieve> {
+const performanceReviews = computed((): Array<ReviewRetrieve> => {
   let prs = [] as Array<ReviewRetrieve>
   if (props.employeePk) {
     if (props.complete && props.complete === true) {
@@ -295,7 +295,7 @@ function performanceReviews(): Array<ReviewRetrieve> {
     return a.days_until_review - b.days_until_review
   })
   return sorted_by_action_required
-}
+})
 
 function columns() {
   if (props.managerPk) {
