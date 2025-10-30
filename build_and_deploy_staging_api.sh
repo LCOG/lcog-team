@@ -41,7 +41,10 @@ if ! command -v jq >/dev/null; then
 else
     echo "Updating the image version in task definition file $TDFILE ..."
   # Update task definition with new image version
+    # Update image version for main Django container
     cat <<< "$(jq --arg image "$REPO_URI:$API_VERSION" '.containerDefinitions[0].image = $image' $TDFILE)" > "$TDFILE"
+    # Update image version for migrations container
+    cat <<< "$(jq --arg image "$REPO_URI:$API_VERSION" '.containerDefinitions[2].image = $image' $TDFILE)" > "$TDFILE"
     echo "Finished updating image version $REPO_URI:$API_VERSION in task definition $TDFILE"
 fi
 
