@@ -27,13 +27,13 @@ services:
         source: db.sqlite3
         target: /app/db.sqlite3
     env_file:
-      - ".env"
+      - ".develop.env"
     ports:
       - 8000:8000
     
   nginx:
     image: nginx:1.29.1
-    container_name: reverse-proxy
+    container_name: nginx
     build:
       context: ./.nginx
       dockerfile: Dockerfile
@@ -44,7 +44,8 @@ services:
           path: .nginx/nginx.conf
           target: /etc/nginx/nginx.conf
     depends_on:
-      - api
+      api:
+        condition: service_started
     # configs:
     #   - source: nginx_config
     #     target: /etc/nginx/nginx.conf
