@@ -26,6 +26,9 @@ services:
       - type: bind
         source: db.sqlite3
         target: /app/db.sqlite3
+      - type: bind
+        source: mainsite/settings_local.py
+        target: /app/mainsite/settings_local.py
     env_file:
       - ".develop.env"
     ports:
