@@ -13,21 +13,23 @@ REPO_URI="311127195930.dkr.ecr.us-west-2.amazonaws.com/backend/api"
 # Get the login password for the ECR and pass it to Docker to allow pushing
 # to the ECR repository
 echo "Retrieving ECR login password and logging in to Docker..."
-aws ecr get-login-password --profile $AWS_PROFILE \
+aws ecr get-login-password --profile "$AWS_PROFILE" \
   | docker login --username AWS --password-stdin 311127195930.dkr.ecr.us-west-2.amazonaws.com
 
 # Build and push the container image using Docker CLI
+# Use current date and short form of Git HEAD commit SHA for API version number:
+# YYYY.MM.DD-1a2b3c4
 API_VERSION=$(date -I | tr - .)-$(git rev-parse --short HEAD)
 echo "Building API image with version $API_VERSION ..."
-docker build -t backend/api:$API_VERSION .
+docker build -t "backend/api:$API_VERSION" .
 echo "Finished building backend/api:$API_VERSION"
 
 echo "Tagging image with ECR repository URI..."
-docker tag backend/api:$API_VERSION $REPO_URI:$API_VERSION
+docker tag "backend/api:$API_VERSION" "$REPO_URI:$API_VERSION"
 echo "Finished tagging image"
 
 echo "Pushing image to ECR repository $REPO_URI ..."
-docker push $REPO_URI:$API_VERSION
+docker push "$REPO_URI:$API_VERSION"
 echo "Finished pushing image to ECR at $REPO_URI:$API_VERSION"
 
 # Task definition file
@@ -36,12 +38,15 @@ TDFILE=.aws/lcog-team-staging-backend-task-definition.json
 # Check if jq is installed and task definition can be updated automatically
 echo "Checking if jq is installed..."
 if ! command -v jq >/dev/null; then
-  echo "\nIt looks like jq is not installed; cannot automatically update the image version in the task definition file $TDFILE.\n\nEdit the task definition file manually and then run the ECS deployment commands manually."
+  echo -e "\nIt looks like jq is not installed; cannot automatically update the image version in the task definition file $TDFILE.\n\nEdit the task definition file manually and then run the ECS deployment commands manually."
   exit 1
 else
     echo "Updating the image version in task definition file $TDFILE ..."
   # Update task definition with new image version
+    # Update image version for main Django container
     cat <<< "$(jq --arg image "$REPO_URI:$API_VERSION" '.containerDefinitions[0].image = $image' $TDFILE)" > "$TDFILE"
+    # Update image version for migrations container
+    cat <<< "$(jq --arg image "$REPO_URI:$API_VERSION" '.containerDefinitions[2].image = $image' $TDFILE)" > "$TDFILE"
     echo "Finished updating image version $REPO_URI:$API_VERSION in task definition $TDFILE"
 fi
 

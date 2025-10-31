@@ -5,6 +5,9 @@ services:
     build:
       context: .
       dockerfile: ./Dockerfile
+    depends_on:
+      migrations:
+        condition: service_completed_successfully
     develop:
       watch:
         # Synchronize changes with running Django API container when making
@@ -23,17 +26,22 @@ services:
       - type: volume
         source: static
         target: /app/static
+      # For local development, load the sqlite db file and local settings file
+      # to the container
       - type: bind
         source: db.sqlite3
         target: /app/db.sqlite3
+      - type: bind
+        source: mainsite/settings_local.py
+        target: /app/mainsite/settings_local.py
     env_file:
-      - ".env"
+      - ".develop.env"
     ports:
       - 8000:8000
     
   nginx:
     image: nginx:1.29.1
-    container_name: reverse-proxy
+    container_name: nginx
     build:
       context: ./.nginx
       dockerfile: Dockerfile
@@ -44,7 +52,8 @@ services:
           path: .nginx/nginx.conf
           target: /etc/nginx/nginx.conf
     depends_on:
-      - api
+      api:
+        condition: service_started
     # configs:
     #   - source: nginx_config
     #     target: /etc/nginx/nginx.conf
@@ -55,6 +64,19 @@ services:
         read_only: true
     ports:
       - 8080:80
+
+  migrations:
+    image: lcogteam-backend-django
+    container_name: run-migrations
+    command: python manage.py migrate --no-input --verbosity 3
+    volumes:
+      - type: bind
+        source: db.sqlite3
+        target: /app/db.sqlite3
+    env_file:
+      - .develop.env
+
+
 
 # configs:
 #   nginx_config:

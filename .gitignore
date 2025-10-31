@@ -31,3 +31,4 @@ people/management/employees.csv
 people/management/reviews.csv
 
 .python-version
+.aws/team-app-crontasks.tar.gz
