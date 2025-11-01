@@ -41,7 +41,7 @@ class HasCreatorMixin(models.Model):
         if not self.created_by:
             employee = get_current_employee()
             self.created_by = employee
-            self.save()
+            super().save(*args, **kwargs)
 
 
 class Role(models.Model):
