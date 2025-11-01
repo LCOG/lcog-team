@@ -947,7 +947,7 @@ export interface EmployeeTransition extends EmployeeTransitionBase {
   title_pk: number
   title_name: string
   fte: string
-  hours_per_week: string
+  hours_per_week: number | null
   hourly_rate: number | null
   bilingual: boolean
   second_language: string
@@ -1004,7 +1004,7 @@ export interface EmployeeTransitionUpdate extends EmployeeTransitionBase {
   employee_email?: string
   title_pk?: number
   fte?: string
-  hours_per_week?: string
+  hours_per_week?: number | null
   hourly_rate?: number | null
   bilingual?: boolean
   second_language?: string

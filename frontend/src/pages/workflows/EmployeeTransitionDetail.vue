@@ -1262,8 +1262,8 @@ let titleCurrentVal = ref(emptyTitle)
 let title = ref(emptyTitle)
 let fteCurrentVal = ref('')
 let fte = ref('')
-let hoursPerWeekCurrentVal = ref('')
-let hoursPerWeek = ref('')
+let hoursPerWeekCurrentVal = ref(null) as Ref<number | null>
+let hoursPerWeek = ref(null) as Ref<number | null>
 let hourlyRateCurrentVal = ref(null) as Ref<number | null>
 let hourlyRate = ref(null) as Ref<number | null>
 let salaryRangeCurrentVal = ref(null) as Ref<number | null>
@@ -1671,7 +1671,7 @@ function updateTransition() {
       fte.value = '0'
     }
     if (!hoursPerWeek.value) {
-      hoursPerWeek.value = '0'
+      hoursPerWeek.value = 0
     }
     if (!bilingual.value) {
       secondLanguage.value = ''
