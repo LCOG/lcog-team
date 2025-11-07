@@ -53,6 +53,7 @@ else:
         'app.team.lcog.org', # Prod frontend
         'api.team.lcog.org', # Prod backend
     ]
+    CSRF_TRUSTED_ORIGINS = ['https://api.team.lcog.org']
 
 
 # Application definition
