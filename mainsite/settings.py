@@ -31,7 +31,7 @@ SITE_ID = 1
 SECRET_KEY = os.environ.get('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = bool(strtobool(os.getenv('DEBUG', 'True')))
+DEBUG = bool(strtobool(os.getenv('DEBUG', 'False')))
 
 # Disable SECURE_SSL_REDIRECT: the Application Load Balancer handles
 # SSL termination and communicates with the application server in HTTP
