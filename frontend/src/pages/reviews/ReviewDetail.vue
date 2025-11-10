@@ -489,9 +489,16 @@
         class="col-1"
         color="white"
         text-color="black"
-        label="Update"
+        label="Save"
         :disabled="!valuesAreChanged()"
         @click="updatePerformanceReview()"
+      />
+      <q-chip
+        v-if="valuesAreChanged()"
+        color="warning"
+        text-color="white"
+        icon="warning"
+        label="Unsaved changes"
       />
       <q-btn
         v-if="showErrorButton && formErrorItems().length > 0"
