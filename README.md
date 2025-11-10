@@ -13,7 +13,7 @@ Python 3.12.2
 2) Create a python virtualenv
 MacOS 
   Ensure pyenv is installed `brew install pyenv`
-  Install latest python version `pyenv install 3.12.2`
+  Install latest python version `pyenv install 3.13.9`
   Create virtualenv `~/.pyenv/versions/3.12.2/bin/python -m venv env_20240412`
 Windows `python -m venv env_20230705`
 3) Activate virtualenv
