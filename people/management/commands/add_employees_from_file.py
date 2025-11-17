@@ -130,7 +130,10 @@ class Command(BaseCommand):
             if len(department_col_pieces) == 1:
                 department = row[5]
             else:
-                if department_col_pieces[1] == 'Panduro' and department_col_pieces[2] == 'Melendez':
+                if any([
+                    (department_col_pieces[1] == 'Panduro' and department_col_pieces[2] == 'Melendez'),
+                    (department_col_pieces[1] == 'Magana' and department_col_pieces[2] == 'Jr.')
+                ]):
                     # Deal with two last names
                     department = " ".join(department_col_pieces[0:-2])
                 else:
@@ -148,7 +151,7 @@ class Command(BaseCommand):
                 unit_or_program = UnitOrProgram.objects.get(name='Administration')
             elif department in ['Senior & Disability Services', 'SDS', 'Senior & Disablility', 'Senior & Disablility Services', 'Senior $ Disability Services', 'Senior & Diability Services', 'S&DS']:
                 unit_or_program = UnitOrProgram.objects.get(division__name='Senior & Disability Services', name='-')
-            elif department == 'Govt Services':
+            elif department in ['Govt Services', 'Gov Svs']:
                 unit_or_program = UnitOrProgram.objects.get(division__name='Government Services', name='-')
             elif department in ['Transport Services', 'Transport Service', 'Transport Service GS']:
                 unit_or_program = UnitOrProgram.objects.get(name='Transport Services')
@@ -191,7 +194,15 @@ class Command(BaseCommand):
                             'Updated user {} {} email to {}'.format(user.first_name, user.last_name, user.email)
                         )
             except User.DoesNotExist:
-                user = User.objects.create(email=email, username=username, first_name=first_name, last_name=last_name)
+                try:
+                    user = User.objects.create(email=email, username=username, first_name=first_name, last_name=last_name)
+                except Exception as e:
+                    self.stdout.write("vvvvvvvvvvvv EXCEPTION vvvvvvvvvvv")
+                    self.stdout.write(
+                        'Error creating user {} {}: {}'.format(first_name, last_name, str(e))
+                    )
+                    self.stdout.write("^^^^^^^^^^^^ EXCEPTION ^^^^^^^^^^^^")
+                    continue
                 self.stdout.write(
                     'Created user {} {}'.format(user.first_name, user.last_name)
                 )
