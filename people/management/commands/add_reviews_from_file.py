@@ -65,6 +65,10 @@ class Command(BaseCommand):
                         row[9] = datetime.datetime.strftime(datetime.datetime.strptime(row[4], '%m/%d/%Y') + datetime.timedelta(days=365), '%m/%d/%Y')
                     employee_review_rows += [row]
         
+        # Create any new reviews for the last employee
+        if len(employee_review_rows):
+            self.process_review_rows(employee_review_rows, employee)
+
         self.stdout.write(self.style.SUCCESS('Successfully imported reviews.'))
 
     def process_review_rows(self, rows, employee):
