@@ -32,6 +32,7 @@ urlpatterns = [
     path('robots.txt', TemplateView.as_view(template_name="robots.txt", content_type="text/plain")),
     # Elastic beanstalk ELB requires trailing slash for health check
     path('health/', health_check_view, name='health_check_view'),
+    path('health123/', health_check_view, name='health_check_view'),
     # Material icons
     path('material-person-add', RedirectView.as_view(url='%simg/material-person-add.svg' % settings.STATIC_URL)),
     path('material-person-remove', RedirectView.as_view(url='%simg/material-person-remove.svg' % settings.STATIC_URL)),
