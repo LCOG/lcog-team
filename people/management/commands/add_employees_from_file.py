@@ -234,10 +234,11 @@ class Command(BaseCommand):
                                 )
                         )
                     if updated_department:
+                        old_department = employee.unit_or_program
                         employee.unit_or_program = unit_or_program
                         employee.save()
                         self.stdout.write(
-                            'Updated employee {} {} department'.format(employee.user.first_name, employee.user.last_name)
+                            'Updated employee {} {} department from {} to {}'.format(employee.user.first_name, employee.user.last_name, old_department, unit_or_program)
                         )
             except Employee.DoesNotExist:
                 employee = Employee.objects.create(user=user, number=number, job_title=job_title, unit_or_program=unit_or_program)
