@@ -32,40 +32,49 @@ echo "Pushing image to ECR repository $REPO_URI ..."
 docker push "$REPO_URI:$API_VERSION"
 echo "Finished pushing image to ECR at $REPO_URI:$API_VERSION"
 
-# Task definition file
-TDFILE=.aws/lcog-team-staging-backend-task-definition.json
+# Task definition files
+TDFILE_STAGING=.aws/lcog-team-staging-backend-task-definition.json
+TDFILE_PRODUCTION=.aws/lcog-team-production-backend-task-definition.json
 
 # Check if jq is installed and task definition can be updated automatically
 echo "Checking if jq is installed..."
 if ! command -v jq >/dev/null; then
-  echo -e "\nIt looks like jq is not installed; cannot automatically update the image version in the task definition file $TDFILE.\n\nEdit the task definition file manually and then run the ECS deployment commands manually."
+  echo -e "\nIt looks like jq is not installed; cannot automatically update the image version in the task definition files.\n\nEdit the task definition files manually and then run the ECS deployment commands manually."
   exit 1
 else
-    echo "Updating the image version in task definition file $TDFILE ..."
+    echo "Updating the image version in task definition file $TDFILE_STAGING ..."
   # Update task definition with new image version
     # Update image version for main Django container
-    cat <<< "$(jq --arg image "$REPO_URI:$API_VERSION" '.containerDefinitions[0].image = $image' $TDFILE)" > "$TDFILE"
+    cat <<< "$(jq --arg image "$REPO_URI:$API_VERSION" '.containerDefinitions[0].image = $image' $TDFILE_STAGING)" > "$TDFILE_STAGING"
     # Update image version for migrations container
-    cat <<< "$(jq --arg image "$REPO_URI:$API_VERSION" '.containerDefinitions[2].image = $image' $TDFILE)" > "$TDFILE"
-    echo "Finished updating image version $REPO_URI:$API_VERSION in task definition $TDFILE"
+    cat <<< "$(jq --arg image "$REPO_URI:$API_VERSION" '.containerDefinitions[2].image = $image' $TDFILE_STAGING)" > "$TDFILE_STAGING"
+    echo "Finished updating image version $REPO_URI:$API_VERSION in task definition $TDFILE_STAGING"
+    
+    echo "Updating the image version in task definition file $TDFILE_PRODUCTION ..."
+  # Update task definition with new image version
+    # Update image version for main Django container
+    cat <<< "$(jq --arg image "$REPO_URI:$API_VERSION" '.containerDefinitions[0].image = $image' $TDFILE_PRODUCTION)" > "$TDFILE_PRODUCTION"
+    # Update image version for migrations container
+    cat <<< "$(jq --arg image "$REPO_URI:$API_VERSION" '.containerDefinitions[2].image = $image' $TDFILE_PRODUCTION)" > "$TDFILE_PRODUCTION"
+    echo "Finished updating image version $REPO_URI:$API_VERSION in task definition $TDFILE_PRODUCTION"
 fi
 
 # Update the task definition
-echo "Registering updated task definition in ECS..."
+echo "Registering updated staging task definition in ECS..."
 aws ecs register-task-definition \
---cli-input-json "file://./$TDFILE" \
+--cli-input-json "file://./$TDFILE_STAGING" \
 --no-cli-pager \
 --profile $AWS_PROFILE
-echo "Finished registering updated task definition $TDFILE"
+echo "Finished registering updated staging task definition $TDFILE_STAGING"
 
 # Update the service deployment to use the latest version of the task definition
-echo "Starting deployment for ECS service..."
+echo "Starting deployment to staging..."
 aws ecs update-service \
 --cluster lcog-team-staging-ecs-cluster \
 --service lcog-team-staging-backend-service \
 --task-definition lcog-team-app-staging-backend-td \
 --no-cli-pager \
 --profile $AWS_PROFILE
-echo "ECS service deployment started"
+echo "Staging deployment started"
 
 echo -e "\nGit commit message: Update API image to version $API_VERSION"
