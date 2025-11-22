@@ -1,0 +1,86 @@
+services:
+  api:
+    image: lcogteam-backend-django
+    container_name: django-api
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    depends_on:
+      migrations:
+        condition: service_completed_successfully
+    develop:
+      watch:
+        # Synchronize changes with running Django API container when making
+        # changes to files
+        - action: sync
+          path: ./
+          target: /app/
+          initial_sync: true
+          ignore:
+            - requirements.txt
+            - requirements-windows.txt
+        # When modifying Python packages to install, rebuild the image
+        - action: rebuild
+          path: requirements.txt
+    volumes:
+      - type: volume
+        source: static
+        target: /app/static
+      # For local development, load the sqlite db file and local settings file
+      # to the container
+      - type: bind
+        source: db.sqlite3
+        target: /app/db.sqlite3
+      - type: bind
+        source: mainsite/settings_local.py
+        target: /app/mainsite/settings_local.py
+    env_file:
+      - ".develop.env"
+    ports:
+      - 8000:8000
+    
+  nginx:
+    image: nginx:1.29.1
+    container_name: nginx
+    build:
+      context: ./.nginx
+      dockerfile: Dockerfile
+    develop:
+      watch:
+        # Restart nginx container when making configuration changes
+        - action: sync+restart
+          path: .nginx/nginx.conf
+          target: /etc/nginx/nginx.conf
+    depends_on:
+      api:
+        condition: service_started
+    # configs:
+    #   - source: nginx_config
+    #     target: /etc/nginx/nginx.conf
+    volumes:
+      - type: volume
+        source: static
+        target: /var/app/static
+        read_only: true
+    ports:
+      - 8080:80
+
+  migrations:
+    image: lcogteam-backend-django
+    container_name: run-migrations
+    command: python manage.py migrate --no-input --verbosity 3
+    volumes:
+      - type: bind
+        source: db.sqlite3
+        target: /app/db.sqlite3
+    env_file:
+      - .develop.env
+
+
+
+# configs:
+#   nginx_config:
+#     file: ./.nginx/nginx.conf
+
+volumes:
+  static:

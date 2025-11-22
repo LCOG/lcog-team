@@ -1,5 +1,5 @@
 *.pyc
-.env
+**/*.env*
 
 .npmrc
 
@@ -33,3 +33,4 @@ people/management/reviews.csv
 
 .python-version
 .vscode
+.aws/team-app-crontasks.tar.gz

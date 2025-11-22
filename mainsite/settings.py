@@ -31,9 +31,11 @@ SITE_ID = 1
 SECRET_KEY = os.environ.get('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = bool(strtobool(os.getenv('DEBUG', 'True')))
+DEBUG = bool(strtobool(os.getenv('DEBUG', 'False')))
 
-SECURE_SSL_REDIRECT = bool(strtobool(os.getenv('USE_SSL', 'True')))
+# Disable SECURE_SSL_REDIRECT: the Application Load Balancer handles
+# SSL termination and communicates with the application server in HTTP
+SECURE_SSL_REDIRECT = False
 SESSION_COOKIE_SECURE = bool(strtobool(os.getenv('USE_SSL', 'True')))
 CSRF_COOKIE_SECURE = bool(strtobool(os.getenv('USE_SSL', 'True')))
 
@@ -43,19 +45,15 @@ if ENVIRONMENT == 'STAGING':
     ALLOWED_HOSTS = [
         'app.team-staging.lcog.org', # Staging frontend
         'api.team-staging.lcog.org', # Staging backend
-        os.environ.get('EC2_PUBLIC_IP'), # Public IP of EC2 instance
-        os.environ.get('EC2_PRIVATE_IP'), # Private IP of EC2 instance
-        os.environ.get('EBS_DOMAIN'), # Domain of Elastic Beanstalk instance
     ]
+    CSRF_TRUSTED_ORIGINS = ['https://api.team-staging.lcog.org']
 else:
     # PRODUCTION
     ALLOWED_HOSTS = [
         'app.team.lcog.org', # Prod frontend
         'api.team.lcog.org', # Prod backend
-        os.environ.get('EC2_PUBLIC_IP'), # Public IP of EC2 instance
-        os.environ.get('EC2_PRIVATE_IP'), # Private IP of EC2 instance
-        os.environ.get('EBS_DOMAIN'), # Domain of Elastic Beanstalk instance
     ]
+    CSRF_TRUSTED_ORIGINS = ['https://api.team.lcog.org']
 
 
 # Application definition
@@ -88,6 +86,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'mainsite.middleware.HealthCheckMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware', 
     'django.middleware.common.CommonMiddleware',
