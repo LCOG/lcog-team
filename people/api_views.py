@@ -23,7 +23,7 @@ from mainsite.helpers import (
 from mainsite.serializers import FileUploadSerializer
 from people.models import (
     Employee, JobTitle, PerformanceReview, ReviewNote, Signature,
-    TeleworkApplication, TeleworkSignature, UnitOrProgram,
+    SignatureReminder, TeleworkApplication, TeleworkSignature, UnitOrProgram,
     ViewedSecurityMessage, WorkflowOptions
 )
 from people.serializers import (
@@ -545,6 +545,11 @@ class SignatureViewSet(viewsets.ModelViewSet):
         pr = PerformanceReview.objects.get(pk=request.data['review_pk'])
         employee = Employee.objects.get(pk=request.data['employee_pk'])
         new_signature = Signature.objects.create(review=pr, employee=employee)
+
+        # Set all SignatureReminders for this employee and review to signed
+        SignatureReminder.objects.filter(
+            review=pr, employee=employee
+        ).update(signed=True)
         
         def send_to_next_manager(employee):
             if employee.is_division_director:
