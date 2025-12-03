@@ -316,9 +316,18 @@ class PerformanceReviewViewSet(viewsets.ModelViewSet):
                 queryset = PerformanceReview.objects.all()\
                     .order_by('period_end_date')
             else:
+                signature = self.request.query_params.get('signature', None)
                 employee = self.request.query_params.get('employee', None)
                 manager = self.request.query_params.get('manager', None)
-                if employee is not None:
+                if signature is not None:
+                    # All PRs with unsigned signature reminders for the user
+                    queryset = PerformanceReview.objects\
+                        .for_employee(user.employee)\
+                        .filter(
+                            signaturereminder__employee=user.employee,
+                            signaturereminder__signed=False
+                        )
+                elif employee is not None:
                     # Your reviews: All PRs for a given employee
                     employee = Employee.objects.get(pk=int(employee))
                     queryset = PerformanceReview.objects\
@@ -332,19 +341,6 @@ class PerformanceReviewViewSet(viewsets.ModelViewSet):
                     queryset = PerformanceReview.objects\
                         .for_employee(user.employee)\
                         .filter(employee__in=employees)
-
-                    # Filter to either complete or incomplete reviews
-                    complete = self.request.query_params.get('complete', None)
-                    incomplete = self.request.query_params.get('incomplete', None)
-                    if is_true_string(complete):
-                        queryset = queryset.filter(
-                            status=PerformanceReview.EVALUATION_ED_APPROVED
-                        )
-                    elif is_true_string(incomplete):
-                        queryset = queryset.exclude(
-                            status=PerformanceReview.EVALUATION_ED_APPROVED
-                        ).exclude(period_end_date__gte=\
-                                timezone.now() + timedelta(days=60))
                 else:
                     # Any reviews you can access
                     is_ed = user.employee.is_executive_director if user.employee else False
@@ -362,6 +358,19 @@ class PerformanceReviewViewSet(viewsets.ModelViewSet):
                         queryset = PerformanceReview.objects.filter(
                             employee__in=employees
                         )
+                
+                # Filter to either complete or incomplete reviews
+                complete = self.request.query_params.get('complete', None)
+                incomplete = self.request.query_params.get('incomplete', None)
+                if is_true_string(complete):
+                    queryset = queryset.filter(
+                        status=PerformanceReview.EVALUATION_ED_APPROVED
+                    )
+                elif is_true_string(incomplete):
+                    queryset = queryset.exclude(
+                        status=PerformanceReview.EVALUATION_ED_APPROVED
+                    ).exclude(period_end_date__gte=\
+                            timezone.now() + timedelta(days=60))
         else:
             queryset = PerformanceReview.objects.none()
         return queryset

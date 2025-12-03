@@ -16,6 +16,8 @@ export const useReviewStore = defineStore('review', {
     myNextPR: {} as ReviewRetrieve,
     // The PR detail we're looking at
     currentPR: {} as ReviewRetrieve,
+    // PRs requiring your signature
+    signaturePRs: [] as Array<ReviewRetrieve>,
     // Incomplete PRs for your direct reports
     incompletePRs: [] as Array<ReviewRetrieve>,
     // Complete PRs for your direct reports
@@ -60,6 +62,23 @@ export const useReviewStore = defineStore('review', {
           })
           .catch(e => {
             handlePromiseError(reject, 'Error getting performance review', e)
+          })
+      })
+    },
+
+    getSignaturePRs() {
+      return new Promise((resolve, reject) => {
+        axios(
+          { url: `${ apiURL }api/v1/review?signature=True` }
+        )
+          .then(resp => {
+            this.signaturePRs = resp.data.results
+            resolve(resp)
+          })
+          .catch(e => {
+            handlePromiseError(
+              reject, 'Error getting signature reviews', e
+            )
           })
       })
     },
