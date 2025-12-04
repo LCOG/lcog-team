@@ -431,10 +431,9 @@ class PerformanceReviewViewSet(viewsets.ModelViewSet):
             pr.top_step_bonus != None,
             # Make sure all factors are filled out
             all(pr.data.get(factor) is not None for factor in pr.form.factors.values_list('name', flat=True)),
+            # NOTE: We are currently not requiring long responses.
             # Make sure all long responses are filled out
-            all(pr.data.get(long_response[0]) is not None for long_response in pr.form.long_responses),
-            # TODO: Add this back once uploader done
-            # pr.signed_position_description.name != ''
+            # all(pr.data.get(long_response[0]) is not None for long_response in pr.form.long_responses),
         ]):
             pr.status = PerformanceReview.EVALUATION_WRITTEN
             send_evaluation_written_email_to_employee(pr.employee, pr)

@@ -9,7 +9,10 @@
     <h4 class="text-bold text-center">Performance Evaluation Report</h4>
     
     <!-- Metadata -->
-    <div class="eval-grid-container">
+    <div
+      class="eval-grid-container"
+      v-if="!currentUserIsEmployee() || managerHasSigned()"
+    >
       <div class="eval-box eval-box-1">
           <div class="row text-bold">Employee:</div>
           <div class="row">{{ employeeName }}</div>
@@ -223,162 +226,166 @@
       </div>
     </div>
 
-    <!-- Multiple choice performance factors -->
-    <div v-if="form.factorsResponseSet?.indexOf('Needs Improvement') != -1">
-      <h5 class="text-uppercase text-center text-bold q-mb-sm q-mt-lg"><u>Rating Scale</u></h5>
-      <div class="rating-grid-container">
-        <div class="rating-box">
-          <span class="text-bold">(1)*</span> Needs Improvement
+    <div
+      v-if="!currentUserIsEmployee() || managerHasSigned()"
+    >
+      <!-- Multiple choice performance factors -->
+      <div v-if="form.factorsResponseSet?.indexOf('Needs Improvement') != -1">
+        <h5 class="text-uppercase text-center text-bold q-mb-sm q-mt-lg"><u>Rating Scale</u></h5>
+        <div class="rating-grid-container">
+          <div class="rating-box">
+            <span class="text-bold">(1)*</span> Needs Improvement
+          </div>
+          <div class="rating-box">
+            The employee’s work performance does not consistently meet the standards
+            of the position. Serious effort is needed to improve performance.
+          </div>
+          <div class="rating-box">
+            <span class="text-bold">(2)</span> Meets Job Requirments
+          </div>
+          <div class="rating-box">
+            The employee’s work performance consistently meets the standards of the
+            position.
+          </div>
+          <div class="rating-box">
+            <span class="text-bold">(3)</span> Exceeds Job Requirments
+          </div>
+          <div class="rating-box">
+            The employee’s work performance is frequently or consistently above the
+            level of a satisfactory employee.
+          </div>
+          <div class="rating-box">
+            <span class="text-bold">(N/A)</span> Not Applicable
+          </div>
+          <div class="rating-box">
+            Does not pertain to the employee’s actual job duties.
+          </div>
         </div>
-        <div class="rating-box">
-          The employee’s work performance does not consistently meet the standards
-          of the position. Serious effort is needed to improve performance.
+        <div>
+          *Factors rated <span class="text-bold">(1)</span> Needs improvement must
+          be addressed with a plan for improvement.
         </div>
-        <div class="rating-box">
-          <span class="text-bold">(2)</span> Meets Job Requirments
-        </div>
-        <div class="rating-box">
-          The employee’s work performance consistently meets the standards of the
-          position.
-        </div>
-        <div class="rating-box">
-          <span class="text-bold">(3)</span> Exceeds Job Requirments
-        </div>
-        <div class="rating-box">
-          The employee’s work performance is frequently or consistently above the
-          level of a satisfactory employee.
-        </div>
-        <div class="rating-box">
-          <span class="text-bold">(N/A)</span> Not Applicable
-        </div>
-        <div class="rating-box">
-          Does not pertain to the employee’s actual job duties.
-        </div>
-      </div>
-      <div>
-        *Factors rated <span class="text-bold">(1)</span> Needs improvement must
-        be addressed with a plan for improvement.
-      </div>
-    </div>
-
-    <h5 class="text-uppercase text-bold q-my-md">
-      <u>I. Performance Factors Reviewed</u>
-    </h5>
-    
-    <div class="factors-grid-container">
-      <!-- Desktop/Tablet Headers -->
-      <div class="factors-header-box text-bold text-center
-        factors-header-desktop factors-header-sticky"
-      >
-        Performance Factors Reviewed
-      </div>
-      <div
-        v-for="response in form.factorsResponseSet"
-        :key="form.factorsResponseSet.indexOf(response)"
-        class="factors-header-box text-bold text-center
-        factors-header-desktop factors-header-sticky"
-      >
-        {{ response }}
-      </div>
-      <div
-        v-if="form.anyNotApplicable"
-        class="factors-header-box text-bold text-center factors-header-desktop
-        factors-header-sticky"
-      >
-        Not Applicable
       </div>
 
-      <!-- Mobile Headers -->
-      <div class="factors-header-box text-bold text-center
-        factors-header-mobile factors-header-sticky"
-      >
-        Performance Factors Reviewed
-      </div>
-      <div v-for="response in form.factorsResponseSet"
-        :key="form.factorsResponseSet.indexOf(response)"
-        class="factors-header-box text-bold text-center factors-header-mobile
-        factors-header-sticky"
-      >
-        {{ response }}
-      </div>
-      <div
-        v-if="form.anyNotApplicable"
-        class="factors-header-box text-bold text-center factors-header-mobile
-        factors-header-sticky"
-      >
-        Not Appli&shy;cable
-      </div>
-
-      <template v-for="factor in form.factors" :key="form.factors.indexOf(factor)">
-        <div class="factors-box">
-            <div
-              class="row text-bold"
-              :id="`factor-${factor.name.toLowerCase().replace(/\s+/g, '-')}`"
-            >
-              <u>{{ factor.name }}</u>
-            </div>
-            <div class="row">{{ factor.description }}</div>
+      <h5 class="text-uppercase text-bold q-my-md">
+        <u>I. Performance Factors Reviewed</u>
+      </h5>
+      
+      <div class="factors-grid-container">
+        <!-- Desktop/Tablet Headers -->
+        <div class="factors-header-box text-bold text-center
+          factors-header-desktop factors-header-sticky"
+        >
+          Performance Factors Reviewed
         </div>
         <div
           v-for="response in form.factorsResponseSet"
           :key="form.factorsResponseSet.indexOf(response)"
-          class="factors-radio-box"
-          :class="`factors-radio-box-${response ? response.toLowerCase().replace(/\s+/g, '-') : 'na'}`"
+          class="factors-header-box text-bold text-center
+          factors-header-desktop factors-header-sticky"
         >
-          <q-radio
-            v-model="formData[factor.name]"
-            @update:model-value="(val: string) => {
-              formData[factor.name] = val
-            }"
-            :val="response"
-            :disable="!currentUserIsManagerOfEmployee() || employeeHasSigned()"
-          />
+          {{ response }}
         </div>
         <div
           v-if="form.anyNotApplicable"
-          class="factors-radio-box factors-radio-box-na"
+          class="factors-header-box text-bold text-center factors-header-desktop
+          factors-header-sticky"
         >
-          <q-radio
-            v-if="factor.notApplicableOption"
-            v-model="formData[factor.name]"
-            val="NA"
-            :disable="!currentUserIsManagerOfEmployee() || employeeHasSigned()"
-          />
+          Not Applicable
         </div>
+
+        <!-- Mobile Headers -->
+        <div class="factors-header-box text-bold text-center
+          factors-header-mobile factors-header-sticky"
+        >
+          Performance Factors Reviewed
+        </div>
+        <div v-for="response in form.factorsResponseSet"
+          :key="form.factorsResponseSet.indexOf(response)"
+          class="factors-header-box text-bold text-center factors-header-mobile
+          factors-header-sticky"
+        >
+          {{ response }}
+        </div>
+        <div
+          v-if="form.anyNotApplicable"
+          class="factors-header-box text-bold text-center factors-header-mobile
+          factors-header-sticky"
+        >
+          Not Appli&shy;cable
+        </div>
+
+        <template v-for="factor in form.factors" :key="form.factors.indexOf(factor)">
+          <div class="factors-box">
+              <div
+                class="row text-bold"
+                :id="`factor-${factor.name.toLowerCase().replace(/\s+/g, '-')}`"
+              >
+                <u>{{ factor.name }}</u>
+              </div>
+              <div class="row">{{ factor.description }}</div>
+          </div>
+          <div
+            v-for="response in form.factorsResponseSet"
+            :key="form.factorsResponseSet.indexOf(response)"
+            class="factors-radio-box"
+            :class="`factors-radio-box-${response ? response.toLowerCase().replace(/\s+/g, '-') : 'na'}`"
+          >
+            <q-radio
+              v-model="formData[factor.name]"
+              @update:model-value="(val: string) => {
+                formData[factor.name] = val
+              }"
+              :val="response"
+              :disable="!currentUserIsManagerOfEmployee() || employeeHasSigned()"
+            />
+          </div>
+          <div
+            v-if="form.anyNotApplicable"
+            class="factors-radio-box factors-radio-box-na"
+          >
+            <q-radio
+              v-if="factor.notApplicableOption"
+              v-model="formData[factor.name]"
+              val="NA"
+              :disable="!currentUserIsManagerOfEmployee() || employeeHasSigned()"
+            />
+          </div>
+        </template>
+      </div>
+
+      <!-- Long Responses -->
+      <template
+        v-for="response in form.longResponses"
+        :key="form.longResponses.indexOf(response)"
+      >
+        <h5 class="q-my-md" id="evaluation-successes">
+          <u class="text-uppercase text-bold">{{ response[0] }}</u>
+          {{ response[1] }}
+        </h5>
+        <div
+          v-if="
+            !currentUserIsManagerOfEmployee() || employeeHasSigned() || props.print
+          "
+          class="read-only-text-area" v-html="formData[response[0]]"
+        ></div>
+        <q-editor
+          v-else
+          class="long-response-editor"
+          :model-value="formData[response[0]] || ''"
+          @update:model-value="(val: string) => {
+            formData[response[0]] = val
+          }"
+          :toolbar="editorToolbar"
+        />
       </template>
+
+      <!-- <h5 class="text-uppercase">V. Goals for the Coming Year (Employee)</h5>
+      <q-input
+        v-model="evaluationGoalsEmployee"
+        type="textarea"
+      /> -->
     </div>
-
-    <!-- Long Responses -->
-    <template
-      v-for="response in form.longResponses"
-      :key="form.longResponses.indexOf(response)"
-    >
-      <h5 class="q-my-md" id="evaluation-successes">
-        <u class="text-uppercase text-bold">{{ response[0] }}</u>
-        {{ response[1] }}
-      </h5>
-      <div
-        v-if="
-          !currentUserIsManagerOfEmployee() || employeeHasSigned() || props.print
-        "
-        class="read-only-text-area" v-html="formData[response[0]]"
-      ></div>
-      <q-editor
-        v-else
-        class="long-response-editor"
-        :model-value="formData[response[0]] || ''"
-        @update:model-value="(val: string) => {
-          formData[response[0]] = val
-        }"
-        :toolbar="editorToolbar"
-      />
-    </template>
-
-    <!-- <h5 class="text-uppercase">V. Goals for the Coming Year (Employee)</h5>
-    <q-input
-      v-model="evaluationGoalsEmployee"
-      type="textarea"
-    /> -->
 
     <div
       v-for="(signature, index) in signatures"
@@ -871,6 +878,10 @@ function employeeHasSigned(): boolean {
   return !!signatures.value[0][2]
 }
 
+function managerHasSigned(): boolean {
+  return !!signatures.value[1] && !!signatures.value[1][2]
+}
+
 function nextPersonToSign(): string {
   return userStore.getEmployeeProfile.next_to_sign_prs
 }
@@ -1074,6 +1085,11 @@ function updateEmployeeComments(): void {
 function userCanSign(
   employeePk: number, employeeIsReadyToSign: boolean
 ): boolean {
+  // Is the current user the employee being evaluated, and has their manager signed?
+  if (currentUserIsEmployee() && !managerHasSigned()) {
+    return false
+  }
+
   const employeeIsCurrentUser = employeePk == currentUserPk()
   return employeeIsCurrentUser && employeeIsReadyToSign
 }
