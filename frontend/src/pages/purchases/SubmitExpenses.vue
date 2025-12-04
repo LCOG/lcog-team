@@ -218,6 +218,7 @@
                   v-if="!monthLocked() && !monthSubmitted()"
                   v-model="props.row.gls"
                   buttons
+                  persistent
                   v-slot="scope"
                   :validate="GLValidation"
                   @save="(val: Array<GL>) => {
@@ -1270,7 +1271,8 @@ function thisMonthStatements(): Array<ExpenseStatement> {
 
 function statementChoices(): Array<{label: string, value: ExpenseStatement}> {
   return thisMonthStatements()?.map(es => {
-    // Disable this statement choice if any other expenseMonthChoices have this card selected
+    // Disable this statement choice if any other expenseMonthChoices have this
+    // card selected
     let disable = false
     const cardPk = es.card.pk
     const isCardSelectedElsewhere = expenseMonthChoices().some(
