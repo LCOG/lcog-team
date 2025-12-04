@@ -251,10 +251,12 @@ interface QuasarReviewTableRowClickActionProps {
 }
 
 const props = defineProps<{
-  // Provide either employeePk or managerPk
+  // Provide either signature, employeePk, or managerPk.
+  // Optionally provide either complete or incomplete.
+  signature?: boolean, // Show PRs requiring signature 
   employeePk?: number, // If provided, show PRs for this employee
   managerPk?: number, // If provided, show direct report PRs for this manager
-  // Provide either complete or incomplete
+  
   complete?: boolean, // Show only completed PRs
   incomplete?: boolean, // Show only incomplete PRs
 }>()
@@ -268,7 +270,9 @@ let reviewsLoaded = ref(false)
 
 const performanceReviews = computed((): Array<ReviewRetrieve> => {
   let prs = [] as Array<ReviewRetrieve>
-  if (props.employeePk) {
+  if (props.signature) {
+    prs = reviewStore.signaturePRs
+  } else if (props.employeePk) {
     if (props.complete && props.complete === true) {
       prs = reviewStore.employeePRs.filter(pr => pr.complete === true)
     } else if (props.incomplete && props.incomplete === true) {
@@ -298,7 +302,9 @@ const performanceReviews = computed((): Array<ReviewRetrieve> => {
 })
 
 function columns() {
-  if (props.managerPk) {
+  if (props.signature) {
+    return managerCompleteColumns
+  } else if (props.managerPk) {
     if (props.complete && props.complete === true) {
       return managerCompleteColumns
     } else {
@@ -389,14 +395,16 @@ function noDataLabel(): string {
 }
 
 function retrievePerformanceReviews(): void {
-  // Only get PRs if we haven't done it before
-  // TODO: Fix this
-  // if (props.pk == lastPk.value) {
-  //   return
-  // }
-  // lastPk.value = props.pk
-
-  if (props.employeePk) {
+  if (props.signature) {
+    reviewStore.getSignaturePRs()
+      .then(() => {
+        reviewsLoaded.value = true
+      })
+      .catch(e => {
+        console.error('Error retrieving signature PRs:', e)
+      })
+  }
+  else if (props.employeePk) {
     reviewStore.getEmployeePRs(props.employeePk)
       .then(() => {
         reviewsLoaded.value = true

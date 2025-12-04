@@ -17,7 +17,7 @@
       </div>
       <div class="q-mb-md">
         <div class="text-h5 q-mb-sm">Managed Performance Reviews</div>
-        <ReviewTable :managerPk="pk()" />
+        <ReviewTable :managerPk="pk()" :incomplete="true" />
       </div>
     </div>
   </q-page>

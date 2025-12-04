@@ -265,6 +265,9 @@ class PerformanceReviewBaseSerializer(serializers.ModelSerializer):
     employee_name = serializers.CharField(
         source='employee.name', required=False, read_only=True
     )
+    employee_pk = serializers.IntegerField(
+        source='employee.pk', read_only=True
+    )
     days_until_review = serializers.SerializerMethodField()
     employee_action_required = serializers.SerializerMethodField()
     status = serializers.CharField(source='get_status_display', required=False)
@@ -291,7 +294,7 @@ class PerformanceReviewSimpleSerializer(PerformanceReviewBaseSerializer):
     class Meta:
         model = PerformanceReview
         fields = [
-            'url', 'pk', 'employee_name', 'period_start_date',
+            'url', 'pk', 'employee_name', 'employee_pk', 'period_start_date',
             'period_end_date', 'days_until_review', 'status',
             'employee_action_required', 'complete'
         ]
@@ -306,9 +309,6 @@ class PerformanceReviewSerializer(PerformanceReviewBaseSerializer):
     form_pk = serializers.PrimaryKeyRelatedField(
         source='form', queryset=PRForm.objects.all(), allow_null=True,
         required=False, write_only=True
-    )
-    employee_pk = serializers.IntegerField(
-        source='employee.pk', read_only=True
     )
     employee = serializers.PrimaryKeyRelatedField(
         queryset=Employee.objects.all(),

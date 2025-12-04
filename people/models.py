@@ -644,23 +644,6 @@ class ManagerUpcomingReviewsManager(models.Manager):
 ### PR Base Models ###
 ######################
 
-class SignatureBase(models.Model):
-    class Meta:
-        abstract = True
-
-    employee = models.ForeignKey("people.Employee", on_delete=models.CASCADE)
-    date = models.DateField(_("signature date"), auto_now=False, auto_now_add=True)
-
-
-class SignatureReminderBase(models.Model):
-    class Meta:
-        abstract = True
-
-    employee = models.ForeignKey("people.Employee", on_delete=models.CASCADE)
-    date = models.DateField(_("reminder date"), auto_now=False, auto_now_add=True)
-    next_date = models.DateField(_("planned next reminder date"))
-
-
 class PerformanceReview(models.Model):
     class Meta:
         verbose_name = _("Performance Review")
@@ -941,7 +924,7 @@ class PRFactorResponseSet(models.Model):
     )
 
 
-class SignatureReminder(SignatureReminderBase):
+class SignatureReminder(models.Model):
     """
     Represents the last time an employee was reminded to sign a Performance
     Evaluation. We can use this to remind them again a specific amount of time
@@ -961,10 +944,20 @@ class SignatureReminder(SignatureReminderBase):
         else:
             return f"Reminder for {self.employee.user.username} on {self.date} to sign a review for {self.review.employee.user.username}"
 
-    review = models.ForeignKey("people.PerformanceReview", verbose_name=_("performance review"), on_delete=models.CASCADE)
+    employee = models.ForeignKey("people.Employee", on_delete=models.CASCADE)
+    date = models.DateField(
+        _("reminder date"), auto_now=False, auto_now_add=True
+    )
+    next_date = models.DateField(_("planned next reminder date"))
+    review = models.ForeignKey(
+        "people.PerformanceReview",
+        verbose_name=_("performance review"),
+        on_delete=models.CASCADE
+    )
+    signed = models.BooleanField(_("has signed"), default=False)
 
 
-class Signature(SignatureBase):
+class Signature(models.Model):
     class Meta:
         verbose_name = _("PR Signature")
         verbose_name_plural = _("PR Signatures")
@@ -972,57 +965,15 @@ class Signature(SignatureBase):
     def __str__(self):
         return f"{self.employee.name}'s approval of {self.review.employee.name}'s performance review"
 
-    review = models.ForeignKey("people.PerformanceReview", verbose_name=_("performance review"), on_delete=models.CASCADE)
-
-
-#######################
-### Self-Evaluation ###
-#######################
-
-# class EmployeeSelfEvaluation(models.Model):
-#     review = models.OneToOneField("people.PerformanceReview", verbose_name=_("performance review"), on_delete=models.CASCADE)
-#     self_evaluation_date = models.DateField(blank=True, null=True)
-#     self_evaluation_accomplishments = models.TextField(_("employee self-evaluation accomplishments"), blank=True, null=True)
-#     self_evaluation_help = models.TextField(_("employee self-evaluation help"), blank=True, null=True)
-#     self_evaluation_communications = models.TextField(_("employee self-evaluation communications"), blank=True, null=True)
-#     self_evaluation_abilities = models.TextField(_("employee self-evaluation abilities"), blank=True, null=True)
-#     self_evaluation_training = models.TextField(_("employee self-evaluation training"), blank=True, null=True)
-#     self_evaluation_goals = models.TextField(_("employee self-evaluation goals"), blank=True, null=True)
-#     self_evaluation_future = models.TextField(_("employee self-evaluation future"), blank=True, null=True)
-
-
-# class SelfEvaluationSignatureReminder(SignatureReminderBase):
-#     """
-#     Represents the last time an employee was reminded to sign an Employee
-#     Self Evaluation. We can use this to remind them again a specific amount of
-#     time in the future.
-#     """
-    
-#     class Meta:
-#         verbose_name = _("Self Evaluation Signature Reminder")
-#         verbose_name_plural = _("Self Evaluation Signature Reminders")
-#         get_latest_by = ("date")
-
-#     # def __str__(self):
-#     #     if self.employee == self.review.employee:
-#     #         return f"Reminder for {self.employee.user.username} on {self.date} to sign their own review"
-#     #     elif self.employee == self.review.employee.manager:
-#     #         return f"Reminder for {self.employee.user.username} on {self.date} to sign a review for {self.review.employee.user.username} that they wrote"
-#     #     else:
-#     #         return f"Reminder for {self.employee.user.username} on {self.date} to sign a review for {self.review.employee.user.username}"
-
-#     self_evaluation = models.ForeignKey("people.EmployeeSelfEvaluation", on_delete=models.CASCADE)
-
-
-# class SelfEvaluationSignature(SignatureBase):
-#     class Meta:
-#         verbose_name = _("Self Evaluation Signature")
-#         verbose_name_plural = _("Self Evaluation Signatures")
-
-#     def __str__(self):
-#         return f"{self.employee.name}'s approval of {self.review.employee.name}'s performance review self evaluation"
-
-#     self_evaluation = models.ForeignKey("people.EmployeeSelfEvaluation", on_delete=models.CASCADE)
+    employee = models.ForeignKey("people.Employee", on_delete=models.CASCADE)
+    date = models.DateField(
+        _("signature date"), auto_now=False, auto_now_add=True
+    )
+    review = models.ForeignKey(
+        "people.PerformanceReview",
+        verbose_name=_("performance review"),
+        on_delete=models.CASCADE
+    )
 
 
 class ReviewNote(models.Model):

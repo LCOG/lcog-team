@@ -23,7 +23,7 @@ from mainsite.helpers import (
 from mainsite.serializers import FileUploadSerializer
 from people.models import (
     Employee, JobTitle, PerformanceReview, ReviewNote, Signature,
-    TeleworkApplication, TeleworkSignature, UnitOrProgram,
+    SignatureReminder, TeleworkApplication, TeleworkSignature, UnitOrProgram,
     ViewedSecurityMessage, WorkflowOptions
 )
 from people.serializers import (
@@ -316,9 +316,18 @@ class PerformanceReviewViewSet(viewsets.ModelViewSet):
                 queryset = PerformanceReview.objects.all()\
                     .order_by('period_end_date')
             else:
+                signature = self.request.query_params.get('signature', None)
                 employee = self.request.query_params.get('employee', None)
                 manager = self.request.query_params.get('manager', None)
-                if employee is not None:
+                if signature is not None:
+                    # All PRs with unsigned signature reminders for the user
+                    queryset = PerformanceReview.objects\
+                        .for_employee(user.employee)\
+                        .filter(
+                            signaturereminder__employee=user.employee,
+                            signaturereminder__signed=False
+                        )
+                elif employee is not None:
                     # Your reviews: All PRs for a given employee
                     employee = Employee.objects.get(pk=int(employee))
                     queryset = PerformanceReview.objects\
@@ -332,19 +341,6 @@ class PerformanceReviewViewSet(viewsets.ModelViewSet):
                     queryset = PerformanceReview.objects\
                         .for_employee(user.employee)\
                         .filter(employee__in=employees)
-
-                    # Filter to either complete or incomplete reviews
-                    complete = self.request.query_params.get('complete', None)
-                    incomplete = self.request.query_params.get('incomplete', None)
-                    if is_true_string(complete):
-                        queryset = queryset.filter(
-                            status=PerformanceReview.EVALUATION_ED_APPROVED
-                        )
-                    elif is_true_string(incomplete):
-                        queryset = queryset.exclude(
-                            status=PerformanceReview.EVALUATION_ED_APPROVED
-                        ).exclude(period_end_date__gte=\
-                                timezone.now() + timedelta(days=60))
                 else:
                     # Any reviews you can access
                     is_ed = user.employee.is_executive_director if user.employee else False
@@ -362,6 +358,19 @@ class PerformanceReviewViewSet(viewsets.ModelViewSet):
                         queryset = PerformanceReview.objects.filter(
                             employee__in=employees
                         )
+                
+                # Filter to either complete or incomplete reviews
+                complete = self.request.query_params.get('complete', None)
+                incomplete = self.request.query_params.get('incomplete', None)
+                if is_true_string(complete):
+                    queryset = queryset.filter(
+                        status=PerformanceReview.EVALUATION_ED_APPROVED
+                    )
+                elif is_true_string(incomplete):
+                    queryset = queryset.exclude(
+                        status=PerformanceReview.EVALUATION_ED_APPROVED
+                    ).exclude(period_end_date__gte=\
+                            timezone.now() + timedelta(days=60))
         else:
             queryset = PerformanceReview.objects.none()
         return queryset
@@ -422,10 +431,9 @@ class PerformanceReviewViewSet(viewsets.ModelViewSet):
             pr.top_step_bonus != None,
             # Make sure all factors are filled out
             all(pr.data.get(factor) is not None for factor in pr.form.factors.values_list('name', flat=True)),
+            # NOTE: We are currently not requiring long responses.
             # Make sure all long responses are filled out
-            all(pr.data.get(long_response[0]) is not None for long_response in pr.form.long_responses),
-            # TODO: Add this back once uploader done
-            # pr.signed_position_description.name != ''
+            # all(pr.data.get(long_response[0]) is not None for long_response in pr.form.long_responses),
         ]):
             pr.status = PerformanceReview.EVALUATION_WRITTEN
             send_evaluation_written_email_to_employee(pr.employee, pr)
@@ -536,6 +544,11 @@ class SignatureViewSet(viewsets.ModelViewSet):
         pr = PerformanceReview.objects.get(pk=request.data['review_pk'])
         employee = Employee.objects.get(pk=request.data['employee_pk'])
         new_signature = Signature.objects.create(review=pr, employee=employee)
+
+        # Set all SignatureReminders for this employee and review to signed
+        SignatureReminder.objects.filter(
+            review=pr, employee=employee
+        ).update(signed=True)
         
         def send_to_next_manager(employee):
             if employee.is_division_director:
