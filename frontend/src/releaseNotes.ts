@@ -4,6 +4,20 @@
 
 export const releases = [
   {
+    version: '1.0.0',
+    date: new Date(2025, 11, 4),
+    changes: [
+      {
+        type: 'new',
+        description: 'Deployment on ECS so it\'s time for v1.'
+      },
+      {
+        type: 'improved',
+        description: 'Minor improvements to Performance Review and CC modules.'
+      }
+    ]
+  },
+  {
     version: '0.52.0',
     date: new Date(2025, 9, 7),
     changes: [
