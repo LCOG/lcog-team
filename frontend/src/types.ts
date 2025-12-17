@@ -134,6 +134,7 @@ export interface EmployeeRetrieve {
   workflow_roles: Array<number>
   is_expense_submitter: boolean
   is_expense_approver: boolean
+  can_view_phish: boolean
   can_view_reviews: boolean
   can_view_mow_routes: boolean
   can_manage_mow_stops: boolean

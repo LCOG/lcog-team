@@ -569,6 +569,11 @@ class Employee(models.Model):
     def is_expense_approver(self):
         return self.user.groups.filter(name='Expense Approver').exists()
 
+    def can_view_phish(self):
+        return self.user.groups.filter(
+            name='View Phishing'
+        ).exists()
+
     def can_view_reviews(self):
         return self.user.groups.filter(
             name='View Performance Reviews'

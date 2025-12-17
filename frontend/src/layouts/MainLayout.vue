@@ -126,6 +126,7 @@ interface LinkData {
   eligibleForTeleworkApplicationOnly?: boolean
   hasWorkflowRoles?: boolean
   canViewExpenses?: boolean
+  canViewPhish?: boolean
   canViewReviews?: boolean
   canViewMOWRoutes?: boolean
 }
@@ -162,6 +163,12 @@ const navLinks: Array<LinkData> = [
     icon: 'assignment_turned_in',
     link: '/reviews',
     canViewReviews: true
+  },
+  {
+    title: 'Phishing',
+    icon: 'phishing',
+    link: '/phish',
+    canViewPhish: true
   },
   {
     title: 'Schaefers Desk Reservation',
