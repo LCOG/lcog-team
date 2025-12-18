@@ -336,6 +336,20 @@ export interface FileUploadDescriptionUploadServerResponse {
   statusText: string
 }
 
+////////////////////////////////////////////////
+// Phish Structure from Django Rest Framework //
+////////////////////////////////////////////////
+
+export interface PhishReport {
+  url: Url
+  pk: number
+  employee: SimpleEmployeeRetrieve
+  timestamp: Date
+  message: JSON
+  organic: boolean
+  processed: boolean
+}
+
 ///////////////////////////////////////////////////
 // Purchase Structure from Django Rest Framework //
 ///////////////////////////////////////////////////

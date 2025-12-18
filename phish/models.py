@@ -11,3 +11,4 @@ class PhishReport(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
     message = models.JSONField()
     organic = models.BooleanField(default=True)
+    processed = models.BooleanField(default=False)
