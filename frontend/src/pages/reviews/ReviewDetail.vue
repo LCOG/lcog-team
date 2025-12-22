@@ -410,10 +410,17 @@
         <div class="signature-type">
           <span class="text-bold">{{ signature[0] }} Signature</span>
           <span v-if="signature[0] == 'Employee'">
-            <b>:</b><i class="q-ml-xs">
+            <b>:</b><i>
               I have reviewed this evaluation and discussed it further with my
               manager. Signing does not necessarily indicate agreement.
             </i>
+          </span>
+          <span v-if="signature[0] == 'Manager' &&
+            currentUserIsManagerOfEmployee() && !managerHasSigned()"
+          >
+            <b>: <span class="text-red">
+              Once you sign, employee will be able to view this evaluation.
+            </span></b>
           </span>
         </div>
       </div>
@@ -514,7 +521,10 @@
         color="warning"
         @click="openErrorDialog('right')"
       />
-      <div class="col-3 self-center status">Current Status: {{ status }}</div>
+      <div class="col-3 self-center status">
+        Current Status: {{ status }}<span v-if="!managerHasSigned()">.
+          Employee cannot view until you sign.</span>
+      </div>
     </div>
   </div>
 </q-page>
@@ -1085,11 +1095,10 @@ function updateEmployeeComments(): void {
 function userCanSign(
   employeePk: number, employeeIsReadyToSign: boolean
 ): boolean {
-  // Is the current user the employee being evaluated, and has their manager signed?
+  // Employee being evaluated cannot sign if manager has not yet signed
   if (currentUserIsEmployee() && !managerHasSigned()) {
     return false
   }
-
   const employeeIsCurrentUser = employeePk == currentUserPk()
   return employeeIsCurrentUser && employeeIsReadyToSign
 }
