@@ -10,6 +10,13 @@ if ! command -v jq >/dev/null; then
   exit 1
 fi
 
+echo "Checking build system architecture..."
+arch=$(uname --machine)
+echo "Found $arch"
+if [[ $arch != x86_64 ]]; then
+  echo "Looks like you are building the Docker image on an $arch architecture. The target platform is linux/x86_64. Make sure you have the virtual machine tools in place for building x86_64 images or build the image on a different system."
+fi
+
 # Set AWS profile for logging in to Docker and pushing the image
 AWS_PROFILE=${AWS_PROFILE:?Set the AWS_PROFILE variable to your ECS developer profile: export AWS_PROFILE=<AWS profile name>}
 echo "Using AWS profile $AWS_PROFILE"
