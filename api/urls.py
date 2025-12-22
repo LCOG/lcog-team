@@ -18,6 +18,7 @@ from people.api_views import (
     TeleworkApplicationViewSet, TeleworkSignatureViewSet, UnitViewSet,
     UserViewSet, ViewedSecurityMessageViewSet
 )
+from phish.api_views import PhishReportViewSet
 from purchases.api_views import (
     ExpenseGLViewSet, ExpenseMonthViewSet, ExpenseMonthLockViewSet,
     ExpenseStatementViewSet, ExpenseViewSet
@@ -69,6 +70,8 @@ router.register('v1/expense-statement', ExpenseStatementViewSet)
 router.register('v1/review', PerformanceReviewViewSet)
 router.register('v1/signature', SignatureViewSet)
 router.register('v1/reviewnote', ReviewNoteViewSet)
+# Phishing
+router.register('v1/phishreport', PhishReportViewSet, basename='phishreport')
 # Telework
 router.register(
     'v1/telework-fileupload', TeleworkApplicationFileUploadViewSet,

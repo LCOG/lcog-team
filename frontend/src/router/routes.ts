@@ -38,6 +38,11 @@ if (maintenanceMode) {
           component: () => import('src/pages/help/HelpBase.vue'),
           children: [
             {
+              path: 'phish',
+              name: 'help-phish',
+              component: () => import('src/pages/help/Phish.vue')
+            },
+            {
               path: 'workflows',
               name: 'help-workflows',
               component: () => import('src/pages/help/Workflows.vue')
@@ -223,6 +228,26 @@ if (maintenanceMode) {
           component: () => import('src/pages/reviews/ReviewNoteDetail.vue'),
           meta: { requiresAuth: true },
           // beforeEnter: ifCanViewNote
+        },
+
+        //////////////
+        // PHISHING //
+        //////////////
+        {
+          path: '/phish',
+          name: 'phish',
+          component: () => {
+            return import('src/pages/phish/PhishBase.vue')
+          },
+          redirect: {name: 'phish-reports'},
+          meta: { requiresAuth: true },
+          children: [
+            {
+              path: 'reports',
+              name: 'phish-reports',
+              component: () => import('src/pages/phish/PhishReports.vue'),
+            },
+          ]
         },
 
         //////////////////////

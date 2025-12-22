@@ -134,6 +134,7 @@ export interface EmployeeRetrieve {
   workflow_roles: Array<number>
   is_expense_submitter: boolean
   is_expense_approver: boolean
+  can_view_phish: boolean
   can_view_reviews: boolean
   can_view_mow_routes: boolean
   can_manage_mow_stops: boolean
@@ -333,6 +334,20 @@ export interface FileUploadDescriptionUploadServerResponse {
   data: string
   status: number
   statusText: string
+}
+
+////////////////////////////////////////////////
+// Phish Structure from Django Rest Framework //
+////////////////////////////////////////////////
+
+export interface PhishReport {
+  url: Url
+  pk: number
+  employee: SimpleEmployeeRetrieve
+  timestamp: Date
+  message: JSON
+  organic: boolean
+  processed: boolean
 }
 
 ///////////////////////////////////////////////////

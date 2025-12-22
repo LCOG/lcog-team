@@ -569,6 +569,11 @@ class Employee(models.Model):
     def is_expense_approver(self):
         return self.user.groups.filter(name='Expense Approver').exists()
 
+    def can_view_phish(self):
+        return self.user.groups.filter(
+            name='View Phishing'
+        ).exists()
+
     def can_view_reviews(self):
         return self.user.groups.filter(
             name='View Performance Reviews'
@@ -667,7 +672,7 @@ class PerformanceReview(models.Model):
     EVALUATION_ED_APPROVED = 'ED'
     STATUS_CHOICE = [
         (NEEDS_EVALUATION, 'Needs evaluation'),
-        (EVALUATION_WRITTEN, 'Evaluation written and reviewed with employee'),
+        (EVALUATION_WRITTEN, 'Evaluation written'),
         (EVALUATION_APPROVED, 'Evaluation approved up to division director'),
         (EVALUATION_HR_PROCESSED, 'Evaluation processed by HR'),
         (EVALUATION_ED_APPROVED, 'Evaluation approved by executive director'),
