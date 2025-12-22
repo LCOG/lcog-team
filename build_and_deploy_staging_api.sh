@@ -21,7 +21,7 @@ aws ecr get-login-password --profile "$AWS_PROFILE" \
 # YYYY.MM.DD-1a2b3c4
 API_VERSION=$(date -I | tr - .)-$(git rev-parse --short HEAD)
 echo "Building API image with version $API_VERSION ..."
-docker build -t "backend/api:$API_VERSION" .
+docker build --platform linux/amd64 -t "backend/api:$API_VERSION" .
 echo "Finished building backend/api:$API_VERSION"
 
 echo "Tagging image with ECR repository URI..."
