@@ -6,6 +6,14 @@
       id="lcog-logo"
       src="../../assets/lcog-banner.png"
     />
+    <q-icon
+      id="help"  
+      name="help"
+      color="primary"
+      size=48px
+      class="cursor-pointer float-right"
+      @click="showHelp = true"
+    />
     <h4 class="text-bold text-center">Performance Evaluation Report</h4>
     
     <!-- Metadata -->
@@ -526,6 +534,64 @@
           Employee cannot view until you sign.</span>
       </div>
     </div>
+
+    <!-- Help Dialog -->
+    <q-dialog v-model="showHelp">
+      <q-card id="help-dialog">
+        <q-card-section class="q-ma-lg">
+          <div class="row items-center q-gutter-xs">
+            <q-avatar
+              icon="assignment_ind"
+              size="60px"
+              font-size="36px"
+              color="primary"
+              text-color="white"
+            />
+            <div class="text-h6">
+              <ol v-if="currentUserIsEmployee()">
+                <li>
+                  You can view your performance review once your<br />
+                  manager has completed and signed it.
+                </li>
+                <li>
+                  Sign your evaluation to indicate you have reviewed<br />
+                  and discussed it with your manager.
+                </li>
+              </ol>
+              <ol
+                v-else-if="currentUserIsManagerOfEmployee()"
+              >
+                <li>
+                  Mark whether a step increase or a top-step bonus<br />
+                  is needed.
+                </li>
+                <li>
+                  Complete all performance factors, marking N/A<br />
+                  where applicable.
+                </li>
+                <li>
+                  Click "Save" at the bottom left to save your work.<br />
+                  Employees cannot view your work until you sign.
+                </li>
+                <li>
+                  Sign the review when you are finished.<br />
+                  Employee will now be able to view your work.
+                </li>
+              </ol>
+              <ol
+                v-else
+              >
+                <li>
+                  Once previous signers have signed, sign the<br />
+                  evaluation to indicate you have reviewed and<br />
+                  approve it.
+                </li>
+              </ol>
+            </div>
+          </div>
+        </q-card-section>
+      </q-card>
+    </q-dialog>
   </div>
 </q-page>
 </template>
@@ -722,6 +788,10 @@
 .signature-date-text {
   align-self: flex-end;
 }
+#help-dialog {
+  max-width: 700px;
+}
+
 #sticky-footer {
   padding: 10px;
   background-color: rgb(25, 118, 210);
@@ -749,6 +819,9 @@
   }
   #lcog-logo {
     display: block;
+  }
+  #help {
+    display: none;
   }
   h4 {
     font-size: 20px;
@@ -814,6 +887,8 @@ const props = defineProps<{
 }>()
 
 type PositionType = 'top' | 'standard' | 'right' | 'bottom' | 'left' | undefined
+
+let showHelp = ref(false)
 
 let prPk = ref('')
 let status = ref('')
