@@ -3,6 +3,20 @@
 # Set strict mode
 set -eou pipefail
 
+# Check if jq is installed and task definition can be updated automatically
+echo "Checking if jq is installed..."
+if ! command -v jq >/dev/null; then
+  echo -e "\nIt looks like jq is not installed; cannot automatically update the image version in the task definition files.\n\nInstall jq and run the script again."
+  exit 1
+fi
+
+echo "Checking build system architecture..."
+arch=$(uname --machine)
+echo "Found $arch"
+if [[ $arch != x86_64 ]]; then
+  echo "Looks like you are building the Docker image on an $arch architecture. The target platform is linux/x86_64. Make sure you have the virtual machine tools in place for building x86_64 images or build the image on a different system."
+fi
+
 # Set AWS profile for logging in to Docker and pushing the image
 AWS_PROFILE=${AWS_PROFILE:?Set the AWS_PROFILE variable to your ECS developer profile: export AWS_PROFILE=<AWS profile name>}
 echo "Using AWS profile $AWS_PROFILE"
@@ -21,7 +35,7 @@ aws ecr get-login-password --profile "$AWS_PROFILE" \
 # YYYY.MM.DD-1a2b3c4
 API_VERSION=$(date -I | tr - .)-$(git rev-parse --short HEAD)
 echo "Building API image with version $API_VERSION ..."
-docker build -t "backend/api:$API_VERSION" .
+docker build --platform linux/amd64 --tag "backend/api:$API_VERSION" .
 echo "Finished building backend/api:$API_VERSION"
 
 echo "Tagging image with ECR repository URI..."
@@ -36,28 +50,21 @@ echo "Finished pushing image to ECR at $REPO_URI:$API_VERSION"
 TDFILE_STAGING=.aws/lcog-team-staging-backend-task-definition.json
 TDFILE_PRODUCTION=.aws/lcog-team-production-backend-task-definition.json
 
-# Check if jq is installed and task definition can be updated automatically
-echo "Checking if jq is installed..."
-if ! command -v jq >/dev/null; then
-  echo -e "\nIt looks like jq is not installed; cannot automatically update the image version in the task definition files.\n\nEdit the task definition files manually and then run the ECS deployment commands manually."
-  exit 1
-else
-    echo "Updating the image version in task definition file $TDFILE_STAGING ..."
-  # Update task definition with new image version
-    # Update image version for main Django container
-    cat <<< "$(jq --arg image "$REPO_URI:$API_VERSION" '.containerDefinitions[0].image = $image' $TDFILE_STAGING)" > "$TDFILE_STAGING"
-    # Update image version for migrations container
-    cat <<< "$(jq --arg image "$REPO_URI:$API_VERSION" '.containerDefinitions[2].image = $image' $TDFILE_STAGING)" > "$TDFILE_STAGING"
-    echo "Finished updating image version $REPO_URI:$API_VERSION in task definition $TDFILE_STAGING"
-    
-    echo "Updating the image version in task definition file $TDFILE_PRODUCTION ..."
-  # Update task definition with new image version
-    # Update image version for main Django container
-    cat <<< "$(jq --arg image "$REPO_URI:$API_VERSION" '.containerDefinitions[0].image = $image' $TDFILE_PRODUCTION)" > "$TDFILE_PRODUCTION"
-    # Update image version for migrations container
-    cat <<< "$(jq --arg image "$REPO_URI:$API_VERSION" '.containerDefinitions[2].image = $image' $TDFILE_PRODUCTION)" > "$TDFILE_PRODUCTION"
-    echo "Finished updating image version $REPO_URI:$API_VERSION in task definition $TDFILE_PRODUCTION"
-fi
+echo "Updating the image version in task definition file $TDFILE_STAGING ..."
+# Update task definition with new image version
+# Update image version for main Django container
+cat <<< "$(jq --arg image "$REPO_URI:$API_VERSION" '.containerDefinitions[0].image = $image' $TDFILE_STAGING)" > "$TDFILE_STAGING"
+# Update image version for migrations container
+cat <<< "$(jq --arg image "$REPO_URI:$API_VERSION" '.containerDefinitions[2].image = $image' $TDFILE_STAGING)" > "$TDFILE_STAGING"
+echo "Finished updating image version $REPO_URI:$API_VERSION in task definition $TDFILE_STAGING"
+
+echo "Updating the image version in task definition file $TDFILE_PRODUCTION ..."
+# Update task definition with new image version
+# Update image version for main Django container
+cat <<< "$(jq --arg image "$REPO_URI:$API_VERSION" '.containerDefinitions[0].image = $image' $TDFILE_PRODUCTION)" > "$TDFILE_PRODUCTION"
+# Update image version for migrations container
+cat <<< "$(jq --arg image "$REPO_URI:$API_VERSION" '.containerDefinitions[2].image = $image' $TDFILE_PRODUCTION)" > "$TDFILE_PRODUCTION"
+echo "Finished updating image version $REPO_URI:$API_VERSION in task definition $TDFILE_PRODUCTION"
 
 # Update the task definition
 echo "Registering updated staging task definition in ECS..."
