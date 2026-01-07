@@ -226,21 +226,21 @@ class EmployeeViewSet(viewsets.ModelViewSet):
     # problem and lock it down again.
     @action(detail=False, methods=['get'])
     def simple_list(self, request):
-        # # If IP is in TrustedIPs, show all active employees
-        # TrustedIP = apps.get_model('mainsite.TrustedIPAddress')
-        # trusted_ips = TrustedIP.objects.values_list('address', flat=True)
-        # if any([
-        #     request.META['REMOTE_ADDR'] in trusted_ips,
-        #     request.user.is_authenticated
-        # ]):
-        #     employees = Employee.active_objects.all()
-        # else:
-        #     employees = self.get_queryset()
-        # serializer = SimpleEmployeeSerializer(employees, many=True)
-        # return Response(serializer.data)
-        employees = Employee.active_objects.all()
+        # If IP is in TrustedIPs, show all active employees
+        TrustedIP = apps.get_model('mainsite.TrustedIPAddress')
+        trusted_ips = TrustedIP.objects.values_list('address', flat=True)
+        if any([
+            request.META['REMOTE_ADDR'] in trusted_ips,
+            request.user.is_authenticated
+        ]):
+            employees = Employee.active_objects.all()
+        else:
+            employees = self.get_queryset()
         serializer = SimpleEmployeeSerializer(employees, many=True)
         return Response(serializer.data)
+        # employees = Employee.active_objects.all()
+        # serializer = SimpleEmployeeSerializer(employees, many=True)
+        # return Response(serializer.data)
 
     # A simple list of a user's direct reports. Only readable by authenticated
     # users and only ever include that user's direct reports.
