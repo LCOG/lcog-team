@@ -228,9 +228,12 @@ class EmployeeViewSet(viewsets.ModelViewSet):
     def simple_list(self, request):
         # If IP is in TrustedIPs, show all active employees
         TrustedIP = apps.get_model('mainsite.TrustedIPAddress')
-        trusted_ips = TrustedIP.objects.values_list('address', flat=True)
+        all_addresses = []
+        trusted_ips = TrustedIP.objects.all()
+        for ip in trusted_ips:
+            all_addresses.extend(ip.all_addresses())
         if any([
-            request.META['REMOTE_ADDR'] in trusted_ips,
+            request.META['REMOTE_ADDR'] in all_addresses,
             request.user.is_authenticated
         ]):
             employees = Employee.active_objects.all()

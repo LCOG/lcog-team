@@ -144,6 +144,17 @@ class TrustedIPAddress(models.Model):
     )
     description = models.CharField(max_length=255)
 
+    def all_addresses(self):
+        addresses = [self.address]
+        if self.address_range_end:
+            from ipaddress import ip_address
+            current_ip = ip_address(self.address)
+            range_end = ip_address(self.address_range_end)
+            while current_ip < range_end:
+                current_ip += 1
+                addresses.append(str(current_ip))
+        return addresses
+
 
 class State(models.Model):
     class Meta:
