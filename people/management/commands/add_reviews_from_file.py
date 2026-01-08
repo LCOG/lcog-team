@@ -60,7 +60,11 @@ class Command(BaseCommand):
                         # If the employee is not otherwise in the system, ignore them
                         continue
                     employee_review_rows = []
-                elif row[1] and row[1].split(' ')[0] == 'PR':
+                elif all([
+                    not row[0],
+                    row[1],
+                    row[1] not in ['Department', 'Employee ']
+                ]):
                     if row[4] and not row[9]:
                         row[9] = datetime.datetime.strftime(datetime.datetime.strptime(row[4], '%m/%d/%Y') + datetime.timedelta(days=365), '%m/%d/%Y')
                     employee_review_rows += [row]
