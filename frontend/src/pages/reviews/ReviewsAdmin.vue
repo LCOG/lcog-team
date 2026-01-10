@@ -70,10 +70,4 @@ import { useUserStore } from 'src/stores/user'
 
 const userStore = useUserStore()
 
-function isManager() {
-    return userStore.getEmployeeProfile.is_manager ||
-      userStore.getEmployeeProfile.is_hr_manager ||
-      userStore.getEmployeeProfile.is_executive_director
-}
-
 </script>

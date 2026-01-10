@@ -566,7 +566,7 @@ if (maintenanceMode) {
           path: 'pr/:pk',
           name: 'pr-print',
           component: () => import('src/pages/reviews/ReviewDetail.vue'),
-          meta: { requiresManager: true },
+          meta: { requiresAuth: true },
           props: {
             print: true
           }

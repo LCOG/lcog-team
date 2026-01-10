@@ -361,10 +361,10 @@ class PerformanceReviewViewSet(viewsets.ModelViewSet):
                 else:
                     # Any reviews you can access
                     is_ed = e.is_executive_director
-                    is_hrm = e.is_hr_manager
+                    is_hre = e.is_hr_employee
                     is_dir = e.is_division_director
-                    if any([is_ed, is_hrm, is_dir]):
-                        # EDs, HR managers, and Directors can see all reviews
+                    if any([is_ed, is_hre, is_dir]):
+                        # EDs, HR employees, and Directors can see all reviews
                         queryset = PerformanceReview.objects.for_employee(e)
                     else:
                         # All PRs for the current user and their descendants
