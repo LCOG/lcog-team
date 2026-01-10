@@ -24,7 +24,10 @@ export const useReviewStore = defineStore('review', {
     completePRs: [] as Array<ReviewRetrieve>,
     // All PRs for a given employee
     employeePRs: [] as Array<ReviewRetrieve>,
-    allReviewNotes: [] as Array<ReviewNoteRetrieve>
+    allReviewNotes: [] as Array<ReviewNoteRetrieve>,
+    // All PRs (admin)
+    allCompletePRs: [] as Array<ReviewRetrieve>,
+    allIncompletePRs: [] as Array<ReviewRetrieve>
   }),
 
   getters: {},
@@ -62,6 +65,40 @@ export const useReviewStore = defineStore('review', {
           })
           .catch(e => {
             handlePromiseError(reject, 'Error getting performance review', e)
+          })
+      })
+    },
+
+    getAllCompletePRs() {
+      return new Promise((resolve, reject) => {
+        axios(
+          { url: `${ apiURL }api/v1/review?all=True&complete=True` }
+        )
+          .then(resp => {
+            this.allCompletePRs = resp.data.results
+            resolve(resp)
+          })
+          .catch(e => {
+            handlePromiseError(
+              reject, 'Error getting all complete performance reviews', e
+            )
+          })
+      })
+    },
+
+    getAllIncompletePRs() {
+      return new Promise((resolve, reject) => {
+        axios(
+          { url: `${ apiURL }api/v1/review?all=True&incomplete=True` }
+        )
+          .then(resp => {
+            this.allIncompletePRs = resp.data.results
+            resolve(resp)
+          })
+          .catch(e => {
+            handlePromiseError(
+              reject, 'Error getting all incomplete performance reviews', e
+            )
           })
       })
     },

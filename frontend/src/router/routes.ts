@@ -190,6 +190,11 @@ if (maintenanceMode) {
               path: 'complete',
               name: 'reviews-complete',
               component: () => import('pages/reviews/ReviewsComplete.vue'),
+            },
+            {
+              path: 'admin',
+              name: 'reviews-admin',
+              component: () => import('pages/reviews/ReviewsAdmin.vue'),
             }
           ]
         },

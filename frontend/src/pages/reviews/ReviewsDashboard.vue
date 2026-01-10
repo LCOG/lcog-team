@@ -17,6 +17,15 @@
       label="Complete"
       :to="{ name: 'reviews-complete' }"
     />
+    <q-btn
+      v-if="isAdmin()"
+      name="reviews-admin-button"
+      push
+      color="primary"
+      glossy
+      label="Admin"
+      :to="{ name: 'reviews-admin' }"
+    />
   </q-btn-group>
 </div>
 
@@ -99,9 +108,15 @@ import ReviewNoteTable from 'src/components/ReviewNoteTable.vue'
 const userStore = useUserStore()
 
 function isManager() {
-    return userStore.getEmployeeProfile.is_manager ||
-      userStore.getEmployeeProfile.is_hr_manager ||
-      userStore.getEmployeeProfile.is_executive_director
+  return userStore.getEmployeeProfile.is_manager ||
+    userStore.getEmployeeProfile.is_hr_manager ||
+    userStore.getEmployeeProfile.is_executive_director
+}
+
+function isAdmin() {
+  return userStore.getEmployeeProfile.is_hr_employee ||
+    userStore.isDivisionDirector ||
+    userStore.getEmployeeProfile.is_executive_director
 }
 
 </script>
