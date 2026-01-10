@@ -337,7 +337,7 @@ class PerformanceReviewViewSet(viewsets.ModelViewSet):
                         queryset = PerformanceReview.objects.all()\
                             .filter(effective_date__gte=\
                                 timezone.now() - timedelta(days=365))
-                if signature is not None:
+                elif signature is not None:
                     # All PRs with unsigned signature reminders for the user
                     queryset = PerformanceReview.objects\
                         .for_employee(e)\
