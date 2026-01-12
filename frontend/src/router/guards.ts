@@ -113,6 +113,21 @@ export function isManager() {
   }
 }
 
+export function isHROrDirector() {
+  if (
+    cookies.get('is_hr_employee') == 'true' ||
+    cookies.get('is_division_director') == 'true' ||
+    cookies.get('is_executive_director') == 'true'
+  ) {
+    return true
+  } else {
+    console.info(
+      'User is not HR or a director. Redirecting to reviews dashboard.'
+    )
+    return false
+  }
+}
+
 export function isAuthenticated() {
   const authStore = useAuthStore()
   if (authStore.isAuthenticated) {

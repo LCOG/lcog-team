@@ -195,6 +195,7 @@ if (maintenanceMode) {
               path: 'admin',
               name: 'reviews-admin',
               component: () => import('pages/reviews/ReviewsAdmin.vue'),
+              meta: { requiresHROrDirector: true },
             }
           ]
         },
