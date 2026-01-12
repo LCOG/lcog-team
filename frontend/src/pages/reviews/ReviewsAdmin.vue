@@ -28,7 +28,7 @@
   </q-btn-group>
 </div>
 
-<!-- ALL REVIEWS -->
+<!-- ALL COMPLETE REVIEWS -->
 <div class="row items-center q-mb-sm q-mt-md">
   <q-avatar
     icon="assignment_ind"
@@ -38,14 +38,11 @@
     class="q-mr-sm"
     size="md"
   />
-  <div class="text-h5">All Complete Reviews</div>
+  <div class="text-h5">Recent Complete Reviews</div>
 </div>
-<ReviewTable
-  :managerPk="userStore.getEmployeeProfile.employee_pk"
-  :allComplete="true"
-/>
+<ReviewTable :allComplete="true" />
 
-<!-- ALL REVIEWS -->
+<!-- ALL INCOMPLETE REVIEWS -->
 <div class="row items-center q-mb-sm q-mt-md">
   <q-avatar
     icon="assignment_ind"
@@ -55,12 +52,9 @@
     class="q-mr-sm"
     size="md"
   />
-  <div class="text-h5">All Incomplete Reviews</div>
+  <div class="text-h5">Upcoming Incomplete Reviews</div>
 </div>
-<ReviewTable
-  :managerPk="userStore.getEmployeeProfile.employee_pk"
-  :allIncomplete="true"
-/>
+<ReviewTable :allIncomplete="true" />
 </template>
 
 <script setup lang="ts">

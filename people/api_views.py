@@ -331,13 +331,34 @@ class PerformanceReviewViewSet(viewsets.ModelViewSet):
                 if all is not None and is_true_string(all):
                     # All reviews (admin - EDs, HR employees, and Directors)
                     is_ed = e.is_executive_director
-                    is_hre = e.is_hr_employee
                     is_dir = e.is_division_director
-                    if any([is_ed, is_hre, is_dir]):
+                    is_hre = e.is_hr_employee
+                    if any([is_ed, is_dir, is_hre]):
                         # Get all PRs with effective_date within the last year
-                        queryset = PerformanceReview.objects.all()\
-                            .filter(effective_date__gte=\
-                                timezone.now() - timedelta(days=365))
+                        complete = self.request.query_params.get(
+                            'complete', None
+                        )
+                        incomplete = self.request.query_params.get(
+                            'incomplete', None
+                        )
+                        if is_true_string(complete):
+                            return PerformanceReview.objects\
+                                .filter(effective_date__gte=\
+                                    timezone.now() - timedelta(days=365))\
+                                .filter(
+                                    status=
+                                    PerformanceReview.EVALUATION_ED_APPROVED
+                                )\
+                                .order_by('-period_end_date')
+                        elif is_true_string(incomplete):
+                            return PerformanceReview.objects\
+                                .filter(effective_date__gte=\
+                                    timezone.now() - timedelta(days=365))\
+                                .exclude(
+                                    status=
+                                    PerformanceReview.EVALUATION_ED_APPROVED
+                                )\
+                                .order_by('period_end_date')
                 elif signature is not None:
                     # All PRs with unsigned signature reminders for the user
                     queryset = PerformanceReview.objects\
@@ -362,10 +383,10 @@ class PerformanceReviewViewSet(viewsets.ModelViewSet):
                 else:
                     # Any reviews you can access
                     is_ed = e.is_executive_director
-                    is_hre = e.is_hr_employee
                     is_dir = e.is_division_director
-                    if any([is_ed, is_hre, is_dir]):
-                        # EDs, HR employees, and Directors can see all reviews
+                    is_hre = e.is_hr_employee
+                    if any([is_ed, is_dir, is_hre]):
+                        # EDs, Directors, and HR employees can see all reviews
                         queryset = PerformanceReview.objects.for_employee(e)
                     else:
                         # All PRs for the current user and their descendants
