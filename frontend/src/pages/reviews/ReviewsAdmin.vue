@@ -65,9 +65,23 @@
 
 <script setup lang="ts">
 
+import { onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import ReviewTable from 'src/components/ReviewTable.vue'
 import { useUserStore } from 'src/stores/user'
 
 const userStore = useUserStore()
+const router = useRouter()
+
+onMounted(() => {
+  const userProfile = userStore.getEmployeeProfile
+  if (
+    !userProfile.is_hr_employee &&
+    !userProfile.is_division_director &&
+    !userProfile.is_executive_director
+  ) {
+    router.push({ name: 'reviews-dashboard' })
+  }
+})
 
 </script>

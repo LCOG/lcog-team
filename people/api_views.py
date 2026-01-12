@@ -314,6 +314,7 @@ class PerformanceReviewViewSet(viewsets.ModelViewSet):
         reports for everyone else.
         """
         user = self.request.user
+        queryset = PerformanceReview.objects.none()
         if user.is_authenticated:
             if user.is_superuser:
                 queryset = PerformanceReview.objects.all()\
@@ -386,8 +387,6 @@ class PerformanceReviewViewSet(viewsets.ModelViewSet):
                     queryset = queryset.exclude(
                         status=PerformanceReview.EVALUATION_ED_APPROVED
                     )
-        else:
-            queryset = PerformanceReview.objects.none()
         return queryset
 
     def retrieve(self, request, pk=None):
