@@ -526,8 +526,12 @@ watch(() => bus.value.get('updateTeleworkApplicationTables'), () => {
   retrievePerformanceReviews()
 })
 
-onUpdated(() => {
-  // retrievePerformanceReviews();
+// Watch for prop changes and reload PRs when they change
+watch(() => [
+  props.signature, props.employeePk, props.managerPk, props.complete,
+  props.incomplete, props.allComplete, props.allIncomplete
+], () => {
+  retrievePerformanceReviews()
 })
 
 onMounted(() => {

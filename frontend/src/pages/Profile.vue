@@ -5,6 +5,15 @@
       <div class="text-h5 q-mb-sm">Basic Info</div>
       <div>Legal Name: {{ peopleStore.fullEmployeeDetail.legal_name }}</div>
       <div>Title: {{ peopleStore.fullEmployeeDetail.title }}</div>
+      <div>
+        Manager: <router-link
+          v-if="peopleStore.fullEmployeeDetail.manager_pk"
+          :to="`/profile/${peopleStore.fullEmployeeDetail.manager_pk}`"
+        >
+          {{ peopleStore.fullEmployeeDetail.manager_name }}
+        </router-link>
+        <span v-else>None</span>
+      </div>
     </div>
     <div>
       <div class="q-mb-md">

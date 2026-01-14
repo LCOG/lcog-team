@@ -68,6 +68,8 @@ class EmployeeSerializer(serializers.HyperlinkedModelSerializer):
     division = serializers.CharField(
         source='unit_or_program.division.name', default=''
     )
+    manager_name = serializers.CharField(source='manager.name', default='')
+    manager_pk = serializers.IntegerField(source='manager.pk', default=None)
     is_manager = serializers.SerializerMethodField()
     has_manager = serializers.SerializerMethodField()
     is_eligible_for_telework_application = serializers.SerializerMethodField()
@@ -92,17 +94,18 @@ class EmployeeSerializer(serializers.HyperlinkedModelSerializer):
         model = Employee
         fields = [
             'url', 'pk', 'name', 'legal_name', 'user', 'username', 'email',
-            'title', 'manager', 'division', 'is_manager', 'has_manager',
-            'is_is_employee', 'is_hr_employee', 'is_sds_hiring_lead',
-            'is_fiscal_employee', 'is_eligible_for_telework_application',
-            'can_view_seating_charts', 'can_edit_seating_charts',
-            'can_view_desk_reservation_reports', 'is_upper_manager',
-            'is_hr_manager', 'is_division_director', 'is_executive_director',
-            'viewed_security_message', 'prs_can_view', 'notes_can_view',
-            'telework_applications_can_view', 'time_off_requests_can_view',
-            'next_to_sign_prs', 'email_opt_out_all',
-            'email_opt_out_timeoff_all', 'email_opt_out_timeoff_weekly',
-            'email_opt_out_timeoff_daily', 'email_opt_out_workflows_all',
+            'title', 'manager_name', 'manager_pk', 'division', 'is_manager',
+            'has_manager', 'is_is_employee', 'is_hr_employee',
+            'is_sds_hiring_lead', 'is_fiscal_employee',
+            'is_eligible_for_telework_application', 'can_view_seating_charts',
+            'can_edit_seating_charts', 'can_view_desk_reservation_reports',
+            'is_upper_manager', 'is_hr_manager', 'is_division_director',
+            'is_executive_director', 'viewed_security_message', 'prs_can_view',
+            'notes_can_view', 'telework_applications_can_view',
+            'time_off_requests_can_view', 'next_to_sign_prs',
+            'email_opt_out_all', 'email_opt_out_timeoff_all',
+            'email_opt_out_timeoff_weekly', 'email_opt_out_timeoff_daily',
+            'email_opt_out_workflows_all',
             'email_opt_out_workflows_transitions',
             'email_opt_out_workflows_processes', 'email_opt_out_expenses_all',
             'is_all_workflows_admin', 'admin_of_workflows',
