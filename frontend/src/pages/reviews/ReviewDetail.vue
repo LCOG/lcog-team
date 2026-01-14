@@ -32,13 +32,13 @@
       <div class="eval-box eval-box-3">
           <div class="row text-bold">Performance Period:</div>
           <div class="row">
-            {{ readableDate(periodStartDate) }} -
-            {{ readableDate(periodEndDate) }}
+            {{ readableDateNEW(periodStartDate) }} -
+            {{ readableDateNEW(periodEndDate) }}
           </div>
       </div>
       <div class="eval-box eval-box-4">
           <div class="row text-bold">Effective Date:</div>
-          <div class="row">{{ readableDate(effectiveDate) }}</div>
+          <div class="row">{{ readableDateNEW(effectiveDate) }}</div>
       </div>
       <div class="eval-box eval-box-5">
           <div class="row text-bold">Division:</div>
@@ -226,7 +226,7 @@
         >
           <q-card-section>
             <div class="text-bold">
-              {{ note.author_name }} - {{ readableDate(note.created_at) }}
+              {{ note.author_name }} - {{ readableDateNEW(note.created_at) }}
             </div>
             <div class="read-only-text-area" v-html="note.note"></div>
           </q-card-section>
@@ -435,7 +435,7 @@
       <div class="col signature-date-block">
         <div v-if="signature[2]" class="signature-date">
           <span class="signature-date-text">
-            {{ readableDate(signature[2]) }}
+            {{ readableDateNEW(signature[2]) }}
           </span>
         </div>
         <div v-else class="signature-date">&nbsp;</div>
@@ -868,7 +868,7 @@ import { scroll, useQuasar } from 'quasar'
 import { onMounted, ref, Ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
-import { readableDate } from 'src/filters'
+import { readableDateNEW } from 'src/filters'
 import { useReviewStore } from 'src/stores/review'
 import { useUserStore } from 'src/stores/user'
 import { PRFormFactor, PRSignatures, ReviewNoteRetrieve } from 'src/types'

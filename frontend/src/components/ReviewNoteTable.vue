@@ -7,7 +7,7 @@
     >
       <template v-slot:body-cell-created_at="props">
         <q-td key="created_at" :props="props">
-          {{ readableDate(props.row.created_at) }}
+          {{ readableDateTimeNEW(props.row.created_at).split(' ')[0] }}
         </q-td>
       </template>
       <template v-slot:body-cell-actions="props">
@@ -56,7 +56,7 @@ import { Notify, QTable, QTableProps } from 'quasar'
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
-import { readableDate } from 'src/filters'
+import { readableDateTimeNEW } from 'src/filters'
 import { useReviewStore } from 'src/stores/review'
 import { ReviewNoteRetrieve } from 'src/types'
 
