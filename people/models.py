@@ -360,11 +360,11 @@ class Employee(models.Model):
             direct_reports_ids = self.direct_reports.values_list(
                 'pk', flat=True
             )
-            return Employee.objects.filter(
+            return Employee.active_objects.filter(
                 pk__in=list(direct_reports_ids) + [self.pk]
             )
         else:
-            return self.direct_reports.all()
+            return self.direct_reports.filter(active=True)
     
     def get_descendants_of_employee(self, employee):
         employee_and_descendants = [employee]

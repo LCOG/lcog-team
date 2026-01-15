@@ -373,7 +373,7 @@ class PerformanceReviewViewSet(viewsets.ModelViewSet):
                     queryset = PerformanceReview.objects\
                         .for_employee(employee).filter(employee=employee)
                 elif manager is not None:
-                    # Your managed reviews: All PRs for the manager's direct reports
+                    # All PRs for the manager's direct reports
                     manager_employee = Employee.objects.get(
                         pk=int(manager)
                     )
