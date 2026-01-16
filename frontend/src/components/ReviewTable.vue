@@ -84,7 +84,6 @@
             </q-btn>
             <!-- Print button: Only show to managers -->
             <q-btn
-              v-if="managerPk"
               dense
               round
               flat
@@ -183,7 +182,6 @@
                     </q-btn>
                     <!-- Print button: Only show to managers -->
                     <q-btn
-                      v-if="managerPk"
                       dense
                       round
                       flat
