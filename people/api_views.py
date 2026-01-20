@@ -15,7 +15,7 @@ from rest_framework.response import Response
 from mainsite.api_views import LargeResultsSetPagination
 from mainsite.models import SecurityMessage
 from mainsite.helpers import (
-    is_true_string, send_completed_email_to_hr_manager,
+    is_true_string, send_pr_completed_email,
     send_evaluation_written_email_to_employee,
     send_signature_email_to_executive_director,
     send_signature_email_to_hr_manager, send_signature_email_to_manager
@@ -226,11 +226,14 @@ class EmployeeViewSet(viewsets.ModelViewSet):
     # problem and lock it down again.
     @action(detail=False, methods=['get'])
     def simple_list(self, request):
-        # # If IP is in TrustedIPs, show all active employees
+        # If IP is in TrustedIPs, show all active employees
         # TrustedIP = apps.get_model('mainsite.TrustedIPAddress')
-        # trusted_ips = TrustedIP.objects.values_list('address', flat=True)
+        # all_addresses = []
+        # trusted_ips = TrustedIP.objects.all()
+        # for ip in trusted_ips:
+        #     all_addresses.extend(ip.all_addresses())
         # if any([
-        #     request.META['REMOTE_ADDR'] in trusted_ips,
+        #     request.META['REMOTE_ADDR'] in all_addresses,
         #     request.user.is_authenticated
         # ]):
         #     employees = Employee.active_objects.all()
@@ -311,20 +314,57 @@ class PerformanceReviewViewSet(viewsets.ModelViewSet):
         reports for everyone else.
         """
         user = self.request.user
+        queryset = PerformanceReview.objects.none()
         if user.is_authenticated:
             if user.is_superuser:
                 queryset = PerformanceReview.objects.all()\
                     .order_by('period_end_date')
             else:
+                if user.employee is None:
+                    return PerformanceReview.objects.none()
+                else:
+                    e = user.employee
+                all = self.request.query_params.get('all', None)
                 signature = self.request.query_params.get('signature', None)
                 employee = self.request.query_params.get('employee', None)
                 manager = self.request.query_params.get('manager', None)
-                if signature is not None:
+                if all is not None and is_true_string(all):
+                    # All reviews (admin - EDs, HR employees, and Directors)
+                    is_ed = e.is_executive_director
+                    is_dir = e.is_division_director
+                    is_hre = e.is_hr_employee
+                    if any([is_ed, is_dir, is_hre]):
+                        # Get all PRs with effective_date within the last year
+                        complete = self.request.query_params.get(
+                            'complete', None
+                        )
+                        incomplete = self.request.query_params.get(
+                            'incomplete', None
+                        )
+                        if is_true_string(complete):
+                            return PerformanceReview.objects\
+                                .filter(effective_date__gte=\
+                                    timezone.now() - timedelta(days=365))\
+                                .filter(
+                                    status=
+                                    PerformanceReview.EVALUATION_ED_APPROVED
+                                )\
+                                .order_by('-period_end_date')
+                        elif is_true_string(incomplete):
+                            return PerformanceReview.objects\
+                                .filter(effective_date__gte=\
+                                    timezone.now() - timedelta(days=365))\
+                                .exclude(
+                                    status=
+                                    PerformanceReview.EVALUATION_ED_APPROVED
+                                )\
+                                .order_by('period_end_date')
+                elif signature is not None:
                     # All PRs with unsigned signature reminders for the user
                     queryset = PerformanceReview.objects\
-                        .for_employee(user.employee)\
+                        .for_employee(e)\
                         .filter(
-                            signaturereminder__employee=user.employee,
+                            signaturereminder__employee=e,
                             signaturereminder__signed=False
                         )
                 elif employee is not None:
@@ -333,26 +373,24 @@ class PerformanceReviewViewSet(viewsets.ModelViewSet):
                     queryset = PerformanceReview.objects\
                         .for_employee(employee).filter(employee=employee)
                 elif manager is not None:
-                    # Your managed reviews: All PRs for the manager's direct reports
+                    # All PRs for the manager's direct reports
                     manager_employee = Employee.objects.get(
                         pk=int(manager)
                     )
                     employees = manager_employee.get_direct_reports()
-                    queryset = PerformanceReview.objects\
-                        .for_employee(user.employee)\
+                    queryset = PerformanceReview.objects.for_employee(e)\
                         .filter(employee__in=employees)
                 else:
                     # Any reviews you can access
-                    is_ed = user.employee.is_executive_director if user.employee else False
-                    is_hrm = user.employee.is_hr_manager if user.employee else False
-                    is_dir = user.employee.is_division_director if user.employee else False
-                    if any([is_ed, is_hrm, is_dir]):
-                        # EDs, HR managers, and Directors can see all reviews
-                        queryset = PerformanceReview.objects\
-                            .for_employee(user.employee)
+                    is_ed = e.is_executive_director
+                    is_dir = e.is_division_director
+                    is_hre = e.is_hr_employee
+                    if any([is_ed, is_dir, is_hre]):
+                        # EDs, Directors, and HR employees can see all reviews
+                        queryset = PerformanceReview.objects.for_employee(e)
                     else:
                         # All PRs for the current user and their descendants
-                        employees = user.employee.get_direct_reports_descendants(
+                        employees = e.get_direct_reports_descendants(
                             include_self=True
                         )
                         queryset = PerformanceReview.objects.filter(
@@ -369,10 +407,7 @@ class PerformanceReviewViewSet(viewsets.ModelViewSet):
                 elif is_true_string(incomplete):
                     queryset = queryset.exclude(
                         status=PerformanceReview.EVALUATION_ED_APPROVED
-                    ).exclude(period_end_date__gte=\
-                            timezone.now() + timedelta(days=60))
-        else:
-            queryset = PerformanceReview.objects.none()
+                    )
         return queryset
 
     def retrieve(self, request, pk=None):
@@ -588,16 +623,16 @@ class SignatureViewSet(viewsets.ModelViewSet):
                 # Send notification to next manager in the chain
                 # (executive director)
                 send_signature_email_to_executive_director(pr)
-        elif pr.status == PerformanceReview.EVALUATION_HR_PROCESSED:
-            if employee.is_executive_director:
-                pr.status = PerformanceReview.EVALUATION_ED_APPROVED
-                pr.save()
-                # Send notification to HR manager
-                send_completed_email_to_hr_manager(pr)
+                # Send notification to HR employees that review is complete
+                send_pr_completed_email(pr)
                 # Create new Performance Review for employee
                 # NOTE: We don't currently do this, but just wait for the
                 # next review export from Caselle
                 # pr.create_next_review_for_employee()
+        elif pr.status == PerformanceReview.EVALUATION_HR_PROCESSED:
+            if employee.is_executive_director:
+                pr.status = PerformanceReview.EVALUATION_ED_APPROVED
+                pr.save()
         
         serialized_signature = SignatureSerializer(new_signature,
             context={'request': request})

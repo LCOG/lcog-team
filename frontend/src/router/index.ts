@@ -11,7 +11,7 @@ import routes from 'src/router/routes'
 import {
   canViewDeskReservationReports, canViewMealsOnWheelsRoutes,
   canViewTimeOffRequest, isAuthenticated, isDivisionDirector, isExpenseApprover,
-  isExpenseSubmitter, isFiscal, isManager
+  isExpenseSubmitter, isFiscal, isHROrDirector, isManager 
 } from './guards'
 
 /*
@@ -68,6 +68,9 @@ export default route(function (/* { store, ssrContext } */) {
     }
     if (to.meta.requiresCanViewTimeOffRequest && !canViewTimeOffRequest(to)) {
       return '/timeoff'
+    }
+    if (to.meta.requiresHROrDirector && !isHROrDirector()) {
+      return '/reviews/dashboard'
     }
 
   })

@@ -84,7 +84,6 @@
             </q-btn>
             <!-- Print button: Only show to managers -->
             <q-btn
-              v-if="managerPk"
               dense
               round
               flat
@@ -183,7 +182,6 @@
                     </q-btn>
                     <!-- Print button: Only show to managers -->
                     <q-btn
-                      v-if="managerPk"
                       dense
                       round
                       flat
@@ -259,6 +257,9 @@ const props = defineProps<{
   
   complete?: boolean, // Show only completed PRs
   incomplete?: boolean, // Show only incomplete PRs
+
+  allComplete?: boolean, // Show all complete PRs
+  allIncomplete?: boolean, // Show all incomplete PRs
 }>()
 
 const router = useRouter()
@@ -270,7 +271,11 @@ let reviewsLoaded = ref(false)
 
 const performanceReviews = computed((): Array<ReviewRetrieve> => {
   let prs = [] as Array<ReviewRetrieve>
-  if (props.signature) {
+  if (props.allComplete) {
+    prs = reviewStore.allCompletePRs
+  } else if (props.allIncomplete) {
+    prs = reviewStore.allIncompletePRs
+  } else if (props.signature) {
     prs = reviewStore.signaturePRs
   } else if (props.employeePk) {
     if (props.complete && props.complete === true) {
@@ -302,7 +307,11 @@ const performanceReviews = computed((): Array<ReviewRetrieve> => {
 })
 
 function columns() {
-  if (props.signature) {
+  if (props.allComplete) {
+    return managerCompleteColumns
+  } else if (props.allIncomplete) {
+    return managerColumns
+  } else if (props.signature) {
     return managerCompleteColumns
   } else if (props.managerPk) {
     if (props.complete && props.complete === true) {
@@ -395,7 +404,25 @@ function noDataLabel(): string {
 }
 
 function retrievePerformanceReviews(): void {
-  if (props.signature) {
+  if (props.allComplete) {
+    reviewStore.getAllCompletePRs()
+      .then(() => {
+        reviewsLoaded.value = true
+      })
+      .catch(e => {
+        console.error('Error retrieving all PRs:', e)
+      })
+  }
+  else if (props.allIncomplete) {
+    reviewStore.getAllIncompletePRs()
+      .then(() => {
+        reviewsLoaded.value = true
+      })
+      .catch(e => {
+        console.error('Error retrieving all PRs:', e)
+      })
+  }
+  else if (props.signature) {
     reviewStore.getSignaturePRs()
       .then(() => {
         reviewsLoaded.value = true
@@ -497,8 +524,12 @@ watch(() => bus.value.get('updateTeleworkApplicationTables'), () => {
   retrievePerformanceReviews()
 })
 
-onUpdated(() => {
-  // retrievePerformanceReviews();
+// Watch for prop changes and reload PRs when they change
+watch(() => [
+  props.signature, props.employeePk, props.managerPk, props.complete,
+  props.incomplete, props.allComplete, props.allIncomplete
+], () => {
+  retrievePerformanceReviews()
 })
 
 onMounted(() => {

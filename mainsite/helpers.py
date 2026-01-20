@@ -165,21 +165,22 @@ def send_signature_email_to_executive_director(review):
     send_signature_email_to_manager(executive_director, review)
 
 
-def send_completed_email_to_hr_manager(review):
+def send_pr_completed_email(review):
     # Notification #19
+    pr_completed_employees = apps.get_model('people.Employee').objects.filter(
+        user__groups__name='PR Completed Employees',
+        organization=review.employee.organization
+    )
     hr_manager = apps.get_model('people.Employee').objects.get(
         organization=review.employee.organization, is_hr_manager=True
     )
-    executive_director = apps.get_model('people.Employee').objects.get(
-        organization=review.employee.organization, is_executive_director=True
-    )
     current_site = Site.objects.get_current()
     url = current_site.domain + '/print/pr/' + str(review.pk)
-    send_email(
-        hr_manager.user.email,
-        f'A Performance Evaluation has been completed',
-        f'{executive_director.name} has approved a performance evaluation for {review.employee.name}. Please print it here: {url}',
-        f'{executive_director.name} has approved a performance evaluation for {review.employee.name}. Please print it here: {url}'
+    send_email_multiple(
+        to_addresses=pr_completed_employees.values_list('user__email', flat=True),
+        subject='A Performance Evaluation has been completed',
+        text_body=f'{hr_manager.name} has approved a performance evaluation for {review.employee.name}. Please print it here: {url}',
+        html_body=f'{hr_manager.name} has approved a performance evaluation for {review.employee.name}. Please print it here: {url}'
     )
 
 

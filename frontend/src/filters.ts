@@ -26,6 +26,25 @@ export function readableDateNEW(d: string): string {
   }
 }
 
+export function readableDateTimeNEW(d: string): string {
+  // d should be a string in the format 'YYYY-MM-DDTHH:MM:SSZ' or similar
+  if (!d) {
+    return 'Date not set'
+  }
+  try {
+    const dateObj = new Date(d)
+    const month = (dateObj.getMonth() + 1).toString() // Months are zero-based
+    const day = dateObj.getDate().toString()
+    const year = dateObj.getFullYear()
+    const hours = dateObj.getHours().toString()
+    const minutes = dateObj.getMinutes().toString()
+    return `${month}/${day}/${year} ${hours}:${minutes}` // 'MM/DD/YYYY HH:MM'
+  }
+  catch (e) {
+    return 'Date ' + d + ' incorrectly formatted: ' + e
+  }
+}
+
 // Existing date handling which attempts to adjust for timezone. The theory was
 // we would store dates in UTC and then adjust them to the user's timezone, but
 // that's confusing and not necessary.

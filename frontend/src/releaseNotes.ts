@@ -4,6 +4,36 @@
 
 export const releases = [
   {
+    version: '1.1.4',
+    date: new Date(2026, 0, 20),
+    changes: [
+      {
+        type: 'improved',
+        description: 'Minor improvements to Performance Reviews app.'
+      }
+    ]
+  },
+  {
+    version: '1.1.3',
+    date: new Date(2026, 0, 16),
+    changes: [
+      {
+        type: 'improved',
+        description: 'Minor improvements to Performance Reviews app.'
+      }
+    ]
+  },
+  {
+    version: '1.1.2',
+    date: new Date(2026, 0, 9),
+    changes: [
+      {
+        type: 'new',
+        description: 'Add a Performance Reviews Admin page.'
+      }
+    ]
+  },
+  {
     version: '1.1.1',
     date: new Date(2026, 0, 2),
     changes: [
