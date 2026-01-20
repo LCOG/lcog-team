@@ -15,7 +15,7 @@ from rest_framework.response import Response
 from mainsite.api_views import LargeResultsSetPagination
 from mainsite.models import SecurityMessage
 from mainsite.helpers import (
-    is_true_string, send_completed_email_to_hr_manager,
+    is_true_string, send_pr_completed_email,
     send_evaluation_written_email_to_employee,
     send_signature_email_to_executive_director,
     send_signature_email_to_hr_manager, send_signature_email_to_manager
@@ -623,16 +623,16 @@ class SignatureViewSet(viewsets.ModelViewSet):
                 # Send notification to next manager in the chain
                 # (executive director)
                 send_signature_email_to_executive_director(pr)
-        elif pr.status == PerformanceReview.EVALUATION_HR_PROCESSED:
-            if employee.is_executive_director:
-                pr.status = PerformanceReview.EVALUATION_ED_APPROVED
-                pr.save()
-                # Send notification to HR manager
-                send_completed_email_to_hr_manager(pr)
+                # Send notification to HR employees that review is complete
+                send_pr_completed_email(pr)
                 # Create new Performance Review for employee
                 # NOTE: We don't currently do this, but just wait for the
                 # next review export from Caselle
                 # pr.create_next_review_for_employee()
+        elif pr.status == PerformanceReview.EVALUATION_HR_PROCESSED:
+            if employee.is_executive_director:
+                pr.status = PerformanceReview.EVALUATION_ED_APPROVED
+                pr.save()
         
         serialized_signature = SignatureSerializer(new_signature,
             context={'request': request})
