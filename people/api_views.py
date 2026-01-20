@@ -589,6 +589,8 @@ class SignatureViewSet(viewsets.ModelViewSet):
             if employee.is_division_director:
                 # Send notification to next manager in the chain (HR manager)
                 send_signature_email_to_hr_manager(pr)
+                # Send notification to HR employees that review is complete
+                send_pr_completed_email(pr)
             else:
                 send_signature_email_to_manager(employee.manager, pr)
 
@@ -623,8 +625,6 @@ class SignatureViewSet(viewsets.ModelViewSet):
                 # Send notification to next manager in the chain
                 # (executive director)
                 send_signature_email_to_executive_director(pr)
-                # Send notification to HR employees that review is complete
-                send_pr_completed_email(pr)
                 # Create new Performance Review for employee
                 # NOTE: We don't currently do this, but just wait for the
                 # next review export from Caselle
