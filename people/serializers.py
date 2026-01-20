@@ -310,7 +310,7 @@ class PerformanceReviewSimpleSerializer(PerformanceReviewBaseSerializer):
     
     @staticmethod
     def get_complete(pr):
-        return pr.status == PerformanceReview.EVALUATION_ED_APPROVED
+        return pr.status == PerformanceReview.EVALUATION_HR_PROCESSED
 
 
 class PerformanceReviewSerializer(PerformanceReviewBaseSerializer):
