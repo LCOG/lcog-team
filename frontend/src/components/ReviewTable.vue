@@ -273,6 +273,10 @@ const performanceReviews = computed((): Array<ReviewRetrieve> => {
   let prs = [] as Array<ReviewRetrieve>
   if (props.allComplete) {
     prs = reviewStore.allCompletePRs
+    return prs.sort((a, b) => {
+      return new Date(b.period_end_date).getTime() -
+        new Date(a.period_end_date).getTime()
+    })
   } else if (props.allIncomplete) {
     prs = reviewStore.allIncompletePRs
   } else if (props.signature) {
@@ -335,7 +339,7 @@ const managerColumns: QTableProps['columns'] = [
   },
   {
     name: 'performancePeriod', align: 'center', label: 'Performance Period',
-    field: 'performance_period'
+    field: 'period_end_date', sortable: true
   },
   {
     name: 'daysUntilReview', align: 'center', label: 'Days Until Review',
@@ -355,7 +359,7 @@ const managerCompleteColumns: QTableProps['columns'] = [
   },
   {
     name: 'performancePeriod', align: 'center', label: 'Performance Period',
-    field: 'performance_period'
+    field: 'period_end_date', sortable: true
   },
   { name: 'actions', label: 'Actions', align: 'center', field: ''},
 ]
@@ -363,7 +367,7 @@ const managerCompleteColumns: QTableProps['columns'] = [
 const employeeColumns: QTableProps['columns'] = [
   {
     name: 'performancePeriod', align: 'center', label: 'Performance Period',
-    field: 'performance_period'
+    field: 'period_end_date', sortable: true
   },
   {
     name: 'daysUntilReview', align: 'center', label: 'Days Until Review',
@@ -379,7 +383,7 @@ const employeeColumns: QTableProps['columns'] = [
 const employeeCompleteColumns: QTableProps['columns'] = [
   {
     name: 'performancePeriod', align: 'center', label: 'Performance Period',
-    field: 'performance_period'
+    field: 'period_end_date', sortable: true
   },
   { name: 'actions', label: 'Actions', align: 'center', field: ''},
 ]
