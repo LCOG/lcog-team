@@ -47,7 +47,9 @@ class Command(BaseCommand):
                 if row[0]:
                     # Create any new reviews for the previous employee
                     if len(employee_review_rows):
-                        self.process_review_rows(employee_review_rows, employee)
+                        self.process_review_rows(
+                            employee_review_rows, employee
+                        )
 
                     # Start a new employee section
                     try:
@@ -59,7 +61,7 @@ class Command(BaseCommand):
                     except MultipleObjectsReturned:
                         import pdb; pdb.set_trace();
                     except Employee.DoesNotExist:
-                        # If the employee is not otherwise in the system, ignore them
+                        # Ignore employees not otherwise in the system
                         continue
                     employee_review_rows = []
                 elif all([
@@ -68,7 +70,11 @@ class Command(BaseCommand):
                     row[1] not in ['Department', 'Employee ']
                 ]):
                     if row[4] and not row[9]:
-                        row[9] = datetime.datetime.strftime(datetime.datetime.strptime(row[4], '%m/%d/%Y') + datetime.timedelta(days=365), '%m/%d/%Y')
+                        row[9] = datetime.datetime.strftime(
+                            datetime.datetime.strptime(row[4], '%m/%d/%Y') + 
+                                datetime.timedelta(days=365),
+                            '%m/%d/%Y'
+                        )
                     employee_review_rows += [row]
         
         # Create any new reviews for the last employee
@@ -79,47 +85,90 @@ class Command(BaseCommand):
 
     def process_review_rows(self, rows, employee):
         '''
-        Creates a review for the employee based on the most recent review in the rows
+        Create a review for the employee based on the most recent review
+        in the rows.
         '''
         # Get the most recent review
-        filtered_rows = filter(lambda row: row[4] != '' and row[9] != '', rows) # Remove rows without a date
-        sorted_rows = sorted(filtered_rows, key=lambda row: datetime.datetime.strptime(row[9], '%m/%d/%Y'))
+        # Remove rows without a date
+        filtered_rows = filter(lambda row: row[4] != '' and row[9] != '', rows)
+        sorted_rows = sorted(
+            filtered_rows,
+            key=lambda row: datetime.datetime.strptime(row[9], '%m/%d/%Y')
+        )
         most_recent_row = sorted_rows[-1]
         
         # Get the most recent review information
-        review_date = datetime.datetime.strptime(most_recent_row[4], '%m/%d/%Y')
-        next_review_date = datetime.datetime.strptime(most_recent_row[9], '%m/%d/%Y')
+        review_date = datetime.datetime.strptime(
+            most_recent_row[4], '%m/%d/%Y'
+        )
+        next_review_date = datetime.datetime.strptime(
+            most_recent_row[9], '%m/%d/%Y'
+        )
         try:
-            existing_reviews = PerformanceReview.objects.filter(employee=employee, period_start_date=review_date).exists()
+            existing_reviews = PerformanceReview.objects.filter(
+                employee=employee, period_start_date=review_date
+            ).exists()
             if not existing_reviews:
-                # review_range = next_review_date - review_date
+                # Mark any not started PRs for this employee as completed
+                incomplete_prs = PerformanceReview.objects.filter(
+                    employee=employee,
+                    status=PerformanceReview.NEEDS_EVALUATION
+                )
+                for pr in incomplete_prs:
+                    self.stdout.write(
+                        'Marking incomplete review for employee {} {} for ' \
+                        'period {} - {} as processed.'.format(
+                            employee.user.first_name, employee.user.last_name,
+                            pr.period_start_date, pr.period_end_date
+                        )
+                    )
+                    pr.status = PerformanceReview.EVALUATION_HR_PROCESSED
+                    pr.save()
+
+                # Decide evaluation type and form
                 if employee.is_sds_employee and len(rows) < 2:
                     evaluation_type = PerformanceReview.PROBATIONARY_EVALUATION
-                    probationary_evaluation_type = PerformanceReview.SEIU_PROBATIONARY_EVALUATION
-                    form = PRForm.objects.get(name='SEIU - 60 - Probation Feedback')
+                    probationary_evaluation_type = \
+                        PerformanceReview.SEIU_PROBATIONARY_EVALUATION
+                    form = PRForm.objects.get(
+                        name='SEIU - 60 - Probation Feedback'
+                    )
                 elif employee.is_sds_employee and len(rows) < 3:
                     evaluation_type = PerformanceReview.PROBATIONARY_EVALUATION
-                    probationary_evaluation_type = PerformanceReview.SEIU_PROBATIONARY_EVALUATION
-                    form = PRForm.objects.get(name='SEIU - 120 - Probation Progress')
+                    probationary_evaluation_type = \
+                        PerformanceReview.SEIU_PROBATIONARY_EVALUATION
+                    form = PRForm.objects.get(
+                        name='SEIU - 120 - Probation Progress'
+                    )
                 elif not employee.is_sds_employee and len(rows) < 2:
                     evaluation_type = PerformanceReview.PROBATIONARY_EVALUATION
-                    probationary_evaluation_type = PerformanceReview.NON_SEIU_PROBATIONARY_EVALUATION
-                    form = PRForm.objects.get(name='EA - 90 - Probation Progress')
+                    probationary_evaluation_type = \
+                        PerformanceReview.NON_SEIU_PROBATIONARY_EVALUATION
+                    form = PRForm.objects.get(
+                        name='EA - 90 - Probation Progress'
+                    )
                 else:
                     evaluation_type = PerformanceReview.ANNUAL_EVALUATION
                     probationary_evaluation_type = None
                     form = PRForm.objects.get(name='All - 180 - Annual PR')
+                
+                # Create the new PR
                 PerformanceReview.objects.create(
                     employee=employee,
                     period_start_date=review_date,
                     period_end_date=next_review_date,
-                    effective_date=next_review_date + datetime.timedelta(days=1),
+                    effective_date=
+                        next_review_date + datetime.timedelta(days=1),
                     evaluation_type=evaluation_type,
                     probationary_evaluation_type=probationary_evaluation_type,
                     form=form
                 )
                 self.stdout.write(
-                    'Created review for employee {} {} for period {} - {}'.format(employee.user.first_name, employee.user.last_name, review_date, next_review_date)
+                    'Created review for employee {} {} for period {} - {}'
+                        .format(
+                            employee.user.first_name, employee.user.last_name,
+                            review_date, next_review_date
+                        )
                 )
                 
         except PerformanceReview.DoesNotExist:
