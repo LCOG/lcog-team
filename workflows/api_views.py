@@ -156,8 +156,15 @@ class WorkflowInstanceViewSet(viewsets.ModelViewSet):
             )
         # Create workflow instance
         wfi = WorkflowInstance.objects.create(workflow=wf, transition=et)
-        # Create process instances
-        for process in wf.processes.filter(workflow_start=True):
+        # Create process instances with unique names, selecting highest version
+        processes = wf.processes.filter(workflow_start=True)
+        unique_processes = {}
+        for process in processes:
+            if process.name not in unique_processes:
+                unique_processes[process.name] = process
+            elif process.version > unique_processes[process.name].version:
+                unique_processes[process.name] = process
+        for process in unique_processes.values():
             process.create_process_instance(wfi)
         serialized_wfi = WorkflowInstanceSerializer(wfi,
             context={'request': request}

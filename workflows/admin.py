@@ -54,13 +54,17 @@ class StepInlineForm(ModelForm):
     """
     def __init__(self, *args, parent_object, **kwargs):
         super(StepInlineForm, self).__init__(*args, **kwargs)
-        self.fields['next_step'].queryset = Step.objects.filter(
-            process=parent_object
-            ).exclude(pk=self.instance.pk).order_by('order')
-        if (parent_object.pk):
+        if parent_object.pk:
+            self.fields['next_step'].queryset = Step.objects\
+                .filter(process=parent_object)\
+                .exclude(pk=self.instance.pk)\
+                .order_by('order')
             self.fields['trigger_processes'].queryset = Process.objects.filter(
                 workflow=parent_object.workflow
             ).exclude(pk=parent_object.pk).order_by('name')
+        else:
+            self.fields['next_step'].queryset = Step.objects.none()
+            self.fields['trigger_processes'].queryset = Process.objects.none()
 
 
 class StepChoiceForm(ModelForm):
@@ -238,6 +242,7 @@ class ProcessInstanceAdmin(admin.ModelAdmin):
         "started_at", "completed_at", "process", "workflow_instance",
         "current_step_instance"
     )
+    list_filter = ("process__workflow", "process")
     readonly_fields = ("started_at",)
     form = ProcessInstanceForm
 

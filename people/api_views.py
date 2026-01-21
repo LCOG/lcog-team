@@ -347,7 +347,7 @@ class PerformanceReviewViewSet(viewsets.ModelViewSet):
                                     timezone.now() - timedelta(days=365))\
                                 .filter(
                                     status=
-                                    PerformanceReview.EVALUATION_ED_APPROVED
+                                    PerformanceReview.EVALUATION_HR_PROCESSED
                                 )\
                                 .order_by('-period_end_date')
                         elif is_true_string(incomplete):
@@ -356,7 +356,7 @@ class PerformanceReviewViewSet(viewsets.ModelViewSet):
                                     timezone.now() - timedelta(days=365))\
                                 .exclude(
                                     status=
-                                    PerformanceReview.EVALUATION_ED_APPROVED
+                                    PerformanceReview.EVALUATION_HR_PROCESSED
                                 )\
                                 .order_by('period_end_date')
                 elif signature is not None:
@@ -402,11 +402,11 @@ class PerformanceReviewViewSet(viewsets.ModelViewSet):
                 incomplete = self.request.query_params.get('incomplete', None)
                 if is_true_string(complete):
                     queryset = queryset.filter(
-                        status=PerformanceReview.EVALUATION_ED_APPROVED
+                        status=PerformanceReview.EVALUATION_HR_PROCESSED
                     )
                 elif is_true_string(incomplete):
                     queryset = queryset.exclude(
-                        status=PerformanceReview.EVALUATION_ED_APPROVED
+                        status=PerformanceReview.EVALUATION_HR_PROCESSED
                     )
         return queryset
 
@@ -589,6 +589,8 @@ class SignatureViewSet(viewsets.ModelViewSet):
             if employee.is_division_director:
                 # Send notification to next manager in the chain (HR manager)
                 send_signature_email_to_hr_manager(pr)
+                # Send notification to HR employees that review is complete
+                send_pr_completed_email(pr)
             else:
                 send_signature_email_to_manager(employee.manager, pr)
 
@@ -623,16 +625,10 @@ class SignatureViewSet(viewsets.ModelViewSet):
                 # Send notification to next manager in the chain
                 # (executive director)
                 send_signature_email_to_executive_director(pr)
-                # Send notification to HR employees that review is complete
-                send_pr_completed_email(pr)
                 # Create new Performance Review for employee
                 # NOTE: We don't currently do this, but just wait for the
                 # next review export from Caselle
                 # pr.create_next_review_for_employee()
-        elif pr.status == PerformanceReview.EVALUATION_HR_PROCESSED:
-            if employee.is_executive_director:
-                pr.status = PerformanceReview.EVALUATION_ED_APPROVED
-                pr.save()
         
         serialized_signature = SignatureSerializer(new_signature,
             context={'request': request})

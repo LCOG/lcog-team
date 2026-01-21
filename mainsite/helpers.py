@@ -171,16 +171,13 @@ def send_pr_completed_email(review):
         user__groups__name='PR Completed Employees',
         organization=review.employee.organization
     )
-    hr_manager = apps.get_model('people.Employee').objects.get(
-        organization=review.employee.organization, is_hr_manager=True
-    )
     current_site = Site.objects.get_current()
     url = current_site.domain + '/print/pr/' + str(review.pk)
     send_email_multiple(
         to_addresses=pr_completed_employees.values_list('user__email', flat=True),
-        subject='A Performance Evaluation has been completed',
-        text_body=f'{hr_manager.name} has approved a performance evaluation for {review.employee.name}. Please print it here: {url}',
-        html_body=f'{hr_manager.name} has approved a performance evaluation for {review.employee.name}. Please print it here: {url}'
+        subject='Performance Evaluation approved',
+        text_body=f'A performance evaluation for {review.employee.name} has been approved. Please print it here: {url}',
+        html_body=f'A performance evaluation for {review.employee.name} has been approved. Please print it here: {url}'
     )
 
 
