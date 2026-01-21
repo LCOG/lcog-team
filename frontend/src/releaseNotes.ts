@@ -4,6 +4,20 @@
 
 export const releases = [
   {
+    version: '1.2.0',
+    date: new Date(2026, 0, 20),
+    changes: [
+      {
+        type: 'improved',
+        description: 'Workflow Process versioning now supported.'
+      },
+      {
+        type: 'improved',
+        description: 'Minor improvements to Performance Reviews app.'
+      }
+    ]
+  },
+  {
     version: '1.1.4',
     date: new Date(2026, 0, 20),
     changes: [
