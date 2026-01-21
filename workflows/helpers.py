@@ -549,12 +549,19 @@ def create_process_instances(transition):
     if len(transition_process_names) == 0:
         wfi.update_percent_complete()
 
-    # Create process instances for each process in the list
-    for process in wfi.workflow.processes.filter(
+    # Create process instances with unique names, selecting highest version
+    processes = wfi.workflow.processes.filter(
         name__in=transition_process_names
-    ):
+    )
+    unique_processes = {}
+    for process in processes:
+        if process.name not in unique_processes:
+            unique_processes[process.name] = process
+        elif process.version > unique_processes[process.name].version:
+            unique_processes[process.name] = process
+    for process in unique_processes.values():
         existing_pis = ProcessInstance.objects.filter(
-            process=process, workflow_instance=wfi
+            process__name=process.name, workflow_instance=wfi
         )
         if existing_pis.count() == 0:
             process.create_process_instance(wfi)
