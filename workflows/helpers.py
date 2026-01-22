@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 import os
 import pytz
 
+from django.apps import apps
 from django.contrib.auth.models import Group
 from django.contrib.sites.models import Site
 from django.template.loader import render_to_string
@@ -14,7 +15,6 @@ from workflows.models import (
 )
 
 STAFF_TRANSITION_NEWS_EMAIL = os.environ.get('STAFF_TRANSITION_NEWS_EMAIL')
-STAFF_MAILBOX_RECIPIENTS = os.environ.get('STAFF_MAILBOX_RECIPIENTS')
 
 def send_mailbox_notification_email(
     t, sender_name='', sender_email='', url=''
@@ -47,8 +47,11 @@ def send_mailbox_notification_email(
     plaintext_message = strip_tags(html_message)
 
     # Send to mailbox admins
+    recipients = apps.get_model('workflows', 'Role').objects\
+        .get(name="SDS Staff Mailbox Recipients").members.all()\
+        .values_list('user__email', flat=True)
     send_email_multiple(
-        [STAFF_MAILBOX_RECIPIENTS], [], subject, plaintext_message, html_message
+        recipients, [], subject, plaintext_message, html_message
     )
 
 def send_transition_submitter_email(
