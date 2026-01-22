@@ -112,7 +112,7 @@
             <q-card flat bordered>
               <q-card-section>
                 <div class="text-caption text-grey-7">Synthetic Phishes</div>
-                <div class="text-h5 text-orange">{{ teamMember?.syntheticReported }} / {{ teamMember?.syntheticReceived }}</div>
+                <div class="text-h5 text-orange">{{ syntheticReportedCount }} / {{ syntheticTests.length }}</div>
                 <div class="text-caption">Reported / Received</div>
               </q-card-section>
             </q-card>
@@ -122,7 +122,7 @@
             <q-card flat bordered>
               <q-card-section>
                 <div class="text-caption text-grey-7">Educational Resources</div>
-                <div class="text-h5 text-green">{{ teamMember?.resourcesCompleted }} / {{ teamMember?.resourcesAssigned }}</div>
+                <div class="text-h5 text-green">{{ educationalResourcesCompleted }} / {{ educationalResources.length }}</div>
                 <div class="text-caption">Completed / Assigned</div>
               </q-card-section>
             </q-card>
@@ -330,10 +330,6 @@ interface TeamMember {
   employeeName: string
   riskLevel: 'low' | 'med' | 'high'
   organicReports: number
-  syntheticReceived: number
-  syntheticReported: number
-  resourcesAssigned: number
-  resourcesCompleted: number
   groups: string[]
 }
 
@@ -359,10 +355,6 @@ const teamMember = ref<TeamMember>({
   employeeName: 'Loading...',
   riskLevel: 'med',
   organicReports: 0,
-  syntheticReceived: 0,
-  syntheticReported: 0,
-  resourcesAssigned: 0,
-  resourcesCompleted: 0,
   groups: []
 })
 
@@ -513,6 +505,14 @@ const highlightedMessage = computed(() =>
   selectedReport.value?.message ? syntaxHighlight(selectedReport.value.message) : ''
 )
 
+const syntheticReportedCount = computed(() => 
+  syntheticTests.value.filter(test => test.reported).length
+)
+
+const educationalResourcesCompleted = computed(() =>
+  educationalResources.value.filter(resource => resource.status === 'completed').length
+)
+
 async function loadTeamMemberData() {
   loading.value = true
   try {
@@ -529,11 +529,11 @@ async function loadTeamMemberData() {
     
     // Load team member details from list (in real app, fetch from API)
     const mockMembers = [
-      { pk: 5, employeeName: 'Dan Wilson', riskLevel: 'high' as const, organicReports: 2, syntheticReceived: 15, syntheticReported: 8, resourcesAssigned: 10, resourcesCompleted: 4, groups: ['Engineering', 'Management'] },
-      { pk: 2, employeeName: 'Bob Smith', riskLevel: 'low' as const, organicReports: 12, syntheticReceived: 10, syntheticReported: 10, resourcesAssigned: 8, resourcesCompleted: 8, groups: ['Sales'] },
-      { pk: 3, employeeName: 'Carol Williams', riskLevel: 'med' as const, organicReports: 5, syntheticReceived: 12, syntheticReported: 9, resourcesAssigned: 6, resourcesCompleted: 5, groups: ['HR'] },
-      { pk: 4, employeeName: 'David Brown', riskLevel: 'high' as const, organicReports: 1, syntheticReceived: 18, syntheticReported: 5, resourcesAssigned: 12, resourcesCompleted: 3, groups: ['Finance'] },
-      { pk: 1, employeeName: 'Emma Davis', riskLevel: 'med' as const, organicReports: 7, syntheticReceived: 14, syntheticReported: 11, resourcesAssigned: 9, resourcesCompleted: 7, groups: ['Operations', 'Engineering'] }
+      { pk: 5, employeeName: 'Dan Wilson', riskLevel: 'high' as const, organicReports: 2, groups: ['Engineering', 'Management'] },
+      { pk: 2, employeeName: 'Bob Smith', riskLevel: 'low' as const, organicReports: 12, groups: ['Sales'] },
+      { pk: 3, employeeName: 'Carol Williams', riskLevel: 'med' as const, organicReports: 5, groups: ['HR'] },
+      { pk: 4, employeeName: 'David Brown', riskLevel: 'high' as const, organicReports: 1, groups: ['Finance'] },
+      { pk: 1, employeeName: 'Emma Davis', riskLevel: 'med' as const, organicReports: 7, groups: ['Operations', 'Engineering'] }
     ]
     
     const member = mockMembers.find(m => m.pk === memberId)
@@ -552,7 +552,7 @@ async function loadTeamMemberData() {
     educationalResources.value = [
       { id: 1, title: 'Phishing Awareness Training', assignedDate: new Date('2025-11-01'), completedDate: new Date('2025-11-15'), status: 'completed' },
       { id: 2, title: 'Email Security Best Practices', assignedDate: new Date('2025-12-01'), completedDate: null, status: 'pending' },
-      { id: 3, title: 'Spotting Social Engineering', assignedDate: new Date('2026-01-01'), completedDate: new Date('2026-01-10'), status: 'completed' }
+      { id: 3, title: 'Spotting Social Engineering', assignedDate: new Date('2026-01-01'), completedDate: null, status: 'pending' }
     ]
     
   } finally {
@@ -580,7 +580,6 @@ function viewReportDetails(report: PhishReport) {
 }
 
 function reassignResource(resource: EducationalResource) {
-  console.log('Reassigning resource:', resource.id)
   resource.status = 'pending'
   resource.completedDate = null
   resource.assignedDate = new Date()

@@ -42,13 +42,27 @@
       
       <template v-slot:body-cell-syntheticPhishes="props">
         <q-td key="syntheticPhishes" :props="props">
-          {{ props.row.syntheticReported }} / {{ props.row.syntheticReceived }}
+          <q-badge 
+            :color="getSyntheticPhishColor(props.row)" 
+            :label="`${calculatePercentage(props.row.syntheticReported, props.row.syntheticReceived)}%`"
+            text-color="white"
+          />
+          <span class="q-ml-xs text-grey-7">
+            ({{ props.row.syntheticReported }} / {{ props.row.syntheticReceived }})
+          </span>
         </q-td>
       </template>
       
       <template v-slot:body-cell-educationalResources="props">
         <q-td key="educationalResources" :props="props">
-          {{ props.row.resourcesCompleted }} / {{ props.row.resourcesAssigned }}
+          <q-badge 
+            :color="getEducationalResourceColor(props.row)" 
+            :label="`${calculatePercentage(props.row.resourcesCompleted, props.row.resourcesAssigned)}%`"
+            text-color="white"
+          />
+          <span class="q-ml-xs text-grey-7">
+            ({{ props.row.resourcesCompleted }} / {{ props.row.resourcesAssigned }})
+          </span>
         </q-td>
       </template>
     </q-table>
@@ -111,22 +125,18 @@ const columns: QTableProps['columns'] = [
   {
     name: 'syntheticPhishes',
     label: '# Synthetic Phishes Reported/Received',
-    field: (row: TeamMember) => `${row.syntheticReported}/${row.syntheticReceived}`,
+    field: (row: TeamMember) => calculatePercentage(row.syntheticReported, row.syntheticReceived),
     align: 'center',
     sortable: true,
-    sort: (a: string, b: string, rowA: TeamMember, rowB: TeamMember) => {
-      return rowA.syntheticReported - rowB.syntheticReported
-    }
+    sort: (a: number, b: number) => a - b
   },
   {
     name: 'educationalResources',
     label: '# Educational Resources Completed/Assigned',
-    field: (row: TeamMember) => `${row.resourcesCompleted}/${row.resourcesAssigned}`,
+    field: (row: TeamMember) => calculatePercentage(row.resourcesCompleted, row.resourcesAssigned),
     align: 'center',
     sortable: true,
-    sort: (a: string, b: string, rowA: TeamMember, rowB: TeamMember) => {
-      return rowA.resourcesCompleted - rowB.resourcesCompleted
-    }
+    sort: (a: number, b: number) => a - b
   }
 ]
 
@@ -202,6 +212,59 @@ function getRiskColor(riskLevel: string): string {
     default:
       return 'grey'
   }
+}
+
+function calculatePercentage(completed: number, total: number): number {
+  if (total === 0) return 0
+  return Math.round((completed / total) * 100)
+}
+
+function getAdaptiveColor(percentage: number, allPercentages: number[]): string {
+  // Filter out any invalid percentages
+  const validPercentages = allPercentages.filter(p => !isNaN(p))
+  
+  if (validPercentages.length === 0) return 'grey-7'
+  
+  const minPercent = Math.min(...validPercentages)
+  const maxPercent = Math.max(...validPercentages)
+  
+  // If all percentages are the same, use green
+  if (minPercent === maxPercent) {
+    return 'green-8'
+  }
+  
+  // Calculate position in range (0 to 1)
+  const position = (percentage - minPercent) / (maxPercent - minPercent)
+  
+  // Map to color gradient with accessible contrast
+  // Using Quasar's color palette with good contrast against white text
+  if (position <= 0.2) {
+    return 'red-9'       // Darkest red for accessibility
+  } else if (position <= 0.4) {
+    return 'deep-orange-8'
+  } else if (position <= 0.6) {
+    return 'orange-8'
+  } else if (position <= 0.8) {
+    return 'light-green-8'
+  } else {
+    return 'green-9'     // Darkest green for accessibility
+  }
+}
+
+function getSyntheticPhishColor(row: TeamMember): string {
+  const percentage = calculatePercentage(row.syntheticReported, row.syntheticReceived)
+  const allPercentages = teamMembers.map(m => 
+    calculatePercentage(m.syntheticReported, m.syntheticReceived)
+  )
+  return getAdaptiveColor(percentage, allPercentages)
+}
+
+function getEducationalResourceColor(row: TeamMember): string {
+  const percentage = calculatePercentage(row.resourcesCompleted, row.resourcesAssigned)
+  const allPercentages = teamMembers.map(m => 
+    calculatePercentage(m.resourcesCompleted, m.resourcesAssigned)
+  )
+  return getAdaptiveColor(percentage, allPercentages)
 }
 
 function tableFilterMethod(rows: readonly TeamMember[], term: string): TeamMember[] {
