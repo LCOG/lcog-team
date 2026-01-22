@@ -1,8 +1,8 @@
 <template>
 <q-page id="performance-review-detail-page">
   <div class="q-px-md">
-    <!-- Logo appears in print view only -->
     <q-img
+      v-if="props.print"
       id="lcog-logo"
       src="../../assets/lcog-banner.png"
     />
@@ -10,9 +10,10 @@
       id="help"  
       name="help"
       color="primary"
-      size=48px
+      size="48px"
       class="cursor-pointer float-right"
       @click="showHelp = true"
+      v-if="!props.print"
     />
     <h4 class="text-bold text-center">Performance Evaluation Report</h4>
     
@@ -599,7 +600,6 @@
 <style scoped lang="scss">
 #lcog-logo {
   max-width: 300px;
-  display: none;
 }
 .eval-grid-container {
   display: grid;
@@ -816,9 +816,6 @@
   * {
     -webkit-print-color-adjust: exact !important;   /* Chrome, Safari */
     print-color-adjust: exact !important;                 /*Firefox*/
-  }
-  #lcog-logo {
-    display: block;
   }
   #help {
     display: none;
