@@ -1,6 +1,6 @@
 <template>
 <q-page class="q-pa-md">
-  <div class="text-h4">Reports</div>
+  <div class="text-h4">Phishing Reports</div>
   <div class="q-mt-md">
     <div class="row items-center justify-between q-mb-sm">
       <q-btn label="Mark Selected Complete" color="primary" :disable="selected.length === 0" @click="markSelectedComplete" />

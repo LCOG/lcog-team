@@ -11,6 +11,18 @@
       />
     </div>
     <div v-if="userHasPhishRoles()">
+      <q-btn-toggle
+        :model-value="$route.path"
+        @update:model-value="router.push($event)"
+        spread
+        no-caps
+        toggle-color="primary"
+        class="q-mb-md"
+        :options="[
+          { label: 'Reports', value: '/phish/reports' },
+          { label: 'Team', value: '/phish/team' }
+        ]"
+      />
       <router-view />
     </div>
   </q-page>
