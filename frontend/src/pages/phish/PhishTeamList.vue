@@ -42,7 +42,7 @@
       
       <template v-slot:body-cell-syntheticPhishes="props">
         <q-td key="syntheticPhishes" :props="props">
-          {{ props.row.syntheticReceived }} / {{ props.row.syntheticReported }}
+          {{ props.row.syntheticReported }} / {{ props.row.syntheticReceived }}
         </q-td>
       </template>
       
@@ -110,8 +110,8 @@ const columns: QTableProps['columns'] = [
   },
   {
     name: 'syntheticPhishes',
-    label: '# Synthetic Phishes Received/Reported',
-    field: (row: TeamMember) => `${row.syntheticReceived}/${row.syntheticReported}`,
+    label: '# Synthetic Phishes Reported/Received',
+    field: (row: TeamMember) => `${row.syntheticReported}/${row.syntheticReceived}`,
     align: 'center',
     sortable: true,
     sort: (a: string, b: string, rowA: TeamMember, rowB: TeamMember) => {
@@ -120,8 +120,8 @@ const columns: QTableProps['columns'] = [
   },
   {
     name: 'educationalResources',
-    label: '# Educational Resources Assigned/Completed',
-    field: (row: TeamMember) => `${row.resourcesAssigned}/${row.resourcesCompleted}`,
+    label: '# Educational Resources Completed/Assigned',
+    field: (row: TeamMember) => `${row.resourcesCompleted}/${row.resourcesAssigned}`,
     align: 'center',
     sortable: true,
     sort: (a: string, b: string, rowA: TeamMember, rowB: TeamMember) => {
@@ -138,10 +138,10 @@ const pagination = ref({
 })
 
 // Dummy data - 5 team members
-const teamMembers: TeamMember[] = [
+const teamMembers: TeamMember[] = [ 
   {
-    pk: 1,
-    employeeName: 'Alice Johnson',
+    pk: 5,
+    employeeName: 'Dan Wilson',
     riskLevel: 'high',
     organicReports: 2,
     syntheticReceived: 15,
@@ -180,7 +180,7 @@ const teamMembers: TeamMember[] = [
     resourcesCompleted: 3
   },
   {
-    pk: 5,
+    pk: 1,
     employeeName: 'Emma Davis',
     riskLevel: 'med',
     organicReports: 7,

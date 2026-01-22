@@ -1,51 +1,296 @@
 <template>
 <q-page class="q-pa-md">
-  <div class="text-h4">Phishing Reports</div>
-  <div class="q-mt-md">
-    <div class="row items-center justify-between q-mb-sm">
-      <q-btn label="Mark Selected Complete" color="primary" :disable="selected.length === 0" @click="markSelectedComplete" />
+  <q-spinner-grid
+    v-if="loading"
+    class="spinner q-mt-lg"
+    color="primary"
+    size="xl"
+  />
+  
+  <div v-else>
+    <!-- Header with back button -->
+    <div class="row items-center q-mb-md">
+      <q-btn 
+        flat 
+        dense 
+        round 
+        icon="arrow_back" 
+        @click="goBack"
+        class="q-mr-md"
+      >
+        <q-tooltip>Back to Team List</q-tooltip>
+      </q-btn>
+      <div class="text-h4">{{ teamMember?.employeeName }}</div>
     </div>
 
-    <q-table
-      title="Submitted Reports"
-      :rows="submittedReports"
-      :columns="columns"
-      row-key="pk"
-      selection="multiple"
-      v-model:selected="selected"
-      @row-click="onRowClick"
-      flat
-      dense
-    >
-    </q-table>
+    <!-- Main info cards -->
+    <div class="row q-col-gutter-md q-mb-md">
+      <!-- Profile card -->
+      <div class="col-xs-12 col-sm-6 col-md-4">
+        <q-card flat bordered>
+          <q-card-section>
+            <div class="text-h6 q-mb-md">Profile</div>
+            
+            <div class="q-mb-sm">
+              <div class="text-caption text-grey-7">Employee Name</div>
+              <div class="text-body1">{{ teamMember?.employeeName }}</div>
+            </div>
 
-    <div class="q-mt-lg">
-      <div class="text-subtitle2 q-mb-sm">Completed Reports</div>
-      <q-table
-        :rows="processedReports"
-        :columns="columns"
-        row-key="id"
-        @row-click="onRowClick"
-        flat
+            <div class="q-mb-sm">
+              <div class="text-caption text-grey-7">Risk Level</div>
+              <q-select
+                v-model="teamMember.riskLevel"
+                :options="riskLevelOptions"
+                @update:model-value="updateRiskLevel"
+                outlined
+                dense
+                class="q-mt-xs"
+              >
+                <template v-slot:selected>
+                  <q-badge 
+                    :color="getRiskColor(teamMember.riskLevel)" 
+                    :label="teamMember.riskLevel"
+                  />
+                </template>
+                <template v-slot:option="scope">
+                  <q-item v-bind="scope.itemProps">
+                    <q-item-section>
+                      <q-badge 
+                        :color="getRiskColor(scope.opt)" 
+                        :label="scope.opt"
+                      />
+                    </q-item-section>
+                  </q-item>
+                </template>
+              </q-select>
+            </div>
+
+            <div>
+              <div class="text-caption text-grey-7 q-mb-xs">Groups</div>
+              <q-select
+                v-model="teamMember.groups"
+                :options="availableGroups"
+                @update:model-value="updateGroups"
+                multiple
+                outlined
+                dense
+                use-chips
+                new-value-mode="add-unique"
+              >
+                <template v-slot:selected-item="scope">
+                  <q-chip
+                    removable
+                    @remove="scope.removeAtIndex(scope.index)"
+                    :tabindex="scope.tabindex"
+                    color="primary"
+                    text-color="white"
+                    size="sm"
+                  >
+                    {{ scope.opt }}
+                  </q-chip>
+                </template>
+              </q-select>
+            </div>
+          </q-card-section>
+        </q-card>
+      </div>
+
+      <!-- Statistics cards -->
+      <div class="col-xs-12 col-sm-6 col-md-8">
+        <div class="row q-col-gutter-md">
+          <div class="col-xs-6 col-sm-6 col-md-4">
+            <q-card flat bordered>
+              <q-card-section>
+                <div class="text-caption text-grey-7">Organic Reports</div>
+                <div class="text-h5 text-primary">{{ teamMember?.organicReports }}</div>
+                <div class="text-caption">Total reports made</div>
+              </q-card-section>
+            </q-card>
+          </div>
+
+          <div class="col-xs-6 col-sm-6 col-md-4">
+            <q-card flat bordered>
+              <q-card-section>
+                <div class="text-caption text-grey-7">Synthetic Phishes</div>
+                <div class="text-h5 text-orange">{{ teamMember?.syntheticReported }} / {{ teamMember?.syntheticReceived }}</div>
+                <div class="text-caption">Reported / Received</div>
+              </q-card-section>
+            </q-card>
+          </div>
+
+          <div class="col-xs-6 col-sm-6 col-md-4">
+            <q-card flat bordered>
+              <q-card-section>
+                <div class="text-caption text-grey-7">Educational Resources</div>
+                <div class="text-h5 text-green">{{ teamMember?.resourcesCompleted }} / {{ teamMember?.resourcesAssigned }}</div>
+                <div class="text-caption">Completed / Assigned</div>
+              </q-card-section>
+            </q-card>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabs for detailed views -->
+    <q-card flat bordered>
+      <q-tabs
+        v-model="activeTab"
         dense
-      />
-    </div>
-    
-    <q-dialog v-model="showMessageDialog">
+        class="text-grey"
+        active-color="primary"
+        indicator-color="primary"
+        align="left"
+      >
+        <q-tab name="organic" label="Organic Reports" />
+        <q-tab name="synthetic" label="Synthetic Phishes" />
+        <q-tab name="resources" label="Educational Resources" />
+      </q-tabs>
+
+      <q-separator />
+
+      <q-tab-panels v-model="activeTab" animated>
+        <!-- Organic Reports Tab -->
+        <q-tab-panel name="organic">
+          <div class="text-h6 q-mb-md">Organic Reports</div>
+          
+          <q-table
+            :rows="organicReports"
+            :columns="organicReportColumns"
+            row-key="pk"
+            flat
+            :pagination="{ rowsPerPage: 10 }"
+          >
+            <template v-slot:body-cell-timestamp="props">
+              <q-td :props="props">
+                {{ formatDate(props.value) }}
+              </q-td>
+            </template>
+            
+            <template v-slot:body-cell-actions="props">
+              <q-td :props="props">
+                <q-btn 
+                  flat 
+                  dense 
+                  round 
+                  icon="visibility" 
+                  @click="viewReportDetails(props.row)"
+                >
+                  <q-tooltip>View Details</q-tooltip>
+                </q-btn>
+              </q-td>
+            </template>
+          </q-table>
+        </q-tab-panel>
+
+        <!-- Synthetic Phishes Tab -->
+        <q-tab-panel name="synthetic">
+          <div class="text-h6 q-mb-md">Synthetic Phishing Tests</div>
+          
+          <q-table
+            :rows="syntheticTests"
+            :columns="syntheticTestColumns"
+            row-key="id"
+            flat
+            :pagination="{ rowsPerPage: 10 }"
+          >
+            <template v-slot:body-cell-reported="props">
+              <q-td :props="props">
+                <q-icon 
+                  :name="props.value ? 'check_circle' : 'cancel'" 
+                  :color="props.value ? 'positive' : 'negative'"
+                  size="sm"
+                />
+              </q-td>
+            </template>
+
+            <template v-slot:body-cell-sentDate="props">
+              <q-td :props="props">
+                {{ formatDate(props.value) }}
+              </q-td>
+            </template>
+
+            <template v-slot:body-cell-reportedDate="props">
+              <q-td :props="props">
+                {{ props.value ? formatDate(props.value) : '-' }}
+              </q-td>
+            </template>
+          </q-table>
+        </q-tab-panel>
+
+        <!-- Educational Resources Tab -->
+        <q-tab-panel name="resources">
+          <div class="text-h6 q-mb-md">Educational Resources</div>
+          
+          <q-table
+            :rows="educationalResources"
+            :columns="resourceColumns"
+            row-key="id"
+            flat
+            :pagination="{ rowsPerPage: 10 }"
+          >
+            <template v-slot:body-cell-status="props">
+              <q-td :props="props">
+                <q-badge 
+                  :color="props.value === 'completed' ? 'positive' : 'grey'" 
+                  :label="props.value"
+                />
+              </q-td>
+            </template>
+
+            <template v-slot:body-cell-assignedDate="props">
+              <q-td :props="props">
+                {{ formatDate(props.value) }}
+              </q-td>
+            </template>
+
+            <template v-slot:body-cell-completedDate="props">
+              <q-td :props="props">
+                {{ props.value ? formatDate(props.value) : '-' }}
+              </q-td>
+            </template>
+
+            <template v-slot:body-cell-actions="props">
+              <q-td :props="props">
+                <q-btn 
+                  v-if="props.row.status === 'completed'"
+                  flat 
+                  dense 
+                  label="Reassign" 
+                  color="primary"
+                  @click="reassignResource(props.row)"
+                />
+              </q-td>
+            </template>
+          </q-table>
+        </q-tab-panel>
+      </q-tab-panels>
+    </q-card>
+
+    <!-- Report details dialog -->
+    <q-dialog v-model="showReportDialog">
       <q-card style="min-width: 50vw; max-width: 90vw;">
         <q-card-section>
-          <div class="text-h6">Phish Report Message</div>
-          <div class="text-subtitle2">Employee: {{ dialogReport?.employee?.name || '' }} — Submitted: {{ dialogReport?.timestamp ? new Date(dialogReport.timestamp).toLocaleString() : '' }}</div>
+          <div class="text-h6">Report Details</div>
+          <div class="text-subtitle2">
+            Submitted: {{ selectedReport?.timestamp ? formatDate(selectedReport.timestamp) : '' }}
+          </div>
         </q-card-section>
 
         <q-separator />
 
         <q-card-section>
-          <pre style="white-space: pre-wrap; word-break: break-word;" v-html="highlightedMessage"></pre>
+          <div class="text-subtitle2 q-mb-sm">Report Type</div>
+          <q-badge 
+            :label="selectedReport?.organic ? 'Organic' : 'Synthetic'" 
+            :color="selectedReport?.organic ? 'primary' : 'orange'"
+          />
+
+          <div class="text-subtitle2 q-mt-md q-mb-sm">Message Content</div>
+          <pre style="white-space: pre-wrap; word-break: break-word; background: #f6f8fa; padding: 12px; border-radius: 4px;" v-html="highlightedMessage"></pre>
         </q-card-section>
 
         <q-card-actions align="right">
-          <q-btn flat label="Close" color="primary" v-close-popup @click="showMessageDialog = false" />
+          <q-btn flat label="Close" color="primary" v-close-popup />
         </q-card-actions>
       </q-card>
     </q-dialog>
@@ -59,34 +304,186 @@
 .json-number { color: #d32f2f; }
 .json-boolean { color: #ff9800; font-weight: 600; }
 .json-null { color: #757575; font-style: italic; }
-pre { background: #f6f8fa; padding: 12px; border-radius: 4px; }
 </style>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, Ref } from 'vue'
+import { ref, onMounted, computed } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { usePhishStore } from 'src/stores/phish'
 import { PhishReport } from 'src/types'
+import { QTableProps } from 'quasar'
 
+const router = useRouter()
+const route = useRoute()
 const phishStore = usePhishStore()
 
-const columns = [
+const loading = ref(false)
+const activeTab = ref('organic')
+const showReportDialog = ref(false)
+const selectedReport = ref<PhishReport | null>(null)
+
+const riskLevelOptions = ['low', 'med', 'high']
+const availableGroups = ['Sales', 'Engineering', 'HR', 'Finance', 'Operations', 'Management']
+
+interface TeamMember {
+  pk: number
+  employeeName: string
+  riskLevel: 'low' | 'med' | 'high'
+  organicReports: number
+  syntheticReceived: number
+  syntheticReported: number
+  resourcesAssigned: number
+  resourcesCompleted: number
+  groups: string[]
+}
+
+interface SyntheticTest {
+  id: number
+  sentDate: Date
+  reported: boolean
+  reportedDate: Date | null
+  testName: string
+}
+
+interface EducationalResource {
+  id: number
+  title: string
+  assignedDate: Date
+  completedDate: Date | null
+  status: 'pending' | 'completed'
+}
+
+// Mock data - replace with API calls
+const teamMember = ref<TeamMember>({
+  pk: Number(route.params.id),
+  employeeName: 'Loading...',
+  riskLevel: 'med',
+  organicReports: 0,
+  syntheticReceived: 0,
+  syntheticReported: 0,
+  resourcesAssigned: 0,
+  resourcesCompleted: 0,
+  groups: []
+})
+
+const organicReports = ref<PhishReport[]>([])
+const syntheticTests = ref<SyntheticTest[]>([])
+const educationalResources = ref<EducationalResource[]>([])
+
+const organicReportColumns: QTableProps['columns'] = [
   {
-    name: 'employee_name', label: 'Employee Name', field: 'employee_name', sortable: true
+    name: 'timestamp',
+    label: 'Date',
+    field: 'timestamp',
+    align: 'left',
+    sortable: true
   },
   {
-    name: 'timestamp', label: 'Date of Submission', field: 'timestamp', sortable: true,
-    format: (ts: string) => ts ? new Date(ts).toLocaleString() : ''
+    name: 'processed',
+    label: 'Status',
+    field: (row: PhishReport) => row.processed ? 'Processed' : 'Pending',
+    align: 'center',
+    sortable: true
+  },
+  {
+    name: 'actions',
+    label: 'Actions',
+    field: '',
+    align: 'center'
   }
 ]
 
-const submittedReports = ref([]) as Ref<Array<PhishReport>>
-const processedReports = ref([]) as Ref<Array<PhishReport>>
-const selected = ref([]) as Ref<Array<PhishReport>>
-const loading = ref(false)
+const syntheticTestColumns: QTableProps['columns'] = [
+  {
+    name: 'testName',
+    label: 'Test Name',
+    field: 'testName',
+    align: 'left',
+    sortable: true
+  },
+  {
+    name: 'sentDate',
+    label: 'Sent Date',
+    field: 'sentDate',
+    align: 'left',
+    sortable: true
+  },
+  {
+    name: 'reported',
+    label: 'Reported',
+    field: 'reported',
+    align: 'center',
+    sortable: true
+  },
+  {
+    name: 'reportedDate',
+    label: 'Reported Date',
+    field: 'reportedDate',
+    align: 'left',
+    sortable: true
+  }
+]
 
-const showMessageDialog = ref(false)
-const dialogMessage = ref<JSON | null>(null)
-const dialogReport = ref<PhishReport | null>(null)
+const resourceColumns: QTableProps['columns'] = [
+  {
+    name: 'title',
+    label: 'Resource Title',
+    field: 'title',
+    align: 'left',
+    sortable: true
+  },
+  {
+    name: 'assignedDate',
+    label: 'Assigned Date',
+    field: 'assignedDate',
+    align: 'left',
+    sortable: true
+  },
+  {
+    name: 'completedDate',
+    label: 'Completed Date',
+    field: 'completedDate',
+    align: 'left',
+    sortable: true
+  },
+  {
+    name: 'status',
+    label: 'Status',
+    field: 'status',
+    align: 'center',
+    sortable: true
+  },
+  {
+    name: 'actions',
+    label: 'Actions',
+    field: '',
+    align: 'center'
+  }
+]
+
+function formatDate(date: Date | string): string {
+  if (!date) return ''
+  return new Date(date).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+}
+
+function getRiskColor(riskLevel: string): string {
+  switch (riskLevel) {
+    case 'high':
+      return 'red'
+    case 'med':
+      return 'orange'
+    case 'low':
+      return 'green'
+    default:
+      return 'grey'
+  }
+}
 
 function escapeHtml(unsafe: string) {
   return unsafe
@@ -112,41 +509,86 @@ function syntaxHighlight(json: any) {
   })
 }
 
-const highlightedMessage = computed(() => dialogMessage.value ? syntaxHighlight(dialogMessage.value) : '')
+const highlightedMessage = computed(() => 
+  selectedReport.value?.message ? syntaxHighlight(selectedReport.value.message) : ''
+)
 
-async function refreshReports() {
+async function loadTeamMemberData() {
   loading.value = true
   try {
+    const memberId = Number(route.params.pk)
+    
+    // Load all reports for this employee
     await phishStore.getReports()
-    submittedReports.value = phishStore.submittedReports.map((r: any) => ({ ...r, employee_name: r.employee?.name || '' }))
-    processedReports.value = phishStore.processedReports.map((r: any) => ({ ...r, employee_name: r.employee?.name || '' }))
+    
+    // Mock data - replace with actual API calls
+    // Filter reports for this specific employee
+    organicReports.value = phishStore.processedReports.filter(
+      (r: PhishReport) => r.employee.pk === memberId && r.organic
+    )
+    
+    // Load team member details from list (in real app, fetch from API)
+    const mockMembers = [
+      { pk: 5, employeeName: 'Dan Wilson', riskLevel: 'high' as const, organicReports: 2, syntheticReceived: 15, syntheticReported: 8, resourcesAssigned: 10, resourcesCompleted: 4, groups: ['Engineering', 'Management'] },
+      { pk: 2, employeeName: 'Bob Smith', riskLevel: 'low' as const, organicReports: 12, syntheticReceived: 10, syntheticReported: 10, resourcesAssigned: 8, resourcesCompleted: 8, groups: ['Sales'] },
+      { pk: 3, employeeName: 'Carol Williams', riskLevel: 'med' as const, organicReports: 5, syntheticReceived: 12, syntheticReported: 9, resourcesAssigned: 6, resourcesCompleted: 5, groups: ['HR'] },
+      { pk: 4, employeeName: 'David Brown', riskLevel: 'high' as const, organicReports: 1, syntheticReceived: 18, syntheticReported: 5, resourcesAssigned: 12, resourcesCompleted: 3, groups: ['Finance'] },
+      { pk: 1, employeeName: 'Emma Davis', riskLevel: 'med' as const, organicReports: 7, syntheticReceived: 14, syntheticReported: 11, resourcesAssigned: 9, resourcesCompleted: 7, groups: ['Operations', 'Engineering'] }
+    ]
+    
+    const member = mockMembers.find(m => m.pk === memberId)
+    if (member) {
+      teamMember.value = member
+    }
+    
+    // Mock synthetic tests
+    syntheticTests.value = [
+      { id: 1, testName: 'CEO Fraud Test #1', sentDate: new Date('2025-12-01'), reported: true, reportedDate: new Date('2025-12-01') },
+      { id: 2, testName: 'Invoice Scam Test', sentDate: new Date('2025-12-15'), reported: false, reportedDate: null },
+      { id: 3, testName: 'Password Reset Phish', sentDate: new Date('2026-01-05'), reported: true, reportedDate: new Date('2026-01-05') }
+    ]
+    
+    // Mock educational resources
+    educationalResources.value = [
+      { id: 1, title: 'Phishing Awareness Training', assignedDate: new Date('2025-11-01'), completedDate: new Date('2025-11-15'), status: 'completed' },
+      { id: 2, title: 'Email Security Best Practices', assignedDate: new Date('2025-12-01'), completedDate: null, status: 'pending' },
+      { id: 3, title: 'Spotting Social Engineering', assignedDate: new Date('2026-01-01'), completedDate: new Date('2026-01-10'), status: 'completed' }
+    ]
+    
   } finally {
     loading.value = false
   }
+}
+
+function goBack() {
+  router.push('/phish/team')
+}
+
+function updateRiskLevel(newLevel: string) {
+  console.log('Updating risk level to:', newLevel)
+  // TODO: API call to update risk level
+}
+
+function updateGroups(newGroups: string[]) {
+  console.log('Updating groups to:', newGroups)
+  // TODO: API call to update groups
+}
+
+function viewReportDetails(report: PhishReport) {
+  selectedReport.value = report
+  showReportDialog.value = true
+}
+
+function reassignResource(resource: EducationalResource) {
+  console.log('Reassigning resource:', resource.id)
+  resource.status = 'pending'
+  resource.completedDate = null
+  resource.assignedDate = new Date()
+  teamMember.value.resourcesCompleted--
+  // TODO: API call to mark resource reassigned
 }
 
 onMounted(() => {
-  refreshReports()
+  loadTeamMemberData()
 })
-
-async function markSelectedComplete() {
-  if (!selected.value.length) return
-  loading.value = true
-  try {
-    await phishStore.markReportsProcessed(selected.value)
-    selected.value = []
-    await refreshReports()
-  } finally {
-    loading.value = false
-  }
-}
-
-function onRowClick(evt: Event, row: PhishReport) {
-  dialogReport.value = row
-  dialogMessage.value = row.message
-  showMessageDialog.value = true
-}
-
-
-
 </script>
