@@ -100,6 +100,10 @@
 </template>
 
 <style lang="scss"> 
+  .floor-plan {
+    width: 100%;
+  }
+  
   #legend {
     border: 2px black solid;
   }
