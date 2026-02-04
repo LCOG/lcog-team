@@ -4,6 +4,30 @@
 
 export const releases = [
   {
+    version: '1.2.3',
+    date: new Date(2026, 1, 3),
+    changes: [
+      {
+        type: 'new',
+        description: 'Phishing app wireframes.'
+      },
+      {
+        type: 'new',
+        description: 'Wireframe sending Next Review Date notifications in ' +
+          'Performance Reviews app.'
+      },
+      {
+        type: 'improved',
+        description: 'Minor improvements to Workflows app.'
+      },
+      {
+        type: 'fix',
+        description: 'Fixed issue where desk reservation floor plans didn\'t ' +
+          'display on mobile.'
+      }
+    ]
+  },
+  {
     version: '1.2.2',
     date: new Date(2026, 0, 21),
     changes: [

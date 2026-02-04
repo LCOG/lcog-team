@@ -253,6 +253,17 @@ if (maintenanceMode) {
               name: 'phish-reports',
               component: () => import('src/pages/phish/PhishReports.vue'),
             },
+            {
+              path: 'team',
+              name: 'phish-team-list',
+              component: () => import('src/pages/phish/PhishTeamList.vue'),
+            }, 
+            {
+              path: 'team/:pk',
+              name: 'phish-team-detail',
+              component:
+                () => import('src/pages/phish/PhishTeamDetail.vue'),
+            }
           ]
         },
 
