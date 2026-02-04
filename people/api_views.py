@@ -489,6 +489,48 @@ class PerformanceReviewViewSet(viewsets.ModelViewSet):
         serialized_review = PerformanceReviewSerializer(pr,
             context={'request': request})
         return Response(serialized_review.data)
+    
+    @action(detail=False, methods=['get'])
+    def nrd_notifications(self, request):
+        """
+        Get data for NRD notifications.
+        """
+        user = self.request.user
+        if not user.is_authenticated:
+            return Response(status=403)
+        
+        one_year_from_now = timezone.now() + timedelta(days=365)
+        upcoming_reviews = PerformanceReview.objects.filter(
+            period_end_date__lte=one_year_from_now,
+            period_end_date__gte=timezone.now(),
+            employee__active=True
+        ).exclude(
+            status=PerformanceReview.EVALUATION_HR_PROCESSED,
+
+        ).order_by('period_end_date')
+        
+        # Group reviews by manager
+        manager_dict = {}
+        for review in upcoming_reviews:
+            manager = review.employee.manager
+            try:
+                if manager.pk not in manager_dict:
+                    manager_dict[manager.pk] = {
+                        'manager': SimpleEmployeeSerializer(
+                            manager, context={'request': request}
+                        ).data,
+                        'reviews': []
+                    }
+                manager_dict[manager.pk]['reviews'].append(
+                    PerformanceReviewSimpleSerializer(
+                        review, context={'request': request}
+                    ).data
+                )
+            except AttributeError:
+                # Handle case where manager is None
+                continue
+        
+        return Response(manager_dict)
 
 
 class TeleworkApplicationFileUploadViewSet(viewsets.ModelViewSet):
