@@ -89,10 +89,10 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'mainsite.middleware.HealthCheckMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'corsheaders.middleware.CorsMiddleware',  # django-cors-headers - must be before CommonMiddleware
     'django.contrib.sessions.middleware.SessionMiddleware', 
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
-    'mainsite.middleware.CorsMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -374,9 +374,16 @@ REST_FRAMEWORK_TRUSTED_IPS_LIST = []
 # Frontend
 if ENVIRONMENT == 'STAGING': 
     FRONTEND_DOMAIN = 'https://app.team-staging.lcog.org'
+    PHISHING_DOMAIN = 'https://reportphish.lcog-or.gov'
 else:
     # Production
     FRONTEND_DOMAIN = 'https://app.team.lcog.org'
+    PHISHING_DOMAIN = 'https://reportphish.lcog-or.gov'
+
+CORS_ALLOWED_ORIGINS = [
+    FRONTEND_DOMAIN,
+    PHISHING_DOMAIN
+]
 
 # Overwrite production settings with local ones
 try:
