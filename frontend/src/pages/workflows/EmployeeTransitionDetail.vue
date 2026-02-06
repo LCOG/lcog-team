@@ -2035,8 +2035,8 @@ function suggestEmail(): void {
     return
   }
   if (employeeLastName.value) {
-    suggestedEmail =
-    `${firstChar}${employeeLastName.value.toLowerCase()}@lcog-or.gov`
+    let lastName = employeeLastName.value.toLowerCase().replace(/\s+/g, '')
+    suggestedEmail = `${firstChar}${lastName}@lcog-or.gov`
   } else {
     return
   }
@@ -2046,7 +2046,7 @@ function suggestEmail(): void {
     // If so, add middle initial and check again
     if (employeeMiddleInitial.value) {
       const mi = employeeMiddleInitial.value.toLowerCase()
-      const ln = employeeLastName.value.toLowerCase()
+      const ln = employeeLastName.value.toLowerCase().replace(/\s+/g, '')
       suggestedEmail = `${firstChar}${mi}${ln}@lcog-or.gov`
     } else {
       return

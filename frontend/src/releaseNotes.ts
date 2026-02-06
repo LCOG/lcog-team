@@ -4,6 +4,21 @@
 
 export const releases = [
   {
+    version: '1.2.4',
+    date: new Date(2026, 1, 5),
+    changes: [
+      {
+        type: 'improved',
+        description: 'Scrap custom CORS middleware in favor of off-the-shelf ' +
+          'configuration. Add configuration for Report Phishing App frontend.'
+      },
+      {
+        type: 'improved',
+        description: 'Minor improvements to Workflows app.'
+      },
+    ]
+  },
+  {
     version: '1.2.3',
     date: new Date(2026, 1, 3),
     changes: [
