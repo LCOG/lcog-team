@@ -374,7 +374,7 @@ REST_FRAMEWORK_TRUSTED_IPS_LIST = []
 # Frontend
 if ENVIRONMENT == 'STAGING': 
     FRONTEND_DOMAIN = 'https://app.team-staging.lcog.org'
-    PHISHING_DOMAIN = 'https://reportphish.lcog-or.gov'
+    PHISHING_DOMAIN = 'https://reportphish-staging.lcog-or.gov'
 else:
     # Production
     FRONTEND_DOMAIN = 'https://app.team.lcog.org'
