@@ -3,6 +3,7 @@ import csv
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
 
+from mainsite.models import Organization
 from people.models import Division, Employee, JobTitle, UnitOrProgram
 
 
@@ -241,7 +242,11 @@ class Command(BaseCommand):
                             'Updated employee {} {} department from {} to {}'.format(employee.user.first_name, employee.user.last_name, old_department, unit_or_program)
                         )
             except Employee.DoesNotExist:
-                employee = Employee.objects.create(user=user, number=number, job_title=job_title, unit_or_program=unit_or_program)
+                lcog_org = Organization.objects.get(name='LCOG')
+                employee = Employee.objects.create(
+                    user=user, number=number, job_title=job_title,
+                    unit_or_program=unit_or_program, organization=lcog_org
+                )
                 self.stdout.write(
                     'Created employee {} {}'.format(employee.user.first_name, employee.user.last_name)
                 )
