@@ -225,7 +225,7 @@ if (maintenanceMode) {
           path: '/note/new',
           name: 'note-create',
           component: () => import('src/pages/reviews/ReviewNoteCreate.vue'),
-          meta: { requiresAuth: true },
+          meta: { requiresAuth: false },
           // beforeEnter: ifManager
         },
         {

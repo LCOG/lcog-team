@@ -988,11 +988,25 @@ class ReviewNote(models.Model):
     def get_absolute_url(self):
         return reverse("note-update", kwargs={"pk": self.pk})
 
-    author = models.ForeignKey("Employee", related_name="notes_written", verbose_name=_("author"), on_delete=models.CASCADE)
-    employee = models.ForeignKey("Employee", related_name="notes", verbose_name=_("employee"), on_delete=models.CASCADE)
-    created_at = models.DateTimeField(_("review note date"), auto_now=False, auto_now_add=True)
+    author = models.ForeignKey(
+        "Employee", related_name="notes_written", verbose_name=_("author"),
+        on_delete=models.CASCADE, blank=True, null=True
+    )
+    employee = models.ForeignKey(
+        "Employee", related_name="notes", verbose_name=_("employee"),
+        on_delete=models.CASCADE
+    )
+    created_at = models.DateTimeField(
+        _("review note date"), auto_now=False, auto_now_add=True
+    )
     note = models.TextField(_("review note"))
-
+    # Name and org for anonymous notes
+    anon_name = models.CharField(
+        _("unauthenticated name"), max_length=255, blank=True
+    )
+    anon_org = models.CharField(
+        _("unauthenticated org"), max_length=255, blank=True
+    )
 
 class ViewedSecurityMessage(models.Model):
     employee = models.ForeignKey("people.Employee", verbose_name=_("employee"), on_delete=models.CASCADE)

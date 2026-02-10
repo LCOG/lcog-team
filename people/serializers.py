@@ -454,7 +454,7 @@ class ReviewNoteSerializer(serializers.HyperlinkedModelSerializer):
     pk = serializers.IntegerField()
     employee_pk = serializers.IntegerField(source='employee.pk')
     employee_name = serializers.CharField(source='employee.name')
-    author_name = serializers.CharField(source='author.name')
+    author_name = serializers.SerializerMethodField()
     note = serializers.CharField()
     
     class Meta:
@@ -463,6 +463,15 @@ class ReviewNoteSerializer(serializers.HyperlinkedModelSerializer):
             'url', 'pk', 'employee_pk', 'employee_name', 'author_name',
             'created_at', 'note'
         ]
+
+    @staticmethod
+    def get_author_name(review_note):
+        if review_note.author:
+            return review_note.author.user.get_full_name()
+        elif review_note.anon_name:
+            return f"{review_note.anon_name} ({review_note.anon_org})"
+        else:
+            return "Unknown"
 
 
 class ViewedSecurityMessageSerializer(serializers.HyperlinkedModelSerializer):

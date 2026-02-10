@@ -546,6 +546,8 @@ export interface ResponsibilityTagUpdate {
 export interface ReviewNoteCreate {
   employee_pk: number
   note: string
+  anon_name?: string
+  anon_org?: string
 }
 
 export interface ReviewNoteRetrieve {

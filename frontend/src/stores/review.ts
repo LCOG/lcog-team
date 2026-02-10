@@ -256,6 +256,9 @@ export const useReviewStore = defineStore('review', {
           .then(() => {
             this.getAllReviewNotes()
               .then(() => {
+                if (reviewNote.anon_name) {
+                  resolve('Successfully created an anonymous review note')
+                }
                 const userStore = useUserStore()
                 userStore.userRequest()
                   .then(() => {
