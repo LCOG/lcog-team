@@ -345,9 +345,8 @@ export interface PhishReport {
   url: Url
   pk: number
   employee: SimpleEmployeeRetrieve
-  timestamp: Date
+  created_at: Date
   message: JSON
-  organic: boolean
   processed: boolean
 }
 

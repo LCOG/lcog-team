@@ -160,7 +160,7 @@
             flat
             :pagination="{ rowsPerPage: 10 }"
           >
-            <template v-slot:body-cell-timestamp="props">
+            <template v-slot:body-cell-created_at="props">
               <q-td :props="props">
                 {{ formatDate(props.value) }}
               </q-td>
@@ -272,7 +272,7 @@
         <q-card-section>
           <div class="text-h6">Report Details</div>
           <div class="text-subtitle2">
-            Submitted: {{ selectedReport?.timestamp ? formatDate(selectedReport.timestamp) : '' }}
+            Submitted: {{ selectedReport?.created_at ? formatDate(selectedReport.created_at) : '' }}
           </div>
         </q-card-section>
 
@@ -280,10 +280,10 @@
 
         <q-card-section>
           <div class="text-subtitle2 q-mb-sm">Report Type</div>
-          <q-badge 
+          <!-- <q-badge 
             :label="selectedReport?.organic ? 'Organic' : 'Synthetic'" 
             :color="selectedReport?.organic ? 'primary' : 'orange'"
-          />
+          /> -->
 
           <div class="text-subtitle2 q-mt-md q-mb-sm">Message Content</div>
           <pre style="white-space: pre-wrap; word-break: break-word; background: #f6f8fa; padding: 12px; border-radius: 4px;" v-html="highlightedMessage"></pre>
@@ -364,9 +364,9 @@ const educationalResources = ref<EducationalResource[]>([])
 
 const organicReportColumns: QTableProps['columns'] = [
   {
-    name: 'timestamp',
+    name: 'created_at',
     label: 'Date',
-    field: 'timestamp',
+    field: 'created_at',
     align: 'left',
     sortable: true
   },
@@ -524,7 +524,7 @@ async function loadTeamMemberData() {
     // Mock data - replace with actual API calls
     // Filter reports for this specific employee
     organicReports.value = phishStore.processedReports.filter(
-      (r: PhishReport) => r.employee.pk === memberId && r.organic
+      (r: PhishReport) => r.employee.pk === memberId
     )
     
     // Load team member details from list (in real app, fetch from API)

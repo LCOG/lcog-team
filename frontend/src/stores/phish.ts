@@ -19,9 +19,12 @@ export const usePhishStore = defineStore('phish', {
         axios({ url: `${ apiURL }api/v1/phishreport` })
           .then(resp => {
             const results = resp.data.results || resp.data
-            // We only want organic reports in submittedReports for now
-            this.submittedReports = results.filter((r: PhishReport) => r.organic === true && r.processed === false)
-            this.processedReports = results.filter((r: PhishReport) => r.organic === true && r.processed === true)
+            this.submittedReports = results.filter((r: PhishReport) => {
+              return r.processed === false
+            })
+            this.processedReports = results.filter((r: PhishReport) => {
+              return r.processed === true
+            })
             resolve(results)
           })
           .catch(e => {
@@ -38,7 +41,7 @@ export const usePhishStore = defineStore('phish', {
         // Find matching reports in submittedReports
         const toMove = this.submittedReports.filter((r: any) => ids.includes(r.pk ?? r.id))
 
-        // Send PATCH requests to mark organic=false for each report
+        // Send PATCH requests to mark processed=true for each report
         const ops = toMove.map((r: any) => {
           const id = r.pk ?? r.id
           return axios({ url: `${ apiURL }api/v1/phishreport/${ id }`, method: 'PATCH', data: { processed: true } })

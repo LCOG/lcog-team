@@ -29,7 +29,7 @@
         :pagination="submittedPagination"
         flat
       >
-        <template v-slot:body-cell-timestamp="props">
+        <template v-slot:body-cell-created_at="props">
           <q-td :props="props">
             {{ formatDate(props.value) }}
           </q-td>
@@ -50,7 +50,7 @@
         :pagination="processedPagination"
         flat
       >
-        <template v-slot:body-cell-timestamp="props">
+        <template v-slot:body-cell-created_at="props">
           <q-td :props="props">
             {{ formatDate(props.value) }}
           </q-td>
@@ -63,7 +63,7 @@
     <q-card style="min-width: 50vw; max-width: 90vw;">
       <q-card-section>
         <div class="text-h6">Phish Report Message</div>
-        <div class="text-subtitle2">Employee: {{ dialogReport?.employee?.name || '' }} — Submitted: {{ dialogReport?.timestamp ? formatDate(dialogReport.timestamp) : '' }}</div>
+        <div class="text-subtitle2">Employee: {{ dialogReport?.employee?.name || '' }} — Submitted: {{ dialogReport?.created_at ? formatDate(dialogReport.created_at) : '' }}</div>
       </q-card-section>
 
       <q-separator />
@@ -110,9 +110,9 @@ const submittedColumns: QTableProps['columns'] = [
     sortable: true
   },
   {
-    name: 'timestamp',
+    name: 'created_at',
     label: 'Date of Submission',
-    field: 'timestamp',
+    field: 'created_at',
     align: 'left',
     sortable: true
   }
@@ -127,23 +127,23 @@ const processedColumns: QTableProps['columns'] = [
     sortable: true
   },
   {
-    name: 'timestamp',
+    name: 'created_at',
     label: 'Date of Submission',
-    field: 'timestamp',
+    field: 'created_at',
     align: 'left',
     sortable: true
   }
 ]
 
 const submittedPagination = ref({
-  sortBy: 'timestamp',
+  sortBy: 'created_at',
   descending: true,
   page: 1,
   rowsPerPage: 10
 })
 
 const processedPagination = ref({
-  sortBy: 'timestamp',
+  sortBy: 'created_at',
   descending: true,
   page: 1,
   rowsPerPage: 10
