@@ -102,7 +102,7 @@
             <q-card flat bordered>
               <q-card-section>
                 <div class="text-caption text-grey-7">Organic Reports</div>
-                <div class="text-h5 text-primary">{{ teamMember?.organicReports }}</div>
+                <div class="text-h5 text-primary">{{ organicReportsCount }}</div>
                 <div class="text-caption">Total reports made</div>
               </q-card-section>
             </q-card>
@@ -365,14 +365,6 @@ interface TeamMember {
   groups: string[]
 }
 
-interface SyntheticTest {
-  id: number
-  sentDate: Date
-  reported: boolean
-  reportedDate: Date | null
-  testName: string
-}
-
 interface EducationalResource {
   id: number
   title: string
@@ -545,6 +537,12 @@ const highlightedMessage = computed(() =>
   selectedReport.value?.message ? syntaxHighlight(selectedReport.value.message) : ''
 )
 
+const organicReportsCount = computed(() => 
+  organicReports.value.filter(
+    report => report.employee.pk === teamMember.value.pk
+  ).length
+)
+
 const syntheticReportedCount = computed(() => 
   syntheticPhishes().filter(phish => phish.reported).length
 )
@@ -560,7 +558,7 @@ async function loadTeamMemberData() {
     
     // Load all reports for this employee
     await phishStore.getReports()
-    await phishStore.getSyntheticPhishes(employeePk)
+    await phishStore.getSyntheticPhishesForEmployee(employeePk)
     
     // Mock data - replace with actual API calls
     // Filter reports for this specific employee

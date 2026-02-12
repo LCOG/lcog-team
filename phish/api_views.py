@@ -113,7 +113,8 @@ class SyntheticPhishViewSet(viewsets.ModelViewSet):
                 return super().get_queryset()
             else:
                 if employee and employee.can_view_phish():
-                    return SyntheticPhish.objects.for_employee(employee)
+                    return SyntheticPhish.objects.for_employee(employee)\
+                        .order_by('-sent_at')
                 else:
                     return SyntheticPhish.objects.none()
         else:

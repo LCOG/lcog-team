@@ -36,7 +36,7 @@ export const usePhishStore = defineStore('phish', {
     },
 
     // Fetch all SyntheticPhish objects for a given employee
-    getSyntheticPhishes(employeeId: number) {
+    getSyntheticPhishesForEmployee(employeeId: number) {
       return new Promise((resolve, reject) => {
         axios({ url: `${ apiURL }api/v1/syntheticphish?employee=${ employeeId }` })
           .then(resp => {
