@@ -350,6 +350,39 @@ export interface PhishReport {
   processed: boolean
 }
 
+export interface SyntheticPhishTemplate {
+  url: Url
+  pk: number
+  name: string
+  version: number
+  subject: string
+  body: string
+  difficulty: number
+  active: boolean
+}
+
+export const emptyPhishTemplate: SyntheticPhishTemplate = {
+  url: '' as any,
+  pk: -1,
+  name: '',
+  version: 1,
+  subject: '',
+  body: '',
+  difficulty: 1,
+  active: true
+}
+
+export interface SyntheticPhish {
+  url: Url
+  pk: number
+  employee: number
+  template: SyntheticPhishTemplate
+  sent_at: Date
+  clicked: boolean
+  reported: boolean
+  reported_at: Date | null
+}
+
 ///////////////////////////////////////////////////
 // Purchase Structure from Django Rest Framework //
 ///////////////////////////////////////////////////

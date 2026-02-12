@@ -41,10 +41,20 @@ class Organization(models.Model, ActiveMixin):
 
 class OrganizationObjectsQuerySet(models.QuerySet):
     def for_organization(self, organization):
-        return self.filter(employee__organization=organization)
+        if hasattr(self.model, 'organization'):
+            return self.filter(organization=organization)
+        elif hasattr(self.model, 'employee'):
+            return self.filter(employee__organization=organization)
+        else:
+            return self
     
     def for_employee(self, employee):
-        return self.filter(employee__organization=employee.organization)
+        if hasattr(self.model, 'organization'):
+            return self.filter(organization=employee.organization)
+        elif hasattr(self.model, 'employee'):
+            return self.filter(employee__organization=employee.organization)
+        else:
+            return self
 
 
 class OrganizationObjectsManager(models.Manager):

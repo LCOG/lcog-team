@@ -112,7 +112,7 @@
             <q-card flat bordered>
               <q-card-section>
                 <div class="text-caption text-grey-7">Synthetic Phishes</div>
-                <div class="text-h5 text-orange">{{ syntheticReportedCount }} / {{ syntheticTests.length }}</div>
+                <div class="text-h5 text-orange">{{ syntheticReportedCount }} / {{ syntheticPhishes().length }}</div>
                 <div class="text-caption">Reported / Received</div>
               </q-card-section>
             </q-card>
@@ -186,14 +186,44 @@
         <q-tab-panel name="synthetic">
           <div class="text-h6 q-mb-md">Synthetic Phishing Tests</div>
           
+          <!-- Send New Synthetic Phish -->
+          <q-card flat bordered class="q-mb-md">
+            <q-card-section class="row items-center q-gutter-md">
+              <div class="text-subtitle2">Send New:</div>
+              <phish-template-select
+                :label="'Select Template'"
+                :read-only="false"
+                @input="template => selectedTemplate = template"
+                style="width: 250px;"
+              />
+              <q-btn 
+                label="Send Test Phish"
+                color="primary"
+                unelevated
+                :disable="!selectedTemplate"
+                @click="sendSyntheticPhish()"
+              />
+            </q-card-section>
+          </q-card>
+
+          <!-- Synthetic Phishes Sent -->
           <q-table
-            :rows="syntheticTests"
+            :rows="syntheticPhishes()"
             :columns="syntheticTestColumns"
             row-key="id"
             flat
             :pagination="{ rowsPerPage: 10 }"
           >
-            <template v-slot:body-cell-reported="props">
+          <template v-slot:body-cell-clicked="props">
+            <q-td :props="props">
+              <q-icon 
+                :name="props.value ? 'check_circle' : 'cancel'" 
+                :color="props.value ? 'negative' : 'positive'"
+                size="sm"
+              />
+            </q-td>
+          </template>  
+          <template v-slot:body-cell-reported="props">
               <q-td :props="props">
                 <q-icon 
                   :name="props.value ? 'check_circle' : 'cancel'" 
@@ -309,8 +339,9 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import PhishTemplateSelect from 'src/components/phish/PhishTemplateSelect.vue'
 import { usePhishStore } from 'src/stores/phish'
-import { PhishReport } from 'src/types'
+import { PhishReport, SyntheticPhishTemplate } from 'src/types'
 import { QTableProps } from 'quasar'
 
 const router = useRouter()
@@ -321,6 +352,7 @@ const loading = ref(false)
 const activeTab = ref('organic')
 const showReportDialog = ref(false)
 const selectedReport = ref<PhishReport | null>(null)
+const selectedTemplate = ref<SyntheticPhishTemplate | null>(null)
 
 const riskLevelOptions = ['low', 'med', 'high']
 const availableGroups = ['Sales', 'Engineering', 'HR', 'Finance', 'Operations', 'Management']
@@ -359,7 +391,6 @@ const teamMember = ref<TeamMember>({
 })
 
 const organicReports = ref<PhishReport[]>([])
-const syntheticTests = ref<SyntheticTest[]>([])
 const educationalResources = ref<EducationalResource[]>([])
 
 const organicReportColumns: QTableProps['columns'] = [
@@ -389,21 +420,27 @@ const syntheticTestColumns: QTableProps['columns'] = [
   {
     name: 'testName',
     label: 'Test Name',
-    field: 'testName',
-    align: 'left',
-    sortable: true
+    field: 'template_name',
+    align: 'left'
   },
   {
     name: 'sentDate',
     label: 'Sent Date',
-    field: 'sentDate',
+    field: 'sent_at',
     align: 'left',
+    sortable: true
+  },
+  {
+    name: 'clicked',
+    label: 'Clicked',
+    field: 'clicked',
+    align: 'center',
     sortable: true
   },
   {
     name: 'reported',
     label: 'Reported',
-    field: 'reported',
+    field: 'reported_at',
     align: 'center',
     sortable: true
   },
@@ -411,8 +448,7 @@ const syntheticTestColumns: QTableProps['columns'] = [
     name: 'reportedDate',
     label: 'Reported Date',
     field: 'reportedDate',
-    align: 'left',
-    sortable: true
+    align: 'left'
   }
 ]
 
@@ -452,6 +488,10 @@ const resourceColumns: QTableProps['columns'] = [
     align: 'center'
   }
 ]
+
+function syntheticPhishes() {
+  return phishStore.syntheticPhishes[teamMember.value.pk] || []
+}
 
 function formatDate(date: Date | string): string {
   if (!date) return ''
@@ -506,7 +546,7 @@ const highlightedMessage = computed(() =>
 )
 
 const syntheticReportedCount = computed(() => 
-  syntheticTests.value.filter(test => test.reported).length
+  syntheticPhishes().filter(phish => phish.reported).length
 )
 
 const educationalResourcesCompleted = computed(() =>
@@ -516,15 +556,16 @@ const educationalResourcesCompleted = computed(() =>
 async function loadTeamMemberData() {
   loading.value = true
   try {
-    const memberId = Number(route.params.pk)
+    const employeePk = Number(route.params.pk)
     
     // Load all reports for this employee
     await phishStore.getReports()
+    await phishStore.getSyntheticPhishes(employeePk)
     
     // Mock data - replace with actual API calls
     // Filter reports for this specific employee
     organicReports.value = phishStore.processedReports.filter(
-      (r: PhishReport) => r.employee.pk === memberId
+      (r: PhishReport) => r.employee.pk === employeePk
     )
     
     // Load team member details from list (in real app, fetch from API)
@@ -536,17 +577,10 @@ async function loadTeamMemberData() {
       { pk: 1, employeeName: 'Emma Davis', riskLevel: 'med' as const, organicReports: 7, groups: ['Operations', 'Engineering'] }
     ]
     
-    const member = mockMembers.find(m => m.pk === memberId)
+    const member = mockMembers.find(m => m.pk === employeePk)
     if (member) {
       teamMember.value = member
     }
-    
-    // Mock synthetic tests
-    syntheticTests.value = [
-      { id: 1, testName: 'CEO Fraud Test #1', sentDate: new Date('2025-12-01'), reported: true, reportedDate: new Date('2025-12-01') },
-      { id: 2, testName: 'Invoice Scam Test', sentDate: new Date('2025-12-15'), reported: false, reportedDate: null },
-      { id: 3, testName: 'Password Reset Phish', sentDate: new Date('2026-01-05'), reported: true, reportedDate: new Date('2026-01-05') }
-    ]
     
     // Mock educational resources
     educationalResources.value = [
@@ -585,6 +619,21 @@ function reassignResource(resource: EducationalResource) {
   resource.assignedDate = new Date()
   teamMember.value.resourcesCompleted--
   // TODO: API call to mark resource reassigned
+}
+
+function sendSyntheticPhish() {
+  if (!selectedTemplate.value) {
+    console.error('No template selected for synthetic phish')
+    return
+  }
+  phishStore.sendSyntheticPhish(teamMember.value.pk, selectedTemplate.value.pk)
+    .then(() => {
+      // Refresh synthetic tests list after sending
+      loadTeamMemberData()
+    })
+    .catch((e) => {
+      console.error('Error sending synthetic phish:', e)
+    })
 }
 
 onMounted(() => {

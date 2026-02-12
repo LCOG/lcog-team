@@ -2,12 +2,14 @@ import axios from 'axios'
 import { defineStore } from 'pinia'
 
 import { apiURL, handlePromiseError } from 'src/stores/index'
-import { PhishReport } from 'src/types'
+import { PhishReport, SyntheticPhish, SyntheticPhishTemplate } from 'src/types'
 
 export const usePhishStore = defineStore('phish', {
   state: () => ({
     submittedReports: [] as Array<PhishReport>,
-    processedReports: [] as Array<PhishReport>
+    processedReports: [] as Array<PhishReport>,
+    phishTemplates: [] as Array<SyntheticPhishTemplate>,
+    syntheticPhishes: {} as { [employeeId: number]: Array<SyntheticPhish> }
   }),
 
   getters: {},
@@ -29,6 +31,21 @@ export const usePhishStore = defineStore('phish', {
           })
           .catch(e => {
             handlePromiseError(reject, 'Error getting phish reports', e)
+          })
+      })
+    },
+
+    // Fetch all SyntheticPhish objects for a given employee
+    getSyntheticPhishes(employeeId: number) {
+      return new Promise((resolve, reject) => {
+        axios({ url: `${ apiURL }api/v1/syntheticphish?employee=${ employeeId }` })
+          .then(resp => {
+            const results = resp.data.results || resp.data
+            this.syntheticPhishes[employeeId] = results
+            resolve(results)
+          })
+          .catch(e => {
+            handlePromiseError(reject, 'Error getting synthetic phishes', e)
           })
       })
     },
@@ -57,6 +74,40 @@ export const usePhishStore = defineStore('phish', {
           })
           .catch(e => {
             handlePromiseError(reject, 'Error marking phish reports processed', e)
+          })
+      })
+    },
+
+    // Fetch all SyntheticPhishTemplate objects from the Django API
+    getPhishTemplates() {
+      return new Promise((resolve, reject) => {
+        axios({ url: `${ apiURL }api/v1/phishtemplate` })
+          .then(resp => {
+            const results = resp.data.results || resp.data
+            this.phishTemplates = results
+            resolve(results)
+          })
+          .catch(e => {
+            handlePromiseError(reject, 'Error getting phish templates', e)
+          })
+      })
+    },
+
+    sendSyntheticPhish(employeeId: number, templateId: number) {
+      return new Promise((resolve, reject) => {
+        axios({
+          url: `${ apiURL }api/v1/syntheticphish`,
+          method: 'POST',
+          data: {
+            employee: employeeId,
+            template: templateId,
+          }
+        })
+          .then(resp => {
+            resolve(resp.data)
+          })
+          .catch(e => {
+            handlePromiseError(reject, 'Error sending synthetic phish', e)
           })
       })
     }
