@@ -214,16 +214,16 @@
             flat
             :pagination="{ rowsPerPage: 10 }"
           >
-          <template v-slot:body-cell-clicked="props">
-            <q-td :props="props">
-              <q-icon 
-                :name="props.value ? 'check_circle' : 'cancel'" 
-                :color="props.value ? 'negative' : 'positive'"
-                size="sm"
-              />
-            </q-td>
-          </template>  
-          <template v-slot:body-cell-reported="props">
+            <template v-slot:body-cell-clicked="props">
+              <q-td :props="props">
+                <q-icon 
+                  :name="props.value ? 'check_circle' : 'cancel'" 
+                  :color="props.value ? 'positive' : 'negative'"
+                  size="sm"
+                />
+              </q-td>
+            </template>  
+            <template v-slot:body-cell-reported="props">
               <q-td :props="props">
                 <q-icon 
                   :name="props.value ? 'check_circle' : 'cancel'" 
@@ -233,13 +233,13 @@
               </q-td>
             </template>
 
-            <template v-slot:body-cell-sentDate="props">
+            <template v-slot:body-cell-sentAt="props">
               <q-td :props="props">
                 {{ formatDate(props.value) }}
               </q-td>
             </template>
 
-            <template v-slot:body-cell-reportedDate="props">
+            <template v-slot:body-cell-reportedAt="props">
               <q-td :props="props">
                 {{ props.value ? formatDate(props.value) : '-' }}
               </q-td>
@@ -278,22 +278,23 @@
             flat
             :pagination="{ rowsPerPage: 10 }"
           >
-            <template v-slot:body-cell-status="props">
+            <template v-slot:body-cell-completed="props">
               <q-td :props="props">
-                <q-badge 
-                  :color="props.value === 'completed' ? 'positive' : 'grey'" 
-                  :label="props.value"
+                <q-icon 
+                  :name="props.value ? 'check_circle' : 'cancel'" 
+                  :color="props.value ? 'positive' : 'negative'"
+                  size="sm"
                 />
               </q-td>
             </template>
 
-            <template v-slot:body-cell-assignedDate="props">
+            <template v-slot:body-cell-assignedAt="props">
               <q-td :props="props">
                 {{ formatDate(props.value) }}
               </q-td>
             </template>
 
-            <template v-slot:body-cell-completedDate="props">
+            <template v-slot:body-cell-completedAt="props">
               <q-td :props="props">
                 {{ props.value ? formatDate(props.value) : '-' }}
               </q-td>
@@ -302,7 +303,7 @@
             <template v-slot:body-cell-actions="props">
               <q-td :props="props">
                 <q-btn 
-                  v-if="props.row.status === 'completed'"
+                  v-if="props.row.completed"
                   flat 
                   dense 
                   label="Reassign" 
@@ -439,7 +440,7 @@ const syntheticTestColumns: QTableProps['columns'] = [
     align: 'left'
   },
   {
-    name: 'sentDate',
+    name: 'sentAt',
     label: 'Sent Date',
     field: 'sent_at',
     align: 'left',
@@ -460,40 +461,39 @@ const syntheticTestColumns: QTableProps['columns'] = [
     sortable: true
   },
   {
-    name: 'reportedDate',
+    name: 'reportedAt',
     label: 'Reported Date',
-    field: 'reportedDate',
+    field: 'reportedAt',
     align: 'left'
   }
 ]
 
 const resourceColumns: QTableProps['columns'] = [
   {
-    name: 'title',
-    label: 'Resource Title',
-    field: 'title',
+    name: 'name',
+    label: 'Name',
+    field: 'training_name',
+    align: 'left',
+  },
+  {
+    name: 'assignedAt',
+    label: 'Assigned',
+    field: 'assigned_at',
     align: 'left',
     sortable: true
   },
   {
-    name: 'assignedDate',
-    label: 'Assigned Date',
-    field: 'assignedDate',
-    align: 'left',
-    sortable: true
-  },
-  {
-    name: 'completedDate',
-    label: 'Completed Date',
-    field: 'completedDate',
-    align: 'left',
-    sortable: true
-  },
-  {
-    name: 'status',
-    label: 'Status',
-    field: 'status',
+    name: 'completed',
+    label: 'Completed',
+    field: 'completed',
     align: 'center',
+    sortable: true
+  },
+  {
+    name: 'completedAt',
+    label: 'Completed Date',
+    field: 'completed_at',
+    align: 'left',
     sortable: true
   },
   {

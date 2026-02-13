@@ -194,3 +194,39 @@ class TrainingAssignmentViewSet(viewsets.ModelViewSet):
                     return TrainingAssignment.objects.none()
         else:
             return TrainingAssignment.objects.none()
+    
+    def create(self, request, *args, **kwargs):
+        employee_pk = request.data.get('employee')
+        template_pk = request.data.get('template')
+        
+        if not employee_pk or not template_pk:
+            return Response(
+                {'error': 'employee and template are required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Get employee
+        try:            
+            employee = Employee.objects.get(pk=employee_pk)
+        except Employee.DoesNotExist:
+            return Response(
+                {'error': 'Employee with this ID does not exist'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        # Get template
+        try:
+            template = TrainingTemplate.objects.get(pk=template_pk)
+        except TrainingTemplate.DoesNotExist:
+            return Response(
+                {'error': 'Training Template with this ID does not exist'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        training_assignment = TrainingAssignment.objects.create(
+            employee=employee,
+            template=template
+        )
+
+        serializer = self.get_serializer(training_assignment)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
