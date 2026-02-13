@@ -1,24 +1,29 @@
 import axios from 'axios'
+import { create, get } from 'cypress/types/lodash'
 import { defineStore } from 'pinia'
 
 import { apiURL, handlePromiseError } from 'src/stores/index'
-import { PhishReport, SyntheticPhish, SyntheticPhishTemplate } from 'src/types'
+import { PhishReport, SyntheticPhish, SyntheticPhishTemplate, TrainingAssignment, TrainingTemplate } from 'src/types'
 
 export const usePhishStore = defineStore('phish', {
   state: () => ({
     submittedReports: [] as Array<PhishReport>,
     processedReports: [] as Array<PhishReport>,
     phishTemplates: [] as Array<SyntheticPhishTemplate>,
-    syntheticPhishes: {} as { [employeeId: number]: Array<SyntheticPhish> }
+    phishAssignments: {} as { [employeeId: number]: Array<SyntheticPhish> },
+    trainingTemplates: [] as Array<TrainingTemplate>,
+    trainingAssignments: {} as {
+      [employeeId: number]: Array<TrainingAssignment>
+    }
   }),
 
   getters: {},
 
-  actions: {
+actions: {
     // Fetch all PhishReport objects from the Django API
     getReports() {
       return new Promise((resolve, reject) => {
-        axios({ url: `${ apiURL }api/v1/phishreport` })
+        axios({ url: `${ apiURL }api/v1/phish-report` })
           .then(resp => {
             const results = resp.data.results || resp.data
             this.submittedReports = results.filter((r: PhishReport) => {
@@ -35,21 +40,6 @@ export const usePhishStore = defineStore('phish', {
       })
     },
 
-    // Fetch all SyntheticPhish objects for a given employee
-    getSyntheticPhishesForEmployee(employeeId: number) {
-      return new Promise((resolve, reject) => {
-        axios({ url: `${ apiURL }api/v1/syntheticphish?employee=${ employeeId }` })
-          .then(resp => {
-            const results = resp.data.results || resp.data
-            this.syntheticPhishes[employeeId] = results
-            resolve(results)
-          })
-          .catch(e => {
-            handlePromiseError(reject, 'Error getting synthetic phishes', e)
-          })
-      })
-    },
-
     // Mark one or more reports complete (moves them from submittedReports to processedReports)
     // Accepts an array of report ids or objects with `pk`/`id` properties.
     markReportsProcessed(reports: Array<number | { pk?: number; id?: number }>) {
@@ -61,7 +51,7 @@ export const usePhishStore = defineStore('phish', {
         // Send PATCH requests to mark processed=true for each report
         const ops = toMove.map((r: any) => {
           const id = r.pk ?? r.id
-          return axios({ url: `${ apiURL }api/v1/phishreport/${ id }`, method: 'PATCH', data: { processed: true } })
+          return axios({ url: `${ apiURL }api/v1/phish-report/${ id }`, method: 'PATCH', data: { processed: true } })
         })
 
         Promise.all(ops)
@@ -81,7 +71,7 @@ export const usePhishStore = defineStore('phish', {
     // Fetch all SyntheticPhishTemplate objects from the Django API
     getPhishTemplates() {
       return new Promise((resolve, reject) => {
-        axios({ url: `${ apiURL }api/v1/phishtemplate` })
+        axios({ url: `${ apiURL }api/v1/phish-template` })
           .then(resp => {
             const results = resp.data.results || resp.data
             this.phishTemplates = results
@@ -93,21 +83,85 @@ export const usePhishStore = defineStore('phish', {
       })
     },
 
-    sendSyntheticPhish(employeeId: number, templateId: number) {
+    createPhishAssignment(employeeId: number, templateId: number) {
       return new Promise((resolve, reject) => {
         axios({
-          url: `${ apiURL }api/v1/syntheticphish`,
+          url: `${ apiURL }api/v1/phish-assignment`,
           method: 'POST',
           data: {
             employee: employeeId,
             template: templateId,
           }
         })
+        .then(resp => {
+          resolve(resp.data)
+        })
+        .catch(e => {
+          handlePromiseError(reject, 'Error creating phish assignment', e)
+        })
+      })
+    },
+
+    // Fetch all SyntheticPhish objects for a given employee
+    getPhishAssignmentsForEmployee(employeeId: number) {
+      return new Promise((resolve, reject) => {
+        axios({
+          url: `${ apiURL }api/v1/phish-assignment?employee=${ employeeId }`
+        })
           .then(resp => {
-            resolve(resp.data)
+            const results = resp.data.results || resp.data
+            this.phishAssignments[employeeId] = results
+            resolve(results)
           })
           .catch(e => {
-            handlePromiseError(reject, 'Error sending synthetic phish', e)
+            handlePromiseError(reject, 'Error getting phishe assignments', e)
+          })
+      })
+    },
+
+    getTrainingTemplates() {
+      return new Promise((resolve, reject) => {
+        axios({ url: `${ apiURL }api/v1/training-template` })
+          .then(resp => {
+            const results = resp.data.results || resp.data
+            this.trainingTemplates = results
+            resolve(results)
+          })
+          .catch(e => {
+            handlePromiseError(reject, 'Error getting training templates', e)
+          })
+      })
+    },
+
+    createTrainingAssignment(employeeId: number, templateId: number) {
+      return new Promise((resolve, reject) => {
+        axios({
+          url: `${ apiURL }api/v1/training-assignment`,
+          method: 'POST',
+          data: {
+            employee: employeeId,
+            template: templateId,
+          }
+        })
+        .then(resp => {
+          resolve(resp.data)
+        })
+        .catch(e => {
+          handlePromiseError(reject, 'Error assigning training', e)
+        })
+      })
+    },
+
+    getTrainingAssignmentsForEmployee(employeeId: number) {
+      return new Promise((resolve, reject) => {
+        axios({ url: `${ apiURL }api/v1/training-assignment?employee=${ employeeId }` })
+          .then(resp => {
+            const results = resp.data.results || resp.data
+            this.trainingAssignments[employeeId] = results
+            resolve(results)
+          })
+          .catch(e => {
+            handlePromiseError(reject, 'Error getting training assignments', e)
           })
       })
     }

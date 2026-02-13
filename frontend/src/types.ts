@@ -342,7 +342,6 @@ export interface FileUploadDescriptionUploadServerResponse {
 ////////////////////////////////////////////////
 
 export interface PhishReport {
-  url: Url
   pk: number
   employee: SimpleEmployeeRetrieve
   created_at: Date
@@ -351,7 +350,6 @@ export interface PhishReport {
 }
 
 export interface SyntheticPhishTemplate {
-  url: Url
   pk: number
   name: string
   version: number
@@ -362,7 +360,6 @@ export interface SyntheticPhishTemplate {
 }
 
 export const emptyPhishTemplate: SyntheticPhishTemplate = {
-  url: '' as any,
   pk: -1,
   name: '',
   version: 1,
@@ -373,7 +370,6 @@ export const emptyPhishTemplate: SyntheticPhishTemplate = {
 }
 
 export interface SyntheticPhish {
-  url: Url
   pk: number
   employee: number
   template: SyntheticPhishTemplate
@@ -381,6 +377,31 @@ export interface SyntheticPhish {
   clicked: boolean
   reported: boolean
   reported_at: Date | null
+}
+
+export interface TrainingTemplate {
+  pk: number
+  name: string
+  version: number
+  content: string
+  active: boolean
+}
+
+export const emptyTrainingTemplate: TrainingTemplate = {
+  pk: -1,
+  name: '',
+  version: 1,
+  content: '',
+  active: true
+}
+
+export interface TrainingAssignment {
+  pk: number
+  employee: number
+  template: TrainingTemplate
+  assigned_at: Date
+  completed: boolean
+  completed_at: Date | null
 }
 
 ///////////////////////////////////////////////////

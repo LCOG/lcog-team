@@ -112,7 +112,7 @@
             <q-card flat bordered>
               <q-card-section>
                 <div class="text-caption text-grey-7">Synthetic Phishes</div>
-                <div class="text-h5 text-orange">{{ syntheticReportedCount }} / {{ syntheticPhishes().length }}</div>
+                <div class="text-h5 text-orange">{{ phishAssignmentsReported }} / {{ phishAssignments().length }}</div>
                 <div class="text-caption">Reported / Received</div>
               </q-card-section>
             </q-card>
@@ -122,7 +122,7 @@
             <q-card flat bordered>
               <q-card-section>
                 <div class="text-caption text-grey-7">Educational Resources</div>
-                <div class="text-h5 text-green">{{ educationalResourcesCompleted }} / {{ educationalResources.length }}</div>
+                <div class="text-h5 text-green">{{ trainingAssignmentsCompleted }} / {{ trainingAssignments().length }}</div>
                 <div class="text-caption">Completed / Assigned</div>
               </q-card-section>
             </q-card>
@@ -193,22 +193,22 @@
               <phish-template-select
                 :label="'Select Template'"
                 :read-only="false"
-                @input="template => selectedTemplate = template"
+                @input="template => selectedPhishTemplate = template"
                 style="width: 250px;"
               />
               <q-btn 
                 label="Send Test Phish"
                 color="primary"
                 unelevated
-                :disable="!selectedTemplate"
-                @click="sendSyntheticPhish()"
+                :disable="!selectedPhishTemplate"
+                @click="createPhishAssignment()"
               />
             </q-card-section>
           </q-card>
 
           <!-- Synthetic Phishes Sent -->
           <q-table
-            :rows="syntheticPhishes()"
+            :rows="phishAssignments()"
             :columns="syntheticTestColumns"
             row-key="id"
             flat
@@ -251,8 +251,28 @@
         <q-tab-panel name="resources">
           <div class="text-h6 q-mb-md">Educational Resources</div>
           
+          <!-- Assign new Training  -->
+          <q-card flat bordered class="q-mb-md">
+            <q-card-section class="row items-center q-gutter-md">
+              <div class="text-subtitle2">Assign New:</div>
+              <training-template-select
+                :label="'Select Training Module'"
+                :read-only="false"
+                @input="template => selectedTrainingTemplate = template"
+                style="width: 250px;"
+              />
+              <q-btn 
+                label="Assign Training"
+                color="primary"
+                unelevated
+                :disable="!selectedTrainingTemplate"
+                @click="createTrainingAssignment()"
+              />
+            </q-card-section>
+          </q-card>
+
           <q-table
-            :rows="educationalResources"
+            :rows="trainingAssignments()"
             :columns="resourceColumns"
             row-key="id"
             flat
@@ -340,8 +360,10 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import PhishTemplateSelect from 'src/components/phish/PhishTemplateSelect.vue'
+import TrainingTemplateSelect from 
+  'src/components/phish/TrainingTemplateSelect.vue'
 import { usePhishStore } from 'src/stores/phish'
-import { PhishReport, SyntheticPhishTemplate } from 'src/types'
+import { PhishReport, SyntheticPhishTemplate, TrainingTemplate } from 'src/types'
 import { QTableProps } from 'quasar'
 
 const router = useRouter()
@@ -352,7 +374,8 @@ const loading = ref(false)
 const activeTab = ref('organic')
 const showReportDialog = ref(false)
 const selectedReport = ref<PhishReport | null>(null)
-const selectedTemplate = ref<SyntheticPhishTemplate | null>(null)
+const selectedPhishTemplate = ref<SyntheticPhishTemplate | null>(null)
+const selectedTrainingTemplate = ref<TrainingTemplate | null>(null)
 
 const riskLevelOptions = ['low', 'med', 'high']
 const availableGroups = ['Sales', 'Engineering', 'HR', 'Finance', 'Operations', 'Management']
@@ -481,8 +504,12 @@ const resourceColumns: QTableProps['columns'] = [
   }
 ]
 
-function syntheticPhishes() {
-  return phishStore.syntheticPhishes[teamMember.value.pk] || []
+function phishAssignments() {
+  return phishStore.phishAssignments[teamMember.value.pk] || []
+}
+
+function trainingAssignments() {
+  return phishStore.trainingAssignments[teamMember.value.pk] || []
 }
 
 function formatDate(date: Date | string): string {
@@ -543,12 +570,12 @@ const organicReportsCount = computed(() =>
   ).length
 )
 
-const syntheticReportedCount = computed(() => 
-  syntheticPhishes().filter(phish => phish.reported).length
+const phishAssignmentsReported = computed(() => 
+  phishAssignments().filter(phish => phish.reported).length
 )
 
-const educationalResourcesCompleted = computed(() =>
-  educationalResources.value.filter(resource => resource.status === 'completed').length
+const trainingAssignmentsCompleted = computed(() =>
+  trainingAssignments().filter(assignment => assignment.completed).length
 )
 
 async function loadTeamMemberData() {
@@ -558,7 +585,8 @@ async function loadTeamMemberData() {
     
     // Load all reports for this employee
     await phishStore.getReports()
-    await phishStore.getSyntheticPhishesForEmployee(employeePk)
+    await phishStore.getPhishAssignmentsForEmployee(employeePk)
+    await phishStore.getTrainingAssignmentsForEmployee(employeePk)
     
     // Mock data - replace with actual API calls
     // Filter reports for this specific employee
@@ -619,18 +647,37 @@ function reassignResource(resource: EducationalResource) {
   // TODO: API call to mark resource reassigned
 }
 
-function sendSyntheticPhish() {
-  if (!selectedTemplate.value) {
+function createPhishAssignment() {
+  if (!selectedPhishTemplate.value) {
     console.error('No template selected for synthetic phish')
     return
   }
-  phishStore.sendSyntheticPhish(teamMember.value.pk, selectedTemplate.value.pk)
+  phishStore.createPhishAssignment(
+    teamMember.value.pk, selectedPhishTemplate.value.pk
+  )
     .then(() => {
       // Refresh synthetic tests list after sending
       loadTeamMemberData()
     })
     .catch((e) => {
       console.error('Error sending synthetic phish:', e)
+    })
+}
+
+function createTrainingAssignment() {
+  if (!selectedTrainingTemplate.value) {
+    console.error('No template selected for training assignment')
+    return
+  }
+  phishStore.createTrainingAssignment(
+    teamMember.value.pk, selectedTrainingTemplate.value.pk
+  )
+    .then(() => {
+      // Refresh educational resources list after assigning
+      loadTeamMemberData()
+    })
+    .catch((e) => {
+      console.error('Error assigning training:', e)
     })
 }
 

@@ -40,8 +40,8 @@
         </q-td>
       </template>
       
-      <template v-slot:body-cell-syntheticPhishes="props">
-        <q-td key="syntheticPhishes" :props="props">
+      <template v-slot:body-cell-phishAssignments="props">
+        <q-td key="phishAssignments" :props="props">
           <q-badge 
             :color="getSyntheticPhishColor(props.row)" 
             :label="`${calculatePercentage(props.row.syntheticReported, props.row.syntheticReceived)}%`"
@@ -123,7 +123,7 @@ const columns: QTableProps['columns'] = [
     sortable: true
   },
   {
-    name: 'syntheticPhishes',
+    name: 'phishAssignments',
     label: '# Synthetic Phishes Reported/Received',
     field: (row: TeamMember) => calculatePercentage(row.syntheticReported, row.syntheticReceived),
     align: 'center',
