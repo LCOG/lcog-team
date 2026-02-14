@@ -230,3 +230,30 @@ class TrainingAssignmentViewSet(viewsets.ModelViewSet):
 
         serializer = self.get_serializer(training_assignment)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+    def partial_update(self, request, *args, **kwargs):
+        """
+        Mark a training assignment as completed.
+        """
+        from django.utils import timezone
+        
+        instance = self.get_object()
+        
+        # Verify the current user is the assigned employee
+        user = request.user
+        employee = getattr(user, 'employee', None)
+        
+        if not employee or instance.employee != employee:
+            return Response(
+                {'error': 'You can only update your own training assignments'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        # If marking as completed, set completed_at timestamp
+        if request.data.get('completed') is True and not instance.completed:
+            instance.completed = True
+            instance.completed_at = timezone.now()
+            instance.save()
+        
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)

@@ -53,12 +53,13 @@ class TrainingTemplateSerializer(serializers.HyperlinkedModelSerializer):
 class TrainingAssignmentSerializer(serializers.HyperlinkedModelSerializer):
     
     training_name = serializers.CharField(source='template.name', read_only=True)
+    template = TrainingTemplateSerializer(read_only=True)
 
     class Meta:
         model = TrainingAssignment
         fields = [
-            'pk', 'employee', 'training_name', 'assigned_at', 'completed',
-            'completed_at'
+            'pk', 'employee', 'template', 'training_name', 'assigned_at',
+            'completed', 'completed_at'
         ]
 
     employee = SimpleEmployeeSerializer(required=True)

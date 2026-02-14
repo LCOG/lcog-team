@@ -279,7 +279,7 @@ function tableFilterMethod(rows: readonly TeamMember[], term: string): TeamMembe
 }
 
 function onRowClick(evt: Event, row: TeamMember): void {
-  router.push({ path: `/phish/team/${row.pk}` })
+  router.push({ path: `/phish/admin/team/${row.pk}` })
     .catch(e => {
       console.error('Error navigating to team member detail:', e)
     })

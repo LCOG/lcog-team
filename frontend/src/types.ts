@@ -397,8 +397,9 @@ export const emptyTrainingTemplate: TrainingTemplate = {
 
 export interface TrainingAssignment {
   pk: number
-  employee: number
+  employee: SimpleEmployeeRetrieve
   template: TrainingTemplate
+  training_name: string
   assigned_at: Date
   completed: boolean
   completed_at: Date | null

@@ -164,6 +164,34 @@ actions: {
             handlePromiseError(reject, 'Error getting training assignments', e)
           })
       })
+    },
+
+    getTrainingAssignment(assignmentId: number) {
+      return new Promise<TrainingAssignment>((resolve, reject) => {
+        axios({ url: `${ apiURL }api/v1/training-assignment/${ assignmentId }` })
+          .then(resp => {
+            resolve(resp.data)
+          })
+          .catch(e => {
+            handlePromiseError(reject, 'Error getting training assignment', e)
+          })
+      })
+    },
+
+    completeTrainingAssignment(assignmentId: number) {
+      return new Promise((resolve, reject) => {
+        axios({
+          url: `${ apiURL }api/v1/training-assignment/${ assignmentId }`,
+          method: 'PATCH',
+          data: { completed: true }
+        })
+          .then(resp => {
+            resolve(resp.data)
+          })
+          .catch(e => {
+            handlePromiseError(reject, 'Error completing training assignment', e)
+          })
+      })
     }
   }
 })

@@ -271,48 +271,11 @@
             </q-card-section>
           </q-card>
 
-          <q-table
-            :rows="trainingAssignments()"
-            :columns="resourceColumns"
-            row-key="id"
-            flat
-            :pagination="{ rowsPerPage: 10 }"
-          >
-            <template v-slot:body-cell-completed="props">
-              <q-td :props="props">
-                <q-icon 
-                  :name="props.value ? 'check_circle' : 'cancel'" 
-                  :color="props.value ? 'positive' : 'negative'"
-                  size="sm"
-                />
-              </q-td>
-            </template>
-
-            <template v-slot:body-cell-assignedAt="props">
-              <q-td :props="props">
-                {{ formatDate(props.value) }}
-              </q-td>
-            </template>
-
-            <template v-slot:body-cell-completedAt="props">
-              <q-td :props="props">
-                {{ props.value ? formatDate(props.value) : '-' }}
-              </q-td>
-            </template>
-
-            <template v-slot:body-cell-actions="props">
-              <q-td :props="props">
-                <q-btn 
-                  v-if="props.row.completed"
-                  flat 
-                  dense 
-                  label="Reassign" 
-                  color="primary"
-                  @click="reassignResource(props.row)"
-                />
-              </q-td>
-            </template>
-          </q-table>
+          <phish-training-assignments-table
+            :training-assignments="trainingAssignments()"
+            :admin="true"
+            @reassign="reassignResource"
+          />
         </q-tab-panel>
       </q-tab-panels>
     </q-card>
@@ -363,8 +326,10 @@ import { useRouter, useRoute } from 'vue-router'
 import PhishTemplateSelect from 'src/components/phish/PhishTemplateSelect.vue'
 import TrainingTemplateSelect from 
   'src/components/phish/TrainingTemplateSelect.vue'
+import PhishTrainingAssignmentsTable from 
+  'src/components/phish/PhishTrainingAssignmentsTable.vue'
 import { usePhishStore } from 'src/stores/phish'
-import { PhishReport, SyntheticPhishTemplate, TrainingTemplate } from 'src/types'
+import { PhishReport, SyntheticPhishTemplate, TrainingTemplate, TrainingAssignment } from 'src/types'
 import { QTableProps } from 'quasar'
 
 const router = useRouter()
@@ -389,14 +354,6 @@ interface TeamMember {
   groups: string[]
 }
 
-interface EducationalResource {
-  id: number
-  title: string
-  assignedDate: Date
-  completedDate: Date | null
-  status: 'pending' | 'completed'
-}
-
 // Mock data - replace with API calls
 const teamMember = ref<TeamMember>({
   pk: Number(route.params.id),
@@ -407,7 +364,6 @@ const teamMember = ref<TeamMember>({
 })
 
 const organicReports = ref<PhishReport[]>([])
-const educationalResources = ref<EducationalResource[]>([])
 
 const organicReportColumns: QTableProps['columns'] = [
   {
@@ -465,42 +421,6 @@ const syntheticTestColumns: QTableProps['columns'] = [
     label: 'Reported Date',
     field: 'reportedAt',
     align: 'left'
-  }
-]
-
-const resourceColumns: QTableProps['columns'] = [
-  {
-    name: 'name',
-    label: 'Name',
-    field: 'training_name',
-    align: 'left',
-  },
-  {
-    name: 'assignedAt',
-    label: 'Assigned',
-    field: 'assigned_at',
-    align: 'left',
-    sortable: true
-  },
-  {
-    name: 'completed',
-    label: 'Completed',
-    field: 'completed',
-    align: 'center',
-    sortable: true
-  },
-  {
-    name: 'completedAt',
-    label: 'Completed Date',
-    field: 'completed_at',
-    align: 'left',
-    sortable: true
-  },
-  {
-    name: 'actions',
-    label: 'Actions',
-    field: '',
-    align: 'center'
   }
 ]
 
@@ -608,20 +528,13 @@ async function loadTeamMemberData() {
       teamMember.value = member
     }
     
-    // Mock educational resources
-    educationalResources.value = [
-      { id: 1, title: 'Phishing Awareness Training', assignedDate: new Date('2025-11-01'), completedDate: new Date('2025-11-15'), status: 'completed' },
-      { id: 2, title: 'Email Security Best Practices', assignedDate: new Date('2025-12-01'), completedDate: null, status: 'pending' },
-      { id: 3, title: 'Spotting Social Engineering', assignedDate: new Date('2026-01-01'), completedDate: null, status: 'pending' }
-    ]
-    
   } finally {
     loading.value = false
   }
 }
 
 function goBack() {
-  router.push('/phish/team')
+  router.push('/phish/admin/team')
 }
 
 function updateRiskLevel(newLevel: string) {
@@ -639,12 +552,11 @@ function viewReportDetails(report: PhishReport) {
   showReportDialog.value = true
 }
 
-function reassignResource(resource: EducationalResource) {
-  resource.status = 'pending'
-  resource.completedDate = null
-  resource.assignedDate = new Date()
-  teamMember.value.resourcesCompleted--
-  // TODO: API call to mark resource reassigned
+function reassignResource(assignment: TrainingAssignment) {
+  console.log('Reassigning training:', assignment)
+  // TODO: API call to mark training reassigned
+  // After API call succeeds, refresh the training assignments
+  loadTeamMemberData()
 }
 
 function createPhishAssignment() {
