@@ -11,6 +11,7 @@
       :pagination="pagination"
       @row-click="onRowClick"
       flat
+      :loading="loading"
     >
       <template v-slot:top-right>
         <q-input
@@ -44,11 +45,14 @@
         <q-td key="phishAssignments" :props="props">
           <q-badge 
             :color="getSyntheticPhishColor(props.row)" 
-            :label="`${calculatePercentage(props.row.syntheticReported, props.row.syntheticReceived)}%`"
+            :label="`${calculatePercentage(
+              props.row.syntheticReported, props.row.syntheticReceived
+            )}%`"
             text-color="white"
           />
           <span class="q-ml-xs text-grey-7">
-            ({{ props.row.syntheticReported }} / {{ props.row.syntheticReceived }})
+            ({{ props.row.syntheticReported }} /
+            {{ props.row.syntheticReceived }})
           </span>
         </q-td>
       </template>
@@ -57,11 +61,14 @@
         <q-td key="educationalResources" :props="props">
           <q-badge 
             :color="getEducationalResourceColor(props.row)" 
-            :label="`${calculatePercentage(props.row.resourcesCompleted, props.row.resourcesAssigned)}%`"
+            :label="`${calculatePercentage(
+              props.row.trainingCompleted, props.row.trainingAssigned
+            )}%`"
             text-color="white"
           />
           <span class="q-ml-xs text-grey-7">
-            ({{ props.row.resourcesCompleted }} / {{ props.row.resourcesAssigned }})
+            ({{ props.row.trainingCompleted }} /
+            {{ props.row.trainingAssigned }})
           </span>
         </q-td>
       </template>
@@ -77,30 +84,34 @@
 </style>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { QTableProps } from 'quasar'
+import { usePhishStore } from 'src/stores/phish'
 
 const router = useRouter()
+const phishStore = usePhishStore()
 
 interface TeamMember {
   pk: number
-  employeeName: string
+  name: string
   riskLevel: 'low' | 'med' | 'high'
-  organicReports: number
+  phishReports: number
   syntheticReceived: number
   syntheticReported: number
-  resourcesAssigned: number
-  resourcesCompleted: number
+  trainingAssigned: number
+  trainingCompleted: number
 }
 
 const tableFilter = ref('')
+const loading = ref(false)
+const teamMembers = ref<TeamMember[]>([])
 
 const columns: QTableProps['columns'] = [
   {
-    name: 'employeeName',
+    name: 'name',
     label: 'Employee Name',
-    field: 'employeeName',
+    field: 'name',
     align: 'left',
     sortable: true
   },
@@ -116,16 +127,17 @@ const columns: QTableProps['columns'] = [
     }
   },
   {
-    name: 'organicReports',
+    name: 'phishReports',
     label: '# Organic Reports Made',
-    field: 'organicReports',
+    field: 'phishReports',
     align: 'center',
     sortable: true
   },
   {
     name: 'phishAssignments',
     label: '# Synthetic Phishes Reported/Received',
-    field: (row: TeamMember) => calculatePercentage(row.syntheticReported, row.syntheticReceived),
+    field: (row: TeamMember) =>
+      calculatePercentage(row.syntheticReported, row.syntheticReceived),
     align: 'center',
     sortable: true,
     sort: (a: number, b: number) => a - b
@@ -133,7 +145,8 @@ const columns: QTableProps['columns'] = [
   {
     name: 'educationalResources',
     label: '# Educational Resources Completed/Assigned',
-    field: (row: TeamMember) => calculatePercentage(row.resourcesCompleted, row.resourcesAssigned),
+    field: (row: TeamMember) =>
+      calculatePercentage(row.trainingCompleted, row.trainingAssigned),
     align: 'center',
     sortable: true,
     sort: (a: number, b: number) => a - b
@@ -147,59 +160,16 @@ const pagination = ref({
   rowsPerPage: 10
 })
 
-// Dummy data - 5 team members
-const teamMembers: TeamMember[] = [ 
-  {
-    pk: 5,
-    employeeName: 'Dan Wilson',
-    riskLevel: 'high',
-    organicReports: 2,
-    syntheticReceived: 15,
-    syntheticReported: 8,
-    resourcesAssigned: 10,
-    resourcesCompleted: 4
-  },
-  {
-    pk: 2,
-    employeeName: 'Bob Smith',
-    riskLevel: 'low',
-    organicReports: 12,
-    syntheticReceived: 10,
-    syntheticReported: 10,
-    resourcesAssigned: 8,
-    resourcesCompleted: 8
-  },
-  {
-    pk: 3,
-    employeeName: 'Carol Williams',
-    riskLevel: 'med',
-    organicReports: 5,
-    syntheticReceived: 12,
-    syntheticReported: 9,
-    resourcesAssigned: 6,
-    resourcesCompleted: 5
-  },
-  {
-    pk: 4,
-    employeeName: 'David Brown',
-    riskLevel: 'high',
-    organicReports: 1,
-    syntheticReceived: 18,
-    syntheticReported: 5,
-    resourcesAssigned: 12,
-    resourcesCompleted: 3
-  },
-  {
-    pk: 1,
-    employeeName: 'Emma Davis',
-    riskLevel: 'med',
-    organicReports: 7,
-    syntheticReceived: 14,
-    syntheticReported: 11,
-    resourcesAssigned: 9,
-    resourcesCompleted: 7
-  }
-]
+function calculateRiskLevel(row: TeamMember): 'low' | 'med' | 'high' {
+  // Calculate risk based on synthetic phish reporting rate
+  const reportingRate = row.syntheticReceived > 0 
+    ? (row.syntheticReported / row.syntheticReceived)
+    : 0
+  
+  if (reportingRate >= 0.8) return 'low'
+  if (reportingRate >= 0.5) return 'med'
+  return 'high'
+}
 
 function getRiskColor(riskLevel: string): string {
   switch (riskLevel) {
@@ -219,7 +189,9 @@ function calculatePercentage(completed: number, total: number): number {
   return Math.round((completed / total) * 100)
 }
 
-function getAdaptiveColor(percentage: number, allPercentages: number[]): string {
+function getAdaptiveColor(
+  percentage: number, allPercentages: number[]
+): string {
   // Filter out any invalid percentages
   const validPercentages = allPercentages.filter(p => !isNaN(p))
   
@@ -252,29 +224,35 @@ function getAdaptiveColor(percentage: number, allPercentages: number[]): string 
 }
 
 function getSyntheticPhishColor(row: TeamMember): string {
-  const percentage = calculatePercentage(row.syntheticReported, row.syntheticReceived)
-  const allPercentages = teamMembers.map(m => 
+  const percentage = calculatePercentage(
+    row.syntheticReported, row.syntheticReceived
+  )
+  const allPercentages = teamMembers.value.map(m => 
     calculatePercentage(m.syntheticReported, m.syntheticReceived)
   )
   return getAdaptiveColor(percentage, allPercentages)
 }
 
 function getEducationalResourceColor(row: TeamMember): string {
-  const percentage = calculatePercentage(row.resourcesCompleted, row.resourcesAssigned)
-  const allPercentages = teamMembers.map(m => 
-    calculatePercentage(m.resourcesCompleted, m.resourcesAssigned)
+  const percentage = calculatePercentage(
+    row.trainingCompleted, row.trainingAssigned
+  )
+  const allPercentages = teamMembers.value.map(m => 
+    calculatePercentage(m.trainingCompleted, m.trainingAssigned)
   )
   return getAdaptiveColor(percentage, allPercentages)
 }
 
-function tableFilterMethod(rows: readonly TeamMember[], term: string): TeamMember[] {
+function tableFilterMethod(
+  rows: readonly TeamMember[], term: string
+): TeamMember[] {
   if (!term) {
     return rows as TeamMember[]
   }
   
   const lowerTerm = term.toLowerCase()
   return rows.filter(row => 
-    row.employeeName.toLowerCase().includes(lowerTerm)
+    row.name.toLowerCase().includes(lowerTerm)
   ) as TeamMember[]
 }
 
@@ -284,4 +262,39 @@ function onRowClick(evt: Event, row: TeamMember): void {
       console.error('Error navigating to team member detail:', e)
     })
 }
+
+async function loadTeamStats() {
+  loading.value = true
+  try {
+    const stats = await phishStore.getTeamStats()
+    // Transform stats to match TeamMember interface
+    teamMembers.value = stats.map((stat: any) => ({
+      pk: stat.pk,
+      name: stat.name,
+      riskLevel: calculateRiskLevel({
+        pk: stat.pk,
+        name: stat.name,
+        riskLevel: 'low' as const,
+        phishReports: stat.phish_reports_count,
+        syntheticReceived: stat.synthetic_phishes_sent,
+        syntheticReported: stat.synthetic_phishes_reported,
+        trainingAssigned: stat.training_assigned,
+        trainingCompleted: stat.training_completed
+      }),
+      phishReports: stat.phish_reports_count,
+      syntheticReceived: stat.synthetic_phishes_sent,
+      syntheticReported: stat.synthetic_phishes_reported,
+      trainingAssigned: stat.training_assigned,
+      trainingCompleted: stat.training_completed
+    }))
+  } catch (error) {
+    console.error('Error loading team stats:', error)
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(() => {
+  loadTeamStats()
+})
 </script>

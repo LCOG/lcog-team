@@ -1,15 +1,21 @@
 import re
 
-from django.contrib.auth.models import User
+from django.db.models import Count, F, Q, Value
+from django.db.models.functions import Concat
 from rest_framework import status, viewsets
+from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from mainsite.helpers import send_email
 from people.models import Employee
-from phish.models import PhishReport, SyntheticPhish, SyntheticPhishTemplate, TrainingAssignment, TrainingTemplate
+from phish.models import (
+    PhishReport, SyntheticPhish, SyntheticPhishTemplate, TrainingAssignment,
+    TrainingTemplate
+)
 from phish.serializers import (
     PhishReportSerializer, SyntheticPhishSerializer,
-    SyntheticPhishTemplateSerializer, TrainingAssignmentSerializer, TrainingTemplateSerializer
+    SyntheticPhishTemplateSerializer, TrainingAssignmentSerializer,
+    TrainingTemplateSerializer
 )
 
 
@@ -64,7 +70,8 @@ class PhishReportViewSet(viewsets.ModelViewSet):
 
 
 class PhishTemplateViewSet(viewsets.ModelViewSet):
-    queryset = SyntheticPhishTemplate.objects.all().order_by('name', '-version')
+    queryset = SyntheticPhishTemplate.objects.all()\
+        .order_by('name', '-version')
     serializer_class = SyntheticPhishTemplateSerializer
 
     def get_queryset(self):
@@ -135,7 +142,7 @@ class PhishAssignmentViewSet(viewsets.ModelViewSet):
             template = SyntheticPhishTemplate.objects.get(pk=template_pk)
         except SyntheticPhishTemplate.DoesNotExist:
             return Response(
-                {'error': 'Synthetic Phish Template with this ID does not exist'},
+                {'error': 'Requested Synthetic Phish Template does not exist'},
                 status=status.HTTP_404_NOT_FOUND
             )
         
@@ -152,6 +159,64 @@ class PhishAssignmentViewSet(viewsets.ModelViewSet):
         
         serializer = self.get_serializer(synthetic_phish)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    @action(detail=False, methods=['get'])
+    def team_stats(self, request):
+        """
+        Fetch aggregated phishing and training stats for all team members.
+        Returns employee name, phish reports, synthetic phishes,
+        and training assignments.
+        """
+        user = self.request.user
+        employee = getattr(user, 'employee', None)
+        
+        if not user.is_authenticated or not (
+            user.is_superuser or (employee and employee.can_view_phish())
+        ):
+            return Response(
+                {'error': 'You do not have permission to view phishing data'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        # Get organization from current user's employee
+        if user.is_superuser:
+            # If superuser, get all employees
+            employees_qs = Employee.objects.all()
+        else:
+            # Otherwise, get employees from current user's organization
+            employees_qs = \
+                Employee.objects.filter(organization=employee.organization)
+        
+        # Annotate with aggregated counts
+        team_stats = employees_qs.annotate(
+            name=Concat(
+                F('user__first_name'), Value(' '), F('user__last_name')
+            ),
+            phish_reports_count=Count(
+                'phishreport',
+                filter=Q(phishreport__processed=False)
+            ),
+            synthetic_phishes_sent=Count('syntheticphish'),
+            synthetic_phishes_clicked=Count(
+                'syntheticphish',
+                filter=Q(syntheticphish__clicked=True)
+            ),
+            synthetic_phishes_reported=Count(
+                'syntheticphish',
+                filter=Q(syntheticphish__reported=True)
+            ),
+            training_assigned=Count('trainingassignment'),
+            training_completed=Count(
+                'trainingassignment',
+                filter=Q(trainingassignment__completed=True)
+            )
+        ).values(
+            'pk', 'name', 'phish_reports_count', 'synthetic_phishes_sent',
+            'synthetic_phishes_clicked', 'synthetic_phishes_reported',
+            'training_assigned', 'training_completed'
+        ).order_by('name')
+        
+        return Response(list(team_stats))
 
 
 class TrainingTemplateViewSet(viewsets.ModelViewSet):
