@@ -2,6 +2,7 @@ import re
 
 from django.db.models import Count, F, Q, Value
 from django.db.models.functions import Concat
+from django.utils import timezone
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -40,8 +41,12 @@ class PhishReportViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         """
-        Create a PhishReport with employee email and email message.
+        Process a phishing email report.
+        If the email contains X-Synthetic-Phish-ID header, mark that
+        synthetic phish as reported (don't create a PhishReport).
+        Otherwise, create a PhishReport for a genuine phishing attempt.
         """
+
         employee_email = request.data.get('employee_email')
         email_message = request.data.get('email_message')
         
@@ -60,6 +65,49 @@ class PhishReportViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_404_NOT_FOUND
             )
         
+        # Check if this report corresponds to a synthetic phish
+        # Look for X-Synthetic-Phish-ID in the email message headers
+        synthetic_phish_id = None
+        if isinstance(email_message, dict):
+            # If message is already parsed as dict with headers
+            headers = email_message.get('headers', {})
+            synthetic_phish_id = headers.get('X-Synthetic-Phish-ID')
+        elif isinstance(email_message, str):
+            # Try to extract header from raw email string
+            match = re.search(
+                r'X-Synthetic-Phish-ID:\s*(\d+)',
+                email_message,
+                re.IGNORECASE
+            )
+            if match:
+                synthetic_phish_id = match.group(1)
+        
+        # If we found a synthetic phish ID, mark it as reported
+        # and don't create a PhishReport (this is an expected test report)
+        if synthetic_phish_id:
+            try:
+                synthetic_phish = SyntheticPhish.objects.get(
+                    pk=int(synthetic_phish_id),
+                    employee=employee
+                )
+                if not synthetic_phish.reported:
+                    synthetic_phish.reported = True
+                    synthetic_phish.reported_at = timezone.now()
+                    synthetic_phish.save()
+                
+                # Return success without creating a PhishReport
+                return Response(
+                    {
+                        'message': 'Synthetic phish correctly reported',
+                        'synthetic_phish_id': synthetic_phish.pk
+                    },
+                    status=status.HTTP_200_OK
+                )
+            except (SyntheticPhish.DoesNotExist, ValueError):
+                # If synthetic phish not found or invalid ID, treat as organic
+                pass
+        
+        # No synthetic phish found - create a PhishReport for organic report
         phish_report = PhishReport.objects.create(
             employee=employee,
             message=email_message
@@ -151,10 +199,17 @@ class PhishAssignmentViewSet(viewsets.ModelViewSet):
             template=template
         )
 
-        # Send email
+        # Send email with custom header containing synthetic phish ID
         text_body = re.sub('<[^<]+?>', '', template.body)
         send_email(
-            employee.user.email, template.subject, text_body, template.body
+            to_address=employee.user.email,
+            subject=template.subject,
+            body=text_body,
+            html_body=template.body,
+            headers={
+                'X-Synthetic-Phish-ID': str(synthetic_phish.pk),
+                'X-Synthetic-Phish-Template': template.name,
+            }
         )
         
         serializer = self.get_serializer(synthetic_phish)
@@ -300,7 +355,6 @@ class TrainingAssignmentViewSet(viewsets.ModelViewSet):
         """
         Mark a training assignment as completed.
         """
-        from django.utils import timezone
         
         instance = self.get_object()
         
