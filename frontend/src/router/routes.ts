@@ -650,6 +650,15 @@ if (maintenanceMode) {
       component: () => import('src/pages/OutageNotice.vue'),
     },
 
+    //////////////////////
+    // Maintenance page //
+    //////////////////////
+    {
+      path: '/maintenance',
+      name: 'maintenance',
+      component: () => import('src/pages/MaintenancePage.vue'),
+    },
+
     ///////////////
     // Test page //
     ///////////////

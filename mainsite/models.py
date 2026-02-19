@@ -201,6 +201,40 @@ class City(models.Model):
 
 
 
+class MaintenanceMode(models.Model):
+    """
+    Singleton model to control site-wide maintenance mode.
+    When enabled, the frontend will display a maintenance message.
+    """
+    class Meta:
+        verbose_name = _("Maintenance Mode")
+        verbose_name_plural = _("Maintenance Mode")
+
+    enabled = models.BooleanField(
+        default=False,
+        help_text=_("Enable to show maintenance message to users")
+    )
+    message = models.TextField(
+        default="The site is currently undergoing maintenance. Please check back in 10-15 minutes.",
+        help_text=_("Message to display to users during maintenance")
+    )
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return "Maintenance Mode - " + ("Enabled" if self.enabled else "Disabled")
+    
+    def save(self, *args, **kwargs):
+        # Ensure only one instance exists (singleton pattern)
+        self.pk = 1
+        super().save(*args, **kwargs)
+    
+    @classmethod
+    def get_instance(cls):
+        """Get or create the singleton instance"""
+        obj, created = cls.objects.get_or_create(pk=1)
+        return obj
+
+
 LANGUAGE_CHOICES = (
     ("asl", _("American Sign Language")),
     ("ar", _("Arabic")),

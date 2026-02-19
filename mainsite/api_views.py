@@ -15,7 +15,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.shortcuts import get_object_or_404
 
 from mainsite.helpers import record_error
-from mainsite.models import SecurityMessage, TrustedIPAddress
+from mainsite.models import MaintenanceMode, SecurityMessage, TrustedIPAddress
 from mainsite.serializers import (
     FileUploadSerializer, SecurityMessageSerializer,
     TrustedIPSerializer
@@ -52,6 +52,21 @@ class LargeResultsSetPagination(PageNumberPagination):
 #                 return True
         
 #         return False
+
+
+class MaintenanceStatusView(viewsets.ViewSet):
+    """
+    Check if the site is in maintenance mode.
+    This endpoint is publicly accessible (no authentication required).
+    """
+    permission_classes = []  # Allow unauthenticated access
+
+    def list(self, request):
+        maintenance = MaintenanceMode.get_instance()
+        return Response({
+            'enabled': maintenance.enabled,
+            'message': maintenance.message
+        })
 
 
 class LogErrorView(viewsets.ViewSet):
