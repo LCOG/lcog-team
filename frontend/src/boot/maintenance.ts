@@ -13,7 +13,7 @@ If the site isn't back after 10 minutes, please contact the help desk at <a href
 export default boot(async ({ app, router }) => {
   // Try to ping the backend to see if it's up
   try {
-    const apiUrl = process.env.API_URL || 'https://api.team.lcog.org'
+    const apiUrl = process.env.API_URL || 'https://api.team.lcog.org/'
     await axios.get(`${apiUrl}health/`, {
       timeout: 5000 // 5 second timeout
     })
