@@ -1,5 +1,5 @@
 import { boot } from 'quasar/wrappers'
-import axios, { AxiosError } from 'axios'
+import axios from 'axios'
 import { ref } from 'vue'
 
 // Create a global reactive state for maintenance mode
@@ -8,12 +8,12 @@ export const backendUnreachable = ref(false)
 
 const MAINTENANCE_MESSAGE = `The site is currently undergoing maintenance and will be back shortly.
 
-Downtime should only last 10 minutes or so. If the site isn't up after 10 minutes, please contact the help desk at help@lcog-or.gov`
+If the site isn't back after 10 minutes, please contact the help desk at <a href="https://lcog-or.gov/help" target="_blank" rel="noopener noreferrer">https://lcog-or.gov/help</a>`
 
 export default boot(async ({ app, router }) => {
   // Try to ping the backend to see if it's up
   try {
-    const apiUrl = process.env.API_URL || 'http://localhost:8000/'
+    const apiUrl = process.env.API_URL || 'https://api.team.lcog.org'
     await axios.get(`${apiUrl}health/`, {
       timeout: 5000 // 5 second timeout
     })
@@ -43,7 +43,7 @@ export default boot(async ({ app, router }) => {
         }
       })
     } else {
-      // Some other error (like 404) - backend is up, let the app try to load normally
+      // Some other error (e.g. 404) - backend is up, try to load normally
       console.error('Error checking backend health:', error)
     }
   }

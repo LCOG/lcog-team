@@ -1,5 +1,5 @@
 <template>
-  <q-page class="flex flex-center bg-grey-2">
+  <div class="flex flex-center bg-grey-2" style="height: 100vh;">
     <div class="maintenance-container text-center q-pa-xl">
       <q-icon 
         name="construction" 
@@ -10,8 +10,11 @@
       <h3 class="text-h3 text-weight-bold q-mt-none q-mb-md">
         Site Maintenance
       </h3>
-      <div class="text-h6 text-grey-8 q-mb-lg" style="white-space: pre-line;">
-        {{ message }}
+      <div
+        class="text-h6 text-grey-8 q-mb-lg"
+        style="white-space: pre-line;"
+        v-html="message"
+      >
       </div>
       <q-spinner-dots
         color="primary"
@@ -21,12 +24,12 @@
         This page will automatically reload when maintenance is complete.
       </div>
     </div>
-  </q-page>
+  </div>
 </template>
 
 <script lang="ts">
 import { defineComponent, ref, onMounted, onUnmounted } from 'vue'
-import { MAINTENANCE_MESSAGE, backendUnreachable } from 'src/boot/maintenance'
+import { MAINTENANCE_MESSAGE } from 'src/boot/maintenance'
 import axios from 'axios'
 
 export default defineComponent({
@@ -53,8 +56,8 @@ export default defineComponent({
     }
 
     onMounted(() => {
-      // Check status every 30 seconds
-      intervalId = window.setInterval(checkBackendStatus, 30000)
+      // Check status every 5 seconds
+      intervalId = window.setInterval(checkBackendStatus, 5000)
     })
 
     onUnmounted(() => {
