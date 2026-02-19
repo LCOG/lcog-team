@@ -102,7 +102,7 @@
             <q-card flat bordered>
               <q-card-section>
                 <div class="text-caption text-grey-7">Organic Reports</div>
-                <div class="text-h5 text-primary">{{ teamMember?.organicReports }}</div>
+                <div class="text-h5 text-primary">{{ organicReportsCount }}</div>
                 <div class="text-caption">Total reports made</div>
               </q-card-section>
             </q-card>
@@ -112,7 +112,7 @@
             <q-card flat bordered>
               <q-card-section>
                 <div class="text-caption text-grey-7">Synthetic Phishes</div>
-                <div class="text-h5 text-orange">{{ syntheticReportedCount }} / {{ syntheticTests.length }}</div>
+                <div class="text-h5 text-orange">{{ phishAssignmentsReported }} / {{ phishAssignments().length }}</div>
                 <div class="text-caption">Reported / Received</div>
               </q-card-section>
             </q-card>
@@ -122,7 +122,7 @@
             <q-card flat bordered>
               <q-card-section>
                 <div class="text-caption text-grey-7">Educational Resources</div>
-                <div class="text-h5 text-green">{{ educationalResourcesCompleted }} / {{ educationalResources.length }}</div>
+                <div class="text-h5 text-green">{{ trainingAssignmentsCompleted }} / {{ trainingAssignments().length }}</div>
                 <div class="text-caption">Completed / Assigned</div>
               </q-card-section>
             </q-card>
@@ -160,7 +160,7 @@
             flat
             :pagination="{ rowsPerPage: 10 }"
           >
-            <template v-slot:body-cell-timestamp="props">
+            <template v-slot:body-cell-created_at="props">
               <q-td :props="props">
                 {{ formatDate(props.value) }}
               </q-td>
@@ -186,13 +186,43 @@
         <q-tab-panel name="synthetic">
           <div class="text-h6 q-mb-md">Synthetic Phishing Tests</div>
           
+          <!-- Send New Synthetic Phish -->
+          <q-card flat bordered class="q-mb-md">
+            <q-card-section class="row items-center q-gutter-md">
+              <div class="text-subtitle2">Send New:</div>
+              <phish-template-select
+                :label="'Select Template'"
+                :read-only="false"
+                @input="template => selectedPhishTemplate = template"
+                style="width: 250px;"
+              />
+              <q-btn 
+                label="Send Test Phish"
+                color="primary"
+                unelevated
+                :disable="!selectedPhishTemplate"
+                @click="createPhishAssignment()"
+              />
+            </q-card-section>
+          </q-card>
+
+          <!-- Synthetic Phishes Sent -->
           <q-table
-            :rows="syntheticTests"
+            :rows="phishAssignments()"
             :columns="syntheticTestColumns"
             row-key="id"
             flat
             :pagination="{ rowsPerPage: 10 }"
           >
+            <template v-slot:body-cell-clicked="props">
+              <q-td :props="props">
+                <q-icon 
+                  :name="props.value ? 'check_circle' : 'cancel'" 
+                  :color="props.value ? 'positive' : 'negative'"
+                  size="sm"
+                />
+              </q-td>
+            </template>  
             <template v-slot:body-cell-reported="props">
               <q-td :props="props">
                 <q-icon 
@@ -203,13 +233,13 @@
               </q-td>
             </template>
 
-            <template v-slot:body-cell-sentDate="props">
+            <template v-slot:body-cell-sentAt="props">
               <q-td :props="props">
                 {{ formatDate(props.value) }}
               </q-td>
             </template>
 
-            <template v-slot:body-cell-reportedDate="props">
+            <template v-slot:body-cell-reportedAt="props">
               <q-td :props="props">
                 {{ props.value ? formatDate(props.value) : '-' }}
               </q-td>
@@ -221,47 +251,31 @@
         <q-tab-panel name="resources">
           <div class="text-h6 q-mb-md">Educational Resources</div>
           
-          <q-table
-            :rows="educationalResources"
-            :columns="resourceColumns"
-            row-key="id"
-            flat
-            :pagination="{ rowsPerPage: 10 }"
-          >
-            <template v-slot:body-cell-status="props">
-              <q-td :props="props">
-                <q-badge 
-                  :color="props.value === 'completed' ? 'positive' : 'grey'" 
-                  :label="props.value"
-                />
-              </q-td>
-            </template>
+          <!-- Assign new Training  -->
+          <q-card flat bordered class="q-mb-md">
+            <q-card-section class="row items-center q-gutter-md">
+              <div class="text-subtitle2">Assign New:</div>
+              <training-template-select
+                :label="'Select Training Module'"
+                :read-only="false"
+                @input="template => selectedTrainingTemplate = template"
+                style="width: 250px;"
+              />
+              <q-btn 
+                label="Assign Training"
+                color="primary"
+                unelevated
+                :disable="!selectedTrainingTemplate"
+                @click="createTrainingAssignment()"
+              />
+            </q-card-section>
+          </q-card>
 
-            <template v-slot:body-cell-assignedDate="props">
-              <q-td :props="props">
-                {{ formatDate(props.value) }}
-              </q-td>
-            </template>
-
-            <template v-slot:body-cell-completedDate="props">
-              <q-td :props="props">
-                {{ props.value ? formatDate(props.value) : '-' }}
-              </q-td>
-            </template>
-
-            <template v-slot:body-cell-actions="props">
-              <q-td :props="props">
-                <q-btn 
-                  v-if="props.row.status === 'completed'"
-                  flat 
-                  dense 
-                  label="Reassign" 
-                  color="primary"
-                  @click="reassignResource(props.row)"
-                />
-              </q-td>
-            </template>
-          </q-table>
+          <phish-training-assignments-table
+            :training-assignments="trainingAssignments()"
+            :admin="true"
+            @reassign="reassignResource"
+          />
         </q-tab-panel>
       </q-tab-panels>
     </q-card>
@@ -272,7 +286,7 @@
         <q-card-section>
           <div class="text-h6">Report Details</div>
           <div class="text-subtitle2">
-            Submitted: {{ selectedReport?.timestamp ? formatDate(selectedReport.timestamp) : '' }}
+            Submitted: {{ selectedReport?.created_at ? formatDate(selectedReport.created_at) : '' }}
           </div>
         </q-card-section>
 
@@ -280,10 +294,10 @@
 
         <q-card-section>
           <div class="text-subtitle2 q-mb-sm">Report Type</div>
-          <q-badge 
+          <!-- <q-badge 
             :label="selectedReport?.organic ? 'Organic' : 'Synthetic'" 
             :color="selectedReport?.organic ? 'primary' : 'orange'"
-          />
+          /> -->
 
           <div class="text-subtitle2 q-mt-md q-mb-sm">Message Content</div>
           <pre style="white-space: pre-wrap; word-break: break-word; background: #f6f8fa; padding: 12px; border-radius: 4px;" v-html="highlightedMessage"></pre>
@@ -309,8 +323,13 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import PhishTemplateSelect from 'src/components/phish/PhishTemplateSelect.vue'
+import TrainingTemplateSelect from 
+  'src/components/phish/TrainingTemplateSelect.vue'
+import PhishTrainingAssignmentsTable from 
+  'src/components/phish/PhishTrainingAssignmentsTable.vue'
 import { usePhishStore } from 'src/stores/phish'
-import { PhishReport } from 'src/types'
+import { PhishReport, SyntheticPhishTemplate, TrainingTemplate, TrainingAssignment } from 'src/types'
 import { QTableProps } from 'quasar'
 
 const router = useRouter()
@@ -321,6 +340,8 @@ const loading = ref(false)
 const activeTab = ref('organic')
 const showReportDialog = ref(false)
 const selectedReport = ref<PhishReport | null>(null)
+const selectedPhishTemplate = ref<SyntheticPhishTemplate | null>(null)
+const selectedTrainingTemplate = ref<TrainingTemplate | null>(null)
 
 const riskLevelOptions = ['low', 'med', 'high']
 const availableGroups = ['Sales', 'Engineering', 'HR', 'Finance', 'Operations', 'Management']
@@ -333,22 +354,6 @@ interface TeamMember {
   groups: string[]
 }
 
-interface SyntheticTest {
-  id: number
-  sentDate: Date
-  reported: boolean
-  reportedDate: Date | null
-  testName: string
-}
-
-interface EducationalResource {
-  id: number
-  title: string
-  assignedDate: Date
-  completedDate: Date | null
-  status: 'pending' | 'completed'
-}
-
 // Mock data - replace with API calls
 const teamMember = ref<TeamMember>({
   pk: Number(route.params.id),
@@ -359,14 +364,12 @@ const teamMember = ref<TeamMember>({
 })
 
 const organicReports = ref<PhishReport[]>([])
-const syntheticTests = ref<SyntheticTest[]>([])
-const educationalResources = ref<EducationalResource[]>([])
 
 const organicReportColumns: QTableProps['columns'] = [
   {
-    name: 'timestamp',
+    name: 'created_at',
     label: 'Date',
-    field: 'timestamp',
+    field: 'created_at',
     align: 'left',
     sortable: true
   },
@@ -389,69 +392,45 @@ const syntheticTestColumns: QTableProps['columns'] = [
   {
     name: 'testName',
     label: 'Test Name',
-    field: 'testName',
+    field: 'template_name',
+    align: 'left'
+  },
+  {
+    name: 'sentAt',
+    label: 'Sent Date',
+    field: 'sent_at',
     align: 'left',
     sortable: true
   },
   {
-    name: 'sentDate',
-    label: 'Sent Date',
-    field: 'sentDate',
-    align: 'left',
+    name: 'clicked',
+    label: 'Clicked',
+    field: 'clicked',
+    align: 'center',
     sortable: true
   },
   {
     name: 'reported',
     label: 'Reported',
-    field: 'reported',
+    field: 'reported_at',
     align: 'center',
     sortable: true
   },
   {
-    name: 'reportedDate',
+    name: 'reportedAt',
     label: 'Reported Date',
-    field: 'reportedDate',
-    align: 'left',
-    sortable: true
+    field: 'reportedAt',
+    align: 'left'
   }
 ]
 
-const resourceColumns: QTableProps['columns'] = [
-  {
-    name: 'title',
-    label: 'Resource Title',
-    field: 'title',
-    align: 'left',
-    sortable: true
-  },
-  {
-    name: 'assignedDate',
-    label: 'Assigned Date',
-    field: 'assignedDate',
-    align: 'left',
-    sortable: true
-  },
-  {
-    name: 'completedDate',
-    label: 'Completed Date',
-    field: 'completedDate',
-    align: 'left',
-    sortable: true
-  },
-  {
-    name: 'status',
-    label: 'Status',
-    field: 'status',
-    align: 'center',
-    sortable: true
-  },
-  {
-    name: 'actions',
-    label: 'Actions',
-    field: '',
-    align: 'center'
-  }
-]
+function phishAssignments() {
+  return phishStore.phishAssignments[teamMember.value.pk] || []
+}
+
+function trainingAssignments() {
+  return phishStore.trainingAssignments[teamMember.value.pk] || []
+}
 
 function formatDate(date: Date | string): string {
   if (!date) return ''
@@ -505,26 +484,34 @@ const highlightedMessage = computed(() =>
   selectedReport.value?.message ? syntaxHighlight(selectedReport.value.message) : ''
 )
 
-const syntheticReportedCount = computed(() => 
-  syntheticTests.value.filter(test => test.reported).length
+const organicReportsCount = computed(() => 
+  organicReports.value.filter(
+    report => report.employee.pk === teamMember.value.pk
+  ).length
 )
 
-const educationalResourcesCompleted = computed(() =>
-  educationalResources.value.filter(resource => resource.status === 'completed').length
+const phishAssignmentsReported = computed(() => 
+  phishAssignments().filter(phish => phish.reported).length
+)
+
+const trainingAssignmentsCompleted = computed(() =>
+  trainingAssignments().filter(assignment => assignment.completed).length
 )
 
 async function loadTeamMemberData() {
   loading.value = true
   try {
-    const memberId = Number(route.params.pk)
+    const employeePk = Number(route.params.pk)
     
     // Load all reports for this employee
     await phishStore.getReports()
+    await phishStore.getPhishAssignmentsForEmployee(employeePk)
+    await phishStore.getTrainingAssignmentsForEmployee(employeePk)
     
     // Mock data - replace with actual API calls
     // Filter reports for this specific employee
     organicReports.value = phishStore.processedReports.filter(
-      (r: PhishReport) => r.employee.pk === memberId && r.organic
+      (r: PhishReport) => r.employee.pk === employeePk
     )
     
     // Load team member details from list (in real app, fetch from API)
@@ -536,24 +523,10 @@ async function loadTeamMemberData() {
       { pk: 1, employeeName: 'Emma Davis', riskLevel: 'med' as const, organicReports: 7, groups: ['Operations', 'Engineering'] }
     ]
     
-    const member = mockMembers.find(m => m.pk === memberId)
+    const member = mockMembers.find(m => m.pk === employeePk)
     if (member) {
       teamMember.value = member
     }
-    
-    // Mock synthetic tests
-    syntheticTests.value = [
-      { id: 1, testName: 'CEO Fraud Test #1', sentDate: new Date('2025-12-01'), reported: true, reportedDate: new Date('2025-12-01') },
-      { id: 2, testName: 'Invoice Scam Test', sentDate: new Date('2025-12-15'), reported: false, reportedDate: null },
-      { id: 3, testName: 'Password Reset Phish', sentDate: new Date('2026-01-05'), reported: true, reportedDate: new Date('2026-01-05') }
-    ]
-    
-    // Mock educational resources
-    educationalResources.value = [
-      { id: 1, title: 'Phishing Awareness Training', assignedDate: new Date('2025-11-01'), completedDate: new Date('2025-11-15'), status: 'completed' },
-      { id: 2, title: 'Email Security Best Practices', assignedDate: new Date('2025-12-01'), completedDate: null, status: 'pending' },
-      { id: 3, title: 'Spotting Social Engineering', assignedDate: new Date('2026-01-01'), completedDate: null, status: 'pending' }
-    ]
     
   } finally {
     loading.value = false
@@ -561,7 +534,7 @@ async function loadTeamMemberData() {
 }
 
 function goBack() {
-  router.push('/phish/team')
+  router.push('/phish/admin/team')
 }
 
 function updateRiskLevel(newLevel: string) {
@@ -579,12 +552,45 @@ function viewReportDetails(report: PhishReport) {
   showReportDialog.value = true
 }
 
-function reassignResource(resource: EducationalResource) {
-  resource.status = 'pending'
-  resource.completedDate = null
-  resource.assignedDate = new Date()
-  teamMember.value.resourcesCompleted--
-  // TODO: API call to mark resource reassigned
+function reassignResource(assignment: TrainingAssignment) {
+  console.log('Reassigning training:', assignment)
+  // TODO: API call to mark training reassigned
+  // After API call succeeds, refresh the training assignments
+  loadTeamMemberData()
+}
+
+function createPhishAssignment() {
+  if (!selectedPhishTemplate.value) {
+    console.error('No template selected for synthetic phish')
+    return
+  }
+  phishStore.createPhishAssignment(
+    teamMember.value.pk, selectedPhishTemplate.value.pk
+  )
+    .then(() => {
+      // Refresh synthetic tests list after sending
+      loadTeamMemberData()
+    })
+    .catch((e) => {
+      console.error('Error sending synthetic phish:', e)
+    })
+}
+
+function createTrainingAssignment() {
+  if (!selectedTrainingTemplate.value) {
+    console.error('No template selected for training assignment')
+    return
+  }
+  phishStore.createTrainingAssignment(
+    teamMember.value.pk, selectedTrainingTemplate.value.pk
+  )
+    .then(() => {
+      // Refresh educational resources list after assigning
+      loadTeamMemberData()
+    })
+    .catch((e) => {
+      console.error('Error assigning training:', e)
+    })
 }
 
 onMounted(() => {

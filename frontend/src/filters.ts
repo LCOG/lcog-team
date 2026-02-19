@@ -26,7 +26,7 @@ export function readableDateNEW(d: string): string {
   }
 }
 
-export function readableDateTimeNEW(d: string): string {
+export function readableDateTimeNEW(d: Date): string {
   // d should be a string in the format 'YYYY-MM-DDTHH:MM:SSZ' or similar
   if (!d) {
     return 'Date not set'
@@ -37,7 +37,7 @@ export function readableDateTimeNEW(d: string): string {
     const day = dateObj.getDate().toString()
     const year = dateObj.getFullYear()
     const hours = dateObj.getHours().toString()
-    const minutes = dateObj.getMinutes().toString()
+    const minutes = dateObj.getMinutes().toString().padStart(2, '0')
     return `${month}/${day}/${year} ${hours}:${minutes}` // 'MM/DD/YYYY HH:MM'
   }
   catch (e) {

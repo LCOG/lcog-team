@@ -268,10 +268,19 @@ class EmployeeViewSet(viewsets.ModelViewSet):
     # authenticated users.
     @action(detail=True, methods=['get'])
     def simple_detail(self, request, pk):
-        if request.user.is_authenticated:
-            employee = Employee.active_objects.filter(pk=pk)
-        else:
-            employee = self.get_queryset().filter(pk=pk)
+        # Block unauthenticated access from the browsable API, but allow
+        # frontend access by checking if HTML is being requested
+        is_browsable_api = (
+            hasattr(request, 'accepted_renderer') and
+            request.accepted_renderer.format == 'api'
+        )
+        if is_browsable_api and not request.user.is_authenticated:
+            return Response(
+                {"detail": "Authentication required for browsable API."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        employee = Employee.active_objects.filter(pk=pk)
         if not employee:
             return Response(status=status.HTTP_404_NOT_FOUND)
         else:
@@ -705,10 +714,18 @@ class ReviewNoteViewSet(viewsets.ModelViewSet):
 
     def create(self, request):
         employee = Employee.objects.get(pk=request.data['employee_pk'])
-        author = request.user.employee  
         note = request.data['note']
-        new_review_note = ReviewNote.objects.create(author=author,
-            employee=employee, note=note)
+        anon_name = request.data.get('anon_name', None)
+        if anon_name:
+            anon_org = request.data.get('anon_org', None)
+            new_review_note = ReviewNote.objects.create(
+                anon_name=anon_name, anon_org=anon_org,
+                employee=employee, note=note
+            )
+        else:
+            author = request.user.employee
+            new_review_note = ReviewNote.objects.create(author=author,
+                employee=employee, note=note)
         serialized_note = ReviewNoteSerializer(new_review_note,
             context={'request': request})
         return Response(serialized_note.data)

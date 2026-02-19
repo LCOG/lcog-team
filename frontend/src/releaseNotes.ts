@@ -4,6 +4,28 @@
 
 export const releases = [
   {
+    version: '1.3.0',
+    date: new Date(2026, 1, 18),
+    changes: [
+      {
+        type: 'new',
+        description: 'Add ability to send and report synthetic phishing messages.'
+      },
+      {
+        type: 'new',
+        description: 'Add ability to assign and take phish training modules.'
+      },
+      {
+        type: 'improved',
+        description: 'Many improvements to phish admin dashboard UI.'
+      },
+      {
+        type: 'improved',
+        description: 'Allow anonymous performance review peer feedback.'
+      },
+    ]
+  },
+  {
     version: '1.2.4',
     date: new Date(2026, 1, 5),
     changes: [

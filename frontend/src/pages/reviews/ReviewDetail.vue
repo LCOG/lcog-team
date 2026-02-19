@@ -227,7 +227,8 @@
         >
           <q-card-section>
             <div class="text-bold">
-              {{ note.author_name }} - {{ readableDateNEW(note.created_at) }}
+              {{ note.author_name }} -
+              {{ readableDateTimeNEW(note.created_at).split(' ')[0] }}
             </div>
             <div class="read-only-text-area" v-html="note.note"></div>
           </q-card-section>
@@ -865,7 +866,7 @@ import { scroll, useQuasar } from 'quasar'
 import { onMounted, ref, Ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
-import { readableDateNEW } from 'src/filters'
+import { readableDateNEW, readableDateTimeNEW } from 'src/filters'
 import { useReviewStore } from 'src/stores/review'
 import { useUserStore } from 'src/stores/user'
 import { PRFormFactor, PRSignatures, ReviewNoteRetrieve } from 'src/types'

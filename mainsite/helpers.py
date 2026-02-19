@@ -65,7 +65,17 @@ def record_email_sent(subject='', body='', to_addresses=[], cc_addresses=[]):
     message += 'Body: ' + body
     email_logger.info(message)
 
-def send_email(to_address, subject, body, html_body):
+def send_email(to_address, subject, body, html_body, headers=None):
+    """
+    Send an email with optional custom headers.
+    
+    Args:
+        to_address: Recipient email address
+        subject: Email subject
+        body: Plain text body
+        html_body: HTML body
+        headers: Optional dictionary of custom headers (e.g., {'X-Custom-Header': 'value'})
+    """
     env = os.getenv('ENVIRONMENT')
     if env == 'DEV':
         subject = f'TEST FROM DEV: {subject}'
@@ -77,16 +87,22 @@ def send_email(to_address, subject, body, html_body):
         body = f'THIS IS A TEST EMAIL\n{body}'
         html_body = \
             f'<div style="color: red;">THIS IS A TEST EMAIL</div>{html_body}'
+    
+    email = EmailMultiAlternatives(
+        subject=subject,
+        body=body,
+        from_email=os.environ.get('FROM_EMAIL'),
+        to=[to_address]
+    )
+    email.attach_alternative(html_body, "text/html")
+    
+    # Add custom headers if provided
+    if headers:
+        for header_name, header_value in headers.items():
+            email.extra_headers[header_name] = header_value
+    
     try:
-        sent_email = send_mail(
-            subject,
-            body,
-            from_email=os.environ.get('FROM_EMAIL'),
-            recipient_list=[to_address],
-            # auth_user=os.environ.get('FROM_EMAIL_USERNAME'),
-            # auth_password=os.environ.get('FROM_EMAIL_PASSWORD'),
-            html_message=html_body
-        )
+        sent_email = email.send()
         record_email_sent(subject, body, [to_address])
         return sent_email
     except Exception as e:

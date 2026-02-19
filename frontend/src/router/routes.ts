@@ -225,7 +225,7 @@ if (maintenanceMode) {
           path: '/note/new',
           name: 'note-create',
           component: () => import('src/pages/reviews/ReviewNoteCreate.vue'),
-          meta: { requiresAuth: true },
+          meta: { requiresAuth: false },
           // beforeEnter: ifManager
         },
         {
@@ -242,8 +242,25 @@ if (maintenanceMode) {
         {
           path: '/phish',
           name: 'phish',
+          redirect: {name: 'phish-dashboard'},
+        },
+        {
+          path: '/phish/dashboard',
+          name: 'phish-dashboard',
+          component: () => import('src/pages/phish/PhishDashboard.vue'),
+          meta: { requiresAuth: true },
+        },
+        {
+          path: '/phish/training/:pk',
+          name: 'phish-training',
+          component: () => import('src/pages/phish/PhishTraining.vue'),
+          meta: { requiresAuth: true },
+        },
+        {
+          path: '/phish/admin',
+          name: 'phish-admin',
           component: () => {
-            return import('src/pages/phish/PhishBase.vue')
+            return import('src/pages/phish/PhishAdminBase.vue')
           },
           redirect: {name: 'phish-reports'},
           meta: { requiresAuth: true },

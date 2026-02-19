@@ -19,8 +19,8 @@
         toggle-color="primary"
         class="q-mb-md"
         :options="[
-          { label: 'Reports', value: '/phish/reports' },
-          { label: 'Team', value: '/phish/team' }
+          { label: 'Reports', value: '/phish/admin/reports' },
+          { label: 'Team', value: '/phish/admin/team' }
         ]"
       />
       <router-view />

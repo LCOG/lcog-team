@@ -342,13 +342,67 @@ export interface FileUploadDescriptionUploadServerResponse {
 ////////////////////////////////////////////////
 
 export interface PhishReport {
-  url: Url
   pk: number
   employee: SimpleEmployeeRetrieve
-  timestamp: Date
+  created_at: Date
   message: JSON
-  organic: boolean
   processed: boolean
+}
+
+export interface SyntheticPhishTemplate {
+  pk: number
+  name: string
+  version: number
+  subject: string
+  body: string
+  difficulty: number
+  active: boolean
+}
+
+export const emptyPhishTemplate: SyntheticPhishTemplate = {
+  pk: -1,
+  name: '',
+  version: 1,
+  subject: '',
+  body: '',
+  difficulty: 1,
+  active: true
+}
+
+export interface SyntheticPhish {
+  pk: number
+  employee: number
+  template: SyntheticPhishTemplate
+  sent_at: Date
+  clicked: boolean
+  reported: boolean
+  reported_at: Date | null
+}
+
+export interface TrainingTemplate {
+  pk: number
+  name: string
+  version: number
+  content: string
+  active: boolean
+}
+
+export const emptyTrainingTemplate: TrainingTemplate = {
+  pk: -1,
+  name: '',
+  version: 1,
+  content: '',
+  active: true
+}
+
+export interface TrainingAssignment {
+  pk: number
+  employee: SimpleEmployeeRetrieve
+  template: TrainingTemplate
+  training_name: string
+  assigned_at: Date
+  completed: boolean
+  completed_at: Date | null
 }
 
 ///////////////////////////////////////////////////
@@ -546,6 +600,8 @@ export interface ResponsibilityTagUpdate {
 export interface ReviewNoteCreate {
   employee_pk: number
   note: string
+  anon_name?: string
+  anon_org?: string
 }
 
 export interface ReviewNoteRetrieve {
