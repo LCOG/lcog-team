@@ -12,8 +12,7 @@ from mainsite.models import ImageUpload, SecurityMessage, TrustedIPAddress
 from people.admin import EmployeeInline
 
 from .models import (
-    City, ImageUpload, MaintenanceMode, Organization, SecurityMessage, State,
-    ZipCode
+    City, ImageUpload, Organization, SecurityMessage, State, ZipCode
 )
 
 
@@ -53,21 +52,6 @@ class SecurityMessageAdmin(admin.ModelAdmin):
 @admin.register(TrustedIPAddress)
 class TrustedIPAddressAdmin(admin.ModelAdmin):
     list_display = ["address", "address_range_end", "description"]
-
-
-@admin.register(MaintenanceMode)
-class MaintenanceAdmin(admin.ModelAdmin):
-    list_display = ("enabled", "updated_at")
-    fields = ("enabled", "message", "updated_at")
-    readonly_fields = ("updated_at",)
-    
-    def has_add_permission(self, request):
-        # Only allow one instance
-        return not MaintenanceMode.objects.exists()
-    
-    def has_delete_permission(self, request, obj=None):
-        # Don't allow deletion of the singleton
-        return False
 
 
 class UserCreationForm(BaseUserCreationForm):

@@ -4,30 +4,20 @@ import { ref } from 'vue'
 
 // Create a global reactive state for maintenance mode
 export const maintenanceEnabled = ref(false)
-export const maintenanceMessage = ref('')
 export const backendUnreachable = ref(false)
 
+const MAINTENANCE_MESSAGE = `The site is currently undergoing maintenance and will be back shortly.
+
+Downtime should only last 10 minutes or so. If the site isn't up after 10 minutes, please contact the help desk at help@lcog-or.gov`
+
 export default boot(async ({ app, router }) => {
-  // Check maintenance status before app loads
+  // Try to ping the backend to see if it's up
   try {
     const apiUrl = process.env.API_URL || 'http://localhost:8000/'
-    const response = await axios.get(`${apiUrl}api/v1/maintenance-status/`, {
+    await axios.get(`${apiUrl}health/`, {
       timeout: 5000 // 5 second timeout
     })
-    
-    if (response.data.enabled) {
-      maintenanceEnabled.value = true
-      maintenanceMessage.value = response.data.message
-      
-      // Redirect to maintenance page if not already there
-      router.beforeEach((to, from, next) => {
-        if (to.path !== '/maintenance') {
-          next('/maintenance')
-        } else {
-          next()
-        }
-      })
-    }
+    // Backend is up, proceed normally
   } catch (error) {
     // Check if this is a network error (backend completely down)
     // vs an HTTP error (backend up but endpoint failed)
@@ -43,8 +33,8 @@ export default boot(async ({ app, router }) => {
       console.warn('Backend unreachable, showing maintenance page')
       backendUnreachable.value = true
       maintenanceEnabled.value = true
-      maintenanceMessage.value = 'The site is currently undergoing maintenance. Please check back in 10-15 minutes.'
       
+      // Redirect to maintenance page if not already there
       router.beforeEach((to, from, next) => {
         if (to.path !== '/maintenance') {
           next('/maintenance')
@@ -53,8 +43,10 @@ export default boot(async ({ app, router }) => {
         }
       })
     } else {
-      // Some other error - let the app try to load normally
-      console.error('Error checking maintenance status:', error)
+      // Some other error (like 404) - backend is up, let the app try to load normally
+      console.error('Error checking backend health:', error)
     }
   }
 })
+
+export { MAINTENANCE_MESSAGE }

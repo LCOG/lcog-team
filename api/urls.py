@@ -5,8 +5,7 @@ from django.urls import include, path
 
 from deskreservation.api_views import DeskReservationViewSet, DeskViewSet
 from mainsite.api_views import (
-    FileUploadViewSet, LogErrorView, MaintenanceStatusView,
-    SecurityMessageViewSet, TrustedIPViewSet
+    FileUploadViewSet, LogErrorView, SecurityMessageViewSet, TrustedIPViewSet
 )
 from mainsite.views import (
     obtain_auth_token_without_password, obtain_zoom_access_token
@@ -43,7 +42,6 @@ urlpatterns = [
     path('api-token-auth/', obtain_auth_token_without_password),
     path('api-token-auth-password/', obtain_auth_token),
     path('v1/current-user/', CurrentUserView.as_view(), name='current_user'),
-    path('v1/maintenance-status/', MaintenanceStatusView.as_view({'get': 'list'}), name='maintenance_status'),
     path(
         'v1/address-lat-long/',
         AddressLatLong.as_view(),
