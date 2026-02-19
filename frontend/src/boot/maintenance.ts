@@ -11,41 +11,44 @@ const MAINTENANCE_MESSAGE = `The site is currently undergoing maintenance and wi
 If the site isn't back after 10 minutes, please contact the help desk at <a href="https://lcog-or.gov/help" target="_blank" rel="noopener noreferrer">https://lcog-or.gov/help</a>`
 
 export default boot(async ({ app, router }) => {
-  // Try to ping the backend to see if it's up
+  // Try to ping the backend to see if it's up using image ping (avoids CORS)
   try {
     const apiUrl = process.env.API_URL || 'https://api.team.lcog.org/'
-    await axios.get(`${apiUrl}health/`, {
-      timeout: 5000 // 5 second timeout
+    
+    // Use image ping to check connectivity - doesn't require CORS
+    // This avoids preflight request issues
+    await new Promise<void>((resolve, reject) => {
+      const img = new Image()
+      const timer = setTimeout(() => {
+        reject(new Error('Timeout'))
+      }, 5000)
+      
+      img.onload = () => {
+        clearTimeout(timer)
+        resolve()
+      }
+      img.onerror = () => {
+        clearTimeout(timer)
+        reject(new Error('Failed to load'))
+      }
+      // Point to any static file that exists on the backend
+      img.src = `${apiUrl}static/admin/img/icon-yes.svg?t=${Date.now()}`
     })
     // Backend is up, proceed normally
   } catch (error) {
-    // Check if this is a network error (backend completely down)
-    // vs an HTTP error (backend up but endpoint failed)
-    const isNetworkError = 
-      !error.response && 
-      (error.code === 'ECONNREFUSED' || 
-       error.code === 'ENOTFOUND' ||
-       error.code === 'ETIMEDOUT' ||
-       error.message?.includes('Network Error'))
+    // Backend is unreachable - assume maintenance/deployment
+    console.warn('Backend unreachable, showing maintenance page:', error)
+    backendUnreachable.value = true
+    maintenanceEnabled.value = true
     
-    if (isNetworkError) {
-      // Backend is unreachable - assume maintenance/deployment
-      console.warn('Backend unreachable, showing maintenance page')
-      backendUnreachable.value = true
-      maintenanceEnabled.value = true
-      
-      // Redirect to maintenance page if not already there
-      router.beforeEach((to, from, next) => {
-        if (to.path !== '/maintenance') {
-          next('/maintenance')
-        } else {
-          next()
-        }
-      })
-    } else {
-      // Some other error (e.g. 404) - backend is up, try to load normally
-      console.error('Error checking backend health:', error)
-    }
+    // Redirect to maintenance page if not already there
+    router.beforeEach((to, from, next) => {
+      if (to.path !== '/maintenance') {
+        next('/maintenance')
+      } else {
+        next()
+      }
+    })
   }
 })
 
