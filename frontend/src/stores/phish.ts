@@ -37,7 +37,7 @@ actions: {
   // Fetch all PhishReport objects from the Django API
   getReports() {
     return new Promise((resolve, reject) => {
-      axios({ url: `${ apiURL }api/v1/phish-report` })
+      axios({ url: `${ apiURL }api/v1/phishreport` })
         .then(resp => {
           const results = resp.data.results || resp.data
           this.submittedReports = results.filter((r: PhishReport) => {
@@ -68,7 +68,7 @@ actions: {
       const ops = toMove.map((r: any) => {
         const id = r.pk ?? r.id
         return axios({
-          url: `${ apiURL }api/v1/phish-report/${ id }`,
+          url: `${ apiURL }api/v1/phishreport/${ id }`,
           method: 'PATCH',
           data: { processed: true }
         })
