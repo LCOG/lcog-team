@@ -70,7 +70,10 @@ class PhishReportViewSet(viewsets.ModelViewSet):
         synthetic_phish_id = None
         if isinstance(email_message, dict):
             # If message is already parsed as dict with headers
-            headers = email_message.get('headers', {})
+            headers = email_message.get('internetMessageHeaders', {})
+            # Convert list of headers to dict for easier lookup
+            headers = {h['name']: h['value'] for h in headers if 'name' in h \
+                       and 'value' in h}
             synthetic_phish_id = headers.get('X-Synthetic-Phish-ID')
         elif isinstance(email_message, str):
             # Try to extract header from raw email string
