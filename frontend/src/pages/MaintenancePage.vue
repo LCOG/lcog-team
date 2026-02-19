@@ -38,12 +38,29 @@ export default defineComponent({
     const message = ref(MAINTENANCE_MESSAGE)
     let intervalId: number | null = null
 
-    // Check every 30 seconds if backend is back up
+    // Check every 5 seconds if backend is back up
     const checkBackendStatus = async () => {
       try {
         const apiUrl = process.env.API_URL || 'http://localhost:8000/'
-        await axios.get(`${apiUrl}health/`, {
-          timeout: 5000
+        // Use an image load to check connectivity - doesn't require CORS
+        // Images can be loaded cross-origin without CORS headers
+        // Add cache busting to avoid stale cached responses
+        await new Promise<void>((resolve, reject) => {
+          const img = new Image()
+          const timer = setTimeout(() => {
+            reject(new Error('Timeout'))
+          }, 5000)
+          
+          img.onload = () => {
+            clearTimeout(timer)
+            resolve()
+          }
+          img.onerror = () => {
+            clearTimeout(timer)
+            reject(new Error('Failed to load'))
+          }
+          // Point to any static file that exists on the backend
+          img.src = `${apiUrl}static/admin/img/icon-yes.svg?t=${Date.now()}`
         })
         
         // Backend is back up, reload the page to get back to normal app
