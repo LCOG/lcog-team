@@ -1,0 +1,52 @@
+import { boot } from 'quasar/wrappers'
+import axios from 'axios'
+import { ref } from 'vue'
+
+// Create a global reactive state for maintenance mode
+export const maintenanceEnabled = ref(false)
+export const backendUnreachable = ref(false)
+
+const MAINTENANCE_MESSAGE = `The site is currently undergoing maintenance and will be back shortly.
+
+If the site isn't back after 10 minutes, please contact the help desk at <a href="https://lcog-or.gov/help" target="_blank" rel="noopener noreferrer">https://lcog-or.gov/help</a>`
+
+export default boot(async ({ app, router }) => {
+  // Try to ping the backend to see if it's up
+  try {
+    const apiUrl = process.env.API_URL || 'https://api.team.lcog.org'
+    await axios.get(`${apiUrl}health/`, {
+      timeout: 5000 // 5 second timeout
+    })
+    // Backend is up, proceed normally
+  } catch (error) {
+    // Check if this is a network error (backend completely down)
+    // vs an HTTP error (backend up but endpoint failed)
+    const isNetworkError = 
+      !error.response && 
+      (error.code === 'ECONNREFUSED' || 
+       error.code === 'ENOTFOUND' ||
+       error.code === 'ETIMEDOUT' ||
+       error.message?.includes('Network Error'))
+    
+    if (isNetworkError) {
+      // Backend is unreachable - assume maintenance/deployment
+      console.warn('Backend unreachable, showing maintenance page')
+      backendUnreachable.value = true
+      maintenanceEnabled.value = true
+      
+      // Redirect to maintenance page if not already there
+      router.beforeEach((to, from, next) => {
+        if (to.path !== '/maintenance') {
+          next('/maintenance')
+        } else {
+          next()
+        }
+      })
+    } else {
+      // Some other error (e.g. 404) - backend is up, try to load normally
+      console.error('Error checking backend health:', error)
+    }
+  }
+})
+
+export { MAINTENANCE_MESSAGE }

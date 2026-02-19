@@ -200,7 +200,6 @@ class City(models.Model):
     state = models.ForeignKey(State, on_delete=models.CASCADE)
 
 
-
 LANGUAGE_CHOICES = (
     ("asl", _("American Sign Language")),
     ("ar", _("Arabic")),
