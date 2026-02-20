@@ -102,7 +102,7 @@
             <q-card flat bordered>
               <q-card-section>
                 <div class="text-caption text-grey-7">Organic Reports</div>
-                <div class="text-h5 text-primary">{{ organicReportsCount }}</div>
+                <div class="text-h5 text-primary">{{ organicReports().length }}</div>
                 <div class="text-caption">Total reports made</div>
               </q-card-section>
             </q-card>
@@ -154,7 +154,7 @@
           <div class="text-h6 q-mb-md">Organic Reports</div>
           
           <q-table
-            :rows="organicReports"
+            :rows="organicReports()"
             :columns="organicReportColumns"
             row-key="pk"
             flat
@@ -329,12 +329,14 @@ import TrainingTemplateSelect from
 import PhishTrainingAssignmentsTable from 
   'src/components/phish/PhishTrainingAssignmentsTable.vue'
 import { usePhishStore } from 'src/stores/phish'
+import { usePeopleStore } from 'src/stores/people'
 import { PhishReport, SyntheticPhishTemplate, TrainingTemplate, TrainingAssignment } from 'src/types'
 import { QTableProps } from 'quasar'
 
 const router = useRouter()
 const route = useRoute()
 const phishStore = usePhishStore()
+const peopleStore = usePeopleStore()
 
 const loading = ref(false)
 const activeTab = ref('organic')
@@ -350,20 +352,15 @@ interface TeamMember {
   pk: number
   employeeName: string
   riskLevel: 'low' | 'med' | 'high'
-  organicReports: number
   groups: string[]
 }
 
-// Mock data - replace with API calls
 const teamMember = ref<TeamMember>({
   pk: Number(route.params.id),
   employeeName: 'Loading...',
   riskLevel: 'med',
-  organicReports: 0,
   groups: []
 })
-
-const organicReports = ref<PhishReport[]>([])
 
 const organicReportColumns: QTableProps['columns'] = [
   {
@@ -424,13 +421,25 @@ const syntheticTestColumns: QTableProps['columns'] = [
   }
 ]
 
+function organicReports() {
+  return phishStore.phishReports[teamMember.value.pk] || []
+}
+
 function phishAssignments() {
   return phishStore.phishAssignments[teamMember.value.pk] || []
 }
 
+const phishAssignmentsReported = computed(() => 
+  phishAssignments().filter(phish => phish.reported).length
+)
+
 function trainingAssignments() {
   return phishStore.trainingAssignments[teamMember.value.pk] || []
 }
+
+const trainingAssignmentsCompleted = computed(() =>
+  trainingAssignments().filter(assignment => assignment.completed).length
+)
 
 function formatDate(date: Date | string): string {
   if (!date) return ''
@@ -484,49 +493,24 @@ const highlightedMessage = computed(() =>
   selectedReport.value?.message ? syntaxHighlight(selectedReport.value.message) : ''
 )
 
-const organicReportsCount = computed(() => 
-  organicReports.value.filter(
-    report => report.employee.pk === teamMember.value.pk
-  ).length
-)
-
-const phishAssignmentsReported = computed(() => 
-  phishAssignments().filter(phish => phish.reported).length
-)
-
-const trainingAssignmentsCompleted = computed(() =>
-  trainingAssignments().filter(assignment => assignment.completed).length
-)
-
 async function loadTeamMemberData() {
   loading.value = true
   try {
     const employeePk = Number(route.params.pk)
     
+    peopleStore.getSimpleEmployeeDetail({pk: employeePk}).then(member => {
+      teamMember.value = {
+        pk: member.pk,
+        employeeName: member.name,
+        riskLevel: 'med', // Default risk level - replace with actual data
+        groups: member.groups || []
+      }
+    })
+
     // Load all reports for this employee
-    await phishStore.getReports()
+    await phishStore.getReportsForEmployee(employeePk)
     await phishStore.getPhishAssignmentsForEmployee(employeePk)
     await phishStore.getTrainingAssignmentsForEmployee(employeePk)
-    
-    // Mock data - replace with actual API calls
-    // Filter reports for this specific employee
-    organicReports.value = phishStore.processedReports.filter(
-      (r: PhishReport) => r.employee.pk === employeePk
-    )
-    
-    // Load team member details from list (in real app, fetch from API)
-    const mockMembers = [
-      { pk: 5, employeeName: 'Dan Wilson', riskLevel: 'high' as const, organicReports: 2, groups: ['Engineering', 'Management'] },
-      { pk: 2, employeeName: 'Bob Smith', riskLevel: 'low' as const, organicReports: 12, groups: ['Sales'] },
-      { pk: 3, employeeName: 'Carol Williams', riskLevel: 'med' as const, organicReports: 5, groups: ['HR'] },
-      { pk: 4, employeeName: 'David Brown', riskLevel: 'high' as const, organicReports: 1, groups: ['Finance'] },
-      { pk: 1, employeeName: 'Emma Davis', riskLevel: 'med' as const, organicReports: 7, groups: ['Operations', 'Engineering'] }
-    ]
-    
-    const member = mockMembers.find(m => m.pk === employeePk)
-    if (member) {
-      teamMember.value = member
-    }
     
   } finally {
     loading.value = false
