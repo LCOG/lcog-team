@@ -26,11 +26,24 @@ class PhishReportViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        employee = getattr(user, 'employee', None)
+
+        # Accept optional employee prop to get phish assignments
+        # for a specific employee
+        employee_pk = self.request.query_params.get('employee')
+        if employee_pk:
+            try:
+                employee = Employee.objects.get(pk=employee_pk)
+                return PhishReport.objects.for_employee(employee)\
+                    .filter(employee=employee).order_by('-pk')
+            except Employee.DoesNotExist:
+                return PhishReport.objects.none()
+
+        # If no employee specified, return all phish reports user can view
         if user.is_authenticated:
             if user.is_superuser:
                 return super().get_queryset()
             else:
+                employee = getattr(user, 'employee', None)
                 if employee and employee.can_view_phish():
                     return PhishReport.objects.for_employee(employee)
                 else:
@@ -153,11 +166,24 @@ class PhishAssignmentViewSet(viewsets.ModelViewSet):
         Show synthetic phishes related to the employee or all if superuser.
         """
         user = self.request.user
-        employee = getattr(user, 'employee', None)
+        
+        # Accept optional employee prop to get phish assignments
+        # for a specific employee
+        employee_pk = self.request.query_params.get('employee')
+        if employee_pk:
+            try:
+                employee = Employee.objects.get(pk=employee_pk)
+                return SyntheticPhish.objects.for_employee(employee)\
+                    .filter(employee=employee).order_by('-sent_at')
+            except Employee.DoesNotExist:
+                return SyntheticPhish.objects.none()
+        
+        # If no employee specified, return all phish assignments user can view
         if user.is_authenticated:
             if user.is_superuser:
                 return super().get_queryset()
             else:
+                employee = getattr(user, 'employee', None)
                 if employee and employee.can_view_phish():
                     return SyntheticPhish.objects.for_employee(employee)\
                         .order_by('-sent_at')
@@ -246,27 +272,29 @@ class PhishAssignmentViewSet(viewsets.ModelViewSet):
                 Employee.objects.filter(organization=employee.organization)
         
         # Annotate with aggregated counts
+        # Use distinct=True to prevent duplicate counting when multiple
+        # relationships are aggregated
         team_stats = employees_qs.annotate(
             name=Concat(
                 F('user__first_name'), Value(' '), F('user__last_name')
             ),
-            phish_reports_count=Count(
-                'phishreport',
-                filter=Q(phishreport__processed=False)
-            ),
-            synthetic_phishes_sent=Count('syntheticphish'),
+            phish_reports_count=Count('phishreport', distinct=True),
+            synthetic_phishes_sent=Count('syntheticphish', distinct=True),
             synthetic_phishes_clicked=Count(
                 'syntheticphish',
-                filter=Q(syntheticphish__clicked=True)
+                filter=Q(syntheticphish__clicked=True),
+                distinct=True
             ),
             synthetic_phishes_reported=Count(
                 'syntheticphish',
-                filter=Q(syntheticphish__reported=True)
+                filter=Q(syntheticphish__reported=True),
+                distinct=True
             ),
-            training_assigned=Count('trainingassignment'),
+            training_assigned=Count('trainingassignment', distinct=True),
             training_completed=Count(
                 'trainingassignment',
-                filter=Q(trainingassignment__completed=True)
+                filter=Q(trainingassignment__completed=True),
+                distinct=True
             )
         ).values(
             'pk', 'name', 'phish_reports_count', 'synthetic_phishes_sent',
@@ -306,13 +334,27 @@ class TrainingAssignmentViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        employee = getattr(user, 'employee', None)
+
+        # Accept optional employee prop to get training assignments
+        # for a specific employee
+        employee_pk = self.request.query_params.get('employee')
+        if employee_pk:
+            try:
+                employee = Employee.objects.get(pk=employee_pk)
+                return TrainingAssignment.objects.for_employee(employee)\
+                    .filter(employee=employee).order_by('-assigned_at')
+            except Employee.DoesNotExist:
+                return TrainingAssignment.objects.none()
+
+        # If no employee specified, return all assignments user can view
         if user.is_authenticated:
             if user.is_superuser:
                 return super().get_queryset()
             else:
+                employee = getattr(user, 'employee', None)
                 if employee and employee.can_view_phish():
-                    return TrainingAssignment.objects.for_employee(employee)
+                    return TrainingAssignment.objects.for_employee(employee)\
+                        .order_by('-assigned_at')
                 else:
                     return TrainingAssignment.objects.none()
         else:

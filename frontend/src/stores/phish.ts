@@ -10,8 +10,11 @@ import {
 export const usePhishStore = defineStore('phish', {
 
 state: () => ({
+  // TODO: Probably going to defunct these at some point in favor of just using phishReports, but still using them on the main dashboard for now
   submittedReports: [] as Array<PhishReport>,
   processedReports: [] as Array<PhishReport>,
+  
+  phishReports: {} as { [employeeId: number]: Array<PhishReport> },
   phishTemplates: [] as Array<SyntheticPhishTemplate>,
   phishAssignments: {} as { [employeeId: number]: Array<SyntheticPhish> },
   trainingTemplates: [] as Array<TrainingTemplate>,
@@ -35,7 +38,7 @@ getters: {},
 
 actions: {
   // Fetch all PhishReport objects from the Django API
-  getReports() {
+  getAllReports() {
     return new Promise((resolve, reject) => {
       axios({ url: `${ apiURL }api/v1/phishreport` })
         .then(resp => {
@@ -50,6 +53,24 @@ actions: {
         })
         .catch(e => {
           handlePromiseError(reject, 'Error getting phish reports', e)
+        })
+    })
+  },
+
+  getReportsForEmployee(employeeId: number) {
+    return new Promise((resolve, reject) => {
+      axios({
+        url: `${ apiURL }api/v1/phishreport?employee=${ employeeId }`
+      })
+        .then(resp => {
+          const results = resp.data.results || resp.data
+          this.phishReports[employeeId] = results
+          resolve(results)
+        })
+        .catch(e => {
+          handlePromiseError(
+            reject, 'Error getting phish reports for employee', e
+          )
         })
     })
   },
@@ -136,7 +157,7 @@ actions: {
           resolve(results)
         })
         .catch(e => {
-          handlePromiseError(reject, 'Error getting phishe assignments', e)
+          handlePromiseError(reject, 'Error getting phish assignments', e)
         })
     })
   },
