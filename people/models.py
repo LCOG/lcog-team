@@ -849,9 +849,14 @@ class PerformanceReview(models.Model):
         # Finally, add the HR Manager and Executive Director Signatures if still needed
         if not added_hr_manager:
             hr_manager = Employee.objects.filter(is_hr_manager=True).first()
-            hr_signature = Signature.objects.filter(review=self, employee=hr_manager).first()
+            hr_signature = Signature.objects.filter(
+                review=self, is_hr=True
+            ).first()
             if hr_signature:
-                signatures.append(["Human Resources Manager", hr_manager.name, hr_signature.date, None, False]) # Not ready to sign because there is a signature
+                signatures.append([
+                    "Human Resources Manager", hr_signature.employee.name,
+                    hr_signature.date, None, False
+                ]) # Not ready to sign because there is a signature
             else:
                 # If last manager has signed, we are ready
                 direct_report_signature = Signature.objects.filter(review=self, employee=last_employee_in_chain).first()
@@ -977,6 +982,7 @@ class Signature(models.Model):
         verbose_name=_("performance review"),
         on_delete=models.CASCADE
     )
+    is_hr = models.BooleanField(_("is HR manager signature"), default=False)
 
 
 class ReviewNote(models.Model):

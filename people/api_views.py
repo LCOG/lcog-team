@@ -629,7 +629,9 @@ class SignatureViewSet(viewsets.ModelViewSet):
     def create(self, request):
         pr = PerformanceReview.objects.get(pk=request.data['review_pk'])
         employee = Employee.objects.get(pk=request.data['employee_pk'])
-        new_signature = Signature.objects.create(review=pr, employee=employee)
+        new_signature = Signature.objects.create(
+            review=pr, employee=employee, is_hr=employee.is_hr_manager
+        )
 
         # Set all SignatureReminders for this employee and review to signed
         SignatureReminder.objects.filter(
