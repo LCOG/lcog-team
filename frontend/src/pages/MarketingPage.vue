@@ -35,6 +35,46 @@
 
       <div class="row product items-center q-pl-md">
         <div class="q-px-lg q-pt-lg product-text-mobile">
+          <div class="text-h4 q-mb-sm">Performance Reviews</div>
+          <div class="description">Streamline the performance review process with our intuitive tools. Managers can set goals, provide feedback, and track progress, while employees can easily view their performance metrics and development plans. This ensures a transparent and efficient review cycle.</div>
+        </div>
+        <div class="col q-pa-lg product-text">
+          <div class="text-h4 q-mb-sm">Performance Reviews</div>
+          <div class="description">Streamline the performance review process with our intuitive tools. Managers can set goals, provide feedback, and track progress, while employees can easily view their performance metrics and development plans. This ensures a transparent and efficient review cycle.</div>
+        </div>
+        <div class="col q-pa-lg">
+          <div class="row items-center justify-center">
+            <q-img
+              src="../assets/marketing/workflows.png"
+              @click="playVideo('https://www.youtube.com/embed/uoW-xsl9Wgo?si=IYWq1RTPUQX75sDu')"
+              class="cursor-pointer"
+            />
+          </div>
+        </div>
+      </div>
+      
+      <div class="row product product-alt items-center q-pl-md">
+        <div class="q-px-lg q-pt-lg product-text-mobile">
+          <div class="text-h4 q-mb-sm">Phishing Education</div>
+          <div class="description">Educate employees on recognizing and avoiding phishing attempts through interactive training modules and simulated phishing attacks. Track progress and measure effectiveness to ensure your team stays vigilant against cyber threats.</div>
+        </div>
+        <div class="col q-pa-lg">
+          <div class="row items-center justify-center">
+            <q-img
+              src="../assets/marketing/phishing.png"
+              @click="playVideo('https://www.youtube.com/embed/AVE43P70CgM?si=LRct-26b4byHxG29')"
+              class="cursor-pointer"
+            />
+          </div>
+        </div>
+        <div class="col q-pa-lg product-text">
+          <div class="text-h4 q-mb-sm">Phishing Education</div>
+          <div class="description">Educate employees on recognizing and avoiding phishing attempts through interactive training modules and simulated phishing attacks. Track progress and measure effectiveness to ensure your team stays vigilant against cyber threats.</div>
+        </div>
+      </div>
+
+      <div class="row product items-center q-pl-md">
+        <div class="q-px-lg q-pt-lg product-text-mobile">
           <div class="text-h4 q-mb-sm">Workflows</div>
           <div class="description">Handle internal processes via a customizable interface. Processes like new employee onboarding can involve many steps and decision points, and require that many different people complete them. Customizable reminders ensure that everyone has the right information at the right time. Administrative dashboards give decision makers a high-level view so nothing falls behind schedule. Web hooks allow you to integrate Workflows with your other tools.</div>
         </div>
