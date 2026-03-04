@@ -111,7 +111,7 @@ class SignatureReminderInline(admin.TabularInline):
 
 class SignatureInline(admin.TabularInline):
     model = Signature
-    fields = ("employee", "date",)
+    fields = ("employee", "date", "is_hr")
     readonly_fields = ("date",)
     extra = 0
 
