@@ -131,6 +131,9 @@ export const useUserStore = defineStore('user', {
               'is_division_director', resp.data.is_division_director.toString()
             )
             cookies.set(
+              'is_executive_director', resp.data.is_executive_director.toString()
+            )
+            cookies.set(
               'is_eligible_for_telework_application',
               resp.data.is_eligible_for_telework_application.toString()
             )
