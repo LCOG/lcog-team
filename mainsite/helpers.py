@@ -144,7 +144,7 @@ def send_evaluation_written_email_to_employee(employee, review):
         employee.user.email,
         f'Signature required: {review.employee.manager.name} has completed your performance evaluation',
         f'Your manager {review.employee.manager.name} has completed your evaluation for an upcoming performance review, which requires your signature. View and sign here: {url}',
-        f'Your manager {review.employee.manager.name} has completed your evaluation for an upcoming performance review, which requires your signature. View and sign here: {url}'
+        f'Your manager {review.employee.manager.name} has completed your evaluation for an upcoming performance review, which requires your signature. View and sign here: <a href="{url}">{url}</a>'
     )
     next_reminder = datetime.datetime.today() + datetime.timedelta(days=EMPLOYEE_SIGNATURE_REMINDER)
     SignatureReminder.objects.create(review=review, employee=employee, next_date=next_reminder)
@@ -159,7 +159,7 @@ def send_signature_email_to_manager(employee, review):
         employee.user.email,
         f'Signature required: Performance evaluation for {review.employee.name}',
         f'{review.employee.manager.name} has completed an evaluation for {review.employee.name}, which requires your signature. View and sign here: {url}',
-        f'{review.employee.manager.name} has completed an evaluation for {review.employee.name}, which requires your signature. View and sign here: {url}'
+        f'{review.employee.manager.name} has completed an evaluation for {review.employee.name}, which requires your signature. View and sign here: <a href="{url}">{url}</a>'
     )
     next_reminder = datetime.datetime.today() + datetime.timedelta(days=MANAGER_SIGNATURE_REMINDER)
     SignatureReminder.objects.create(review=review, employee=employee, next_date=next_reminder)
@@ -181,8 +181,24 @@ def send_signature_email_to_executive_director(review):
     send_signature_email_to_manager(executive_director, review)
 
 
-def send_pr_completed_email(review):
+def send_pay_change_notification(review):
     # Notification #19
+    pr_completed_employees = apps.get_model('people.Employee').objects.filter(
+        user__groups__name='PR Completed Employees',
+        organization=review.employee.organization
+    )
+    current_site = Site.objects.get_current()
+    url = current_site.domain + '/pr/' + str(review.pk)
+    send_email_multiple(
+        to_addresses=pr_completed_employees.values_list('user__email', flat=True),
+        subject='PR ready for pay change',
+        text_body=f'A performance evaluation for {review.employee.name} has been signed by a Deputy Director. Please print it here: {url}',
+        html_body=f'A performance evaluation for {review.employee.name} has been signed by a Deputy Director. Please print it here: <a href="{url}">{url}</a>'
+    )
+
+
+def send_print_notification(review):
+    # Notification #20
     pr_completed_employees = apps.get_model('people.Employee').objects.filter(
         user__groups__name='PR Completed Employees',
         organization=review.employee.organization
@@ -191,9 +207,9 @@ def send_pr_completed_email(review):
     url = current_site.domain + '/print/pr/' + str(review.pk)
     send_email_multiple(
         to_addresses=pr_completed_employees.values_list('user__email', flat=True),
-        subject='Performance Evaluation approved',
-        text_body=f'A performance evaluation for {review.employee.name} has been approved. Please print it here: {url}',
-        html_body=f'A performance evaluation for {review.employee.name} has been approved. Please print it here: {url}'
+        subject='PR ready for printing',
+        text_body=f'A performance evaluation for {review.employee.name} has been signed by the Executive Director. Please print it here: {url}',
+        html_body=f'A performance evaluation for {review.employee.name} has been signed by the Executive Director. Please print it here: <a href="{url}">{url}</a>'
     )
 
 

@@ -118,7 +118,9 @@ class SignatureInline(admin.TabularInline):
 
 @admin.register(PerformanceReview)
 class PerformanceReviewAdmin(admin.ModelAdmin):
-    list_display = ("username", "status", "form", "effective_date")
+    list_display = (
+        "username", "status", "form", "period_start_date", "period_end_date"
+    )
     list_filter = ("status", "form", "employee")
     search_fields = ("employee__user__username", )
     inlines = (SignatureInline, SignatureReminderInline)
