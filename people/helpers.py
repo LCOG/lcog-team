@@ -57,9 +57,16 @@ def send_manager_pr_notices():
             cc_list = cc_emails + [manager_data['manager'].manager.user.email]
         else:
             cc_list = cc_emails
+        # send_email_multiple(
+        #     [manager_data['manager'].user.email],
+        #     cc_list,
+        #     'Next Review Dates',
+        #     body,
+        #     html_body
+        # )
         send_email_multiple(
-            [manager_data['manager'].user.email],
-            cc_list,
+            cc_emails,
+            [],
             'Next Review Dates',
             body,
             html_body
