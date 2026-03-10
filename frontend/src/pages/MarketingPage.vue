@@ -4,7 +4,7 @@
     <q-page class="q-mt-md">
       <div id="title-row" class="row items-center q-pa-sm q-pl-md">
         <q-img
-          src="../assets/summit-suite-logo.png"
+          src="../assets/summit.png"
           class="q-mr-sm"
           id="icon"
         />
@@ -26,33 +26,36 @@
       </div>
       
       <div id="hero-subtext" class="row items-center q-py-xl q-pa-xl">
-        <div id="hero-subtext-placeholder" class="col"></div>
+        <div class="hero-subtext-placeholder col-3"></div>
         <div class="col">
-          <div class="hero-subtext-header">Individually powerful, better together. </div>
+          <div class="hero-subtext-header">Individually powerful. Better together. </div>
           <div>Smaller government agencies sometimes struggle to find a good matches with typical corporate SaaS vendors. To match the great work our government partners do, we are creating <span class="text-bold">Public-Interest Software</span>. We maximize services, not profit. We do this by keeping things simple: our apps function independently from one another, they are delightful to use, and they do just one thing well. This is Oregonians making tools for Oregonians.</div>
         </div>
+        <div class="hero-subtext-placeholder col-3"></div>
       </div>
 
+      <!-- PERFORMANCE REVIEWS -->
       <div class="row product items-center q-pl-md">
         <div class="q-px-lg q-pt-lg product-text-mobile">
           <div class="text-h4 q-mb-sm">Performance Reviews</div>
-          <div class="description">Streamline the performance review process with our intuitive tools. Managers can set goals, provide feedback, and track progress, while employees can easily view their performance metrics and development plans. This ensures a transparent and efficient review cycle.</div>
+          <div class="description">Streamline the performance review process with simple, intuitive tools. Managers can solicit peer feedback and evaluate direct reports using custom forms, while employees can easily view their performance metrics. This ensures a transparent and efficient review cycle.</div>
         </div>
         <div class="col q-pa-lg product-text">
           <div class="text-h4 q-mb-sm">Performance Reviews</div>
-          <div class="description">Streamline the performance review process with our intuitive tools. Managers can set goals, provide feedback, and track progress, while employees can easily view their performance metrics and development plans. This ensures a transparent and efficient review cycle.</div>
+          <div class="description">Streamline the performance review process with simple, intuitive tools. Managers can solicit peer feedback and evaluate direct reports using custom forms, while employees can easily view their performance metrics. This ensures a transparent and efficient review cycle.</div>
         </div>
         <div class="col q-pa-lg">
           <div class="row items-center justify-center">
             <q-img
-              src="../assets/marketing/workflows.png"
-              @click="playVideo('https://www.youtube.com/embed/uoW-xsl9Wgo?si=IYWq1RTPUQX75sDu')"
+              src="../assets/marketing/prs.png"
+              @click="playVideo('https://www.youtube.com/embed/9SYEiF0Ks8Y?si=bCrgjgIhOOmoytEg')"
               class="cursor-pointer"
             />
           </div>
         </div>
       </div>
       
+      <!-- PHISHING EDUCATION -->
       <div class="row product product-alt items-center q-pl-md">
         <div class="q-px-lg q-pt-lg product-text-mobile">
           <div class="text-h4 q-mb-sm">Phishing Education</div>
@@ -62,8 +65,6 @@
           <div class="row items-center justify-center">
             <q-img
               src="../assets/marketing/phishing.png"
-              @click="playVideo('https://www.youtube.com/embed/AVE43P70CgM?si=LRct-26b4byHxG29')"
-              class="cursor-pointer"
             />
           </div>
         </div>
@@ -73,6 +74,7 @@
         </div>
       </div>
 
+      <!-- WORKFLOWS -->
       <div class="row product items-center q-pl-md">
         <div class="q-px-lg q-pt-lg product-text-mobile">
           <div class="text-h4 q-mb-sm">Workflows</div>
@@ -93,6 +95,7 @@
         </div>
       </div>
       
+      <!-- CREDIT CARD RECONCILIATION -->
       <div class="row product product-alt items-center q-pl-md">
         <div class="q-px-lg q-pt-lg product-text-mobile">
           <div class="text-h4 q-mb-sm">Credit Card Reconciliation</div>
@@ -113,6 +116,7 @@
         </div>
       </div>
       
+      <!-- DESK RESERVATION -->
       <div class="row product items-center q-pl-md">
         <div class="q-px-lg q-pt-lg product-text-mobile">
           <div class="text-h4 q-mb-sm">Desk Reservation</div>
@@ -133,6 +137,7 @@
         </div>
       </div>
 
+      <!-- RESPONSIBILITIES -->
       <div class="row product product-alt items-center q-pl-md">
         <div class="q-px-lg q-pt-lg product-text-mobile">
           <div class="text-h4 q-mb-sm">Responsibilities</div>
@@ -153,6 +158,7 @@
         </div>
       </div>
 
+      <!-- TIME OFF -->
       <div class="row product items-center q-pl-md">
         <div class="q-px-lg q-pt-lg product-text-mobile">
           <div class="text-h4 q-mb-sm">Time Off</div>
@@ -219,8 +225,8 @@
         </q-card-section>
 
         <q-card-section>
-          <div class="text-center">More information about Lane Council of</div>
-          <div class="text-center">Governments can be found at <a href="https://lcog-or.gov">lcog-or.gov</a></div>
+          <div class="text-center">More about Lane Council of Governments</div>
+          <div class="text-center"><a href="https://lcog-or.gov/about/page/who-we-are">lcog-or.gov</a></div>
         </q-card-section>
 
       </q-card>
@@ -255,12 +261,12 @@ body {
 
   #icon {
     height: 80px;
-    width: 217.6px;
+    width: 158px;
 
-    @media screen and (max-width: 724px) {
-      height: 33.33px;
-      width: 90.67px;
-    }
+    // @media screen and (max-width: 724px) {
+    //   height: 33.33px;
+    //   width: 68px;
+    // }
   }
 
   .title {
@@ -273,7 +279,7 @@ body {
     height: 100%;
 
     @media screen and (max-width: 724px) {
-      font-size: 18px;
+      font-size: 24px;
       line-height: normal;
     }
   }
@@ -321,7 +327,7 @@ body {
   font-size: 24px;
   color: #191C20;
 
-  #hero-subtext-placeholder {
+  .hero-subtext-placeholder {
     @media screen and (max-width: 900px) {
       display: none;
     }
