@@ -1,27 +1,25 @@
 <template>
   <div class="flex flex-center bg-grey-2" style="height: 100vh;">
     <div class="maintenance-container text-center q-pa-xl">
-      <q-icon 
-        name="construction" 
-        size="100px" 
-        color="orange-7" 
-        class="q-mb-md"
+      <q-img
+        src="/src/assets/summit.png"
+        alt="Maintenance Illustration"
+        contain
+        class="q-mb-lg"
+        style="max-width: 300px;"
       />
       <h3 class="text-h3 text-weight-bold q-mt-none q-mb-md">
         Site Maintenance
       </h3>
+      <q-spinner-dots
+        color="primary"
+        size="50px"
+      />
       <div
         class="text-h6 text-grey-8 q-mb-lg"
         style="white-space: pre-line;"
         v-html="message"
       >
-      </div>
-      <q-spinner-dots
-        color="primary"
-        size="50px"
-      />
-      <div class="text-caption text-grey-6 q-mt-lg">
-        This page will automatically reload when maintenance is complete.
       </div>
     </div>
   </div>
@@ -74,7 +72,7 @@ export default defineComponent({
 
     onMounted(() => {
       // Check status every 5 seconds
-      intervalId = window.setInterval(checkBackendStatus, 5000)
+      // intervalId = window.setInterval(checkBackendStatus, 5000)
     })
 
     onUnmounted(() => {

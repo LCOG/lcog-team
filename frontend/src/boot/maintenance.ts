@@ -6,7 +6,7 @@ import { ref } from 'vue'
 export const maintenanceEnabled = ref(false)
 export const backendUnreachable = ref(false)
 
-const MAINTENANCE_MESSAGE = `The site is currently undergoing maintenance and will be back shortly.
+const MAINTENANCE_MESSAGE = `The site is currently undergoing maintenance and will be back shortly. This page will automatically reload when maintenance is complete.
 
 If the site isn't back after 10 minutes, please contact the help desk at <a href="https://lcog-or.gov/help" target="_blank" rel="noopener noreferrer">https://lcog-or.gov/help</a>`
 
