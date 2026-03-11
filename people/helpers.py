@@ -53,20 +53,14 @@ def send_manager_pr_notices():
             body += f'- {review.employee.name}: {review.period_end_date.strftime("%m/%d/%Y")}{suffix}\n'
             html_body += f'<li>{review.employee.name}: {review.period_end_date.strftime("%m/%d/%Y")}{suffix}</li>'
         html_body += '</ul>'
-        if manager_data['manager'].manager is not None:
+        if manager_data['manager'].manager is not None and \
+            not manager_data['manager'].manager.is_executive_director:
             cc_list = cc_emails + [manager_data['manager'].manager.user.email]
         else:
             cc_list = cc_emails
-        # send_email_multiple(
-        #     [manager_data['manager'].user.email],
-        #     cc_list,
-        #     'Next Review Dates',
-        #     body,
-        #     html_body
-        # )
         send_email_multiple(
-            cc_emails,
-            [],
+            [manager_data['manager'].user.email],
+            cc_list,
             'Next Review Dates',
             body,
             html_body
