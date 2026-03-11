@@ -72,7 +72,7 @@ export default defineComponent({
 
     onMounted(() => {
       // Check status every 5 seconds
-      // intervalId = window.setInterval(checkBackendStatus, 5000)
+      intervalId = window.setInterval(checkBackendStatus, 5000)
     })
 
     onUnmounted(() => {
