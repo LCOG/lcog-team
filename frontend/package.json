@@ -2,7 +2,7 @@
   "name": "frontend",
   "version": "0.0.1",
   "description": "Tools for Employees",
-  "productName": "LCOG Team App",
+  "productName": "Summit Suite",
   "author": "Dan Wilson <daniel.gregory.wilson@gmail.com>",
   "private": true,
   "scripts": {

@@ -44,7 +44,7 @@
             />
           </q-item-section>
           <q-item-section>
-            <q-item-label>LCOG Team App</q-item-label>
+            <q-item-label>Summit Suite</q-item-label>
           </q-item-section>
         </q-item>
         <q-item

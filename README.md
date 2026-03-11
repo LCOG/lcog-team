@@ -1,4 +1,4 @@
-# LCOG Team App Backend Readme
+# Summit Suite Backend Readme
 
 Python 3.12.2 
 

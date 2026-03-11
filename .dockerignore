@@ -36,7 +36,7 @@ README.md
 **/.elasticbeanstalk
 **/.platform
 
-# Team App virtual environments
+# Summit Suite virtual environments
 **/*env*
 
 # Do not copy the local sqlite database onto the image

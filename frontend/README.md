@@ -1,4 +1,4 @@
-# LCOG Team App Frontend Readme
+# Summit Suite Frontend Readme
 
 A Quasar Project
 
