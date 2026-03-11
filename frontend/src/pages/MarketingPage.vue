@@ -190,9 +190,9 @@
     <q-dialog v-model="showContactDialog">
       <q-card class="q-pa-lg">
         <div class="text-h5 q-mb-sm text-center">Contact Us</div>
-        <div class="text-center">If you'd like to demo our tools or want to</div>
-        <div class="text-center">hear more about public-interest software,</div>
-        <div class="text-center">please reach out!</div>
+        <div class="text-center">If you'd like to demo our tools or want to hear</div>
+        <div class="text-center">more about public-interest software, please</div>
+        <div class="text-center">reach out via email or <a :href="INTEREST_FORM_URL">Our Interest Form</a>.</div>
 
         <q-card-section>
           <div class="row no-wrap items-center justify-center">
@@ -381,6 +381,8 @@ import { ref } from 'vue'
 let dialogVideoUrl = ref('')
 let showVideoDialog = ref(false)
 let showContactDialog = ref(false)
+
+const INTEREST_FORM_URL = 'https://forms.office.com/g/YhDJAXX4Xw'
 
 function playVideo(url: string) {
   dialogVideoUrl.value = url
