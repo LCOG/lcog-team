@@ -2,7 +2,7 @@
   <div class="flex flex-center bg-grey-2" style="height: 100vh;">
     <div class="maintenance-container text-center q-pa-xl">
       <q-img
-        src="/src/assets/summit.png"
+        :src="summitImg"
         alt="Maintenance Illustration"
         contain
         class="q-mb-lg"
@@ -28,7 +28,7 @@
 <script lang="ts">
 import { defineComponent, ref, onMounted, onUnmounted } from 'vue'
 import { MAINTENANCE_MESSAGE } from 'src/boot/maintenance'
-import axios from 'axios'
+import summitImg from 'src/assets/summit.png'
 
 export default defineComponent({
   name: 'MaintenancePage',
@@ -82,7 +82,8 @@ export default defineComponent({
     })
 
     return {
-      message
+      message,
+      summitImg
     }
   }
 })
