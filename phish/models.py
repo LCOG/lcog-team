@@ -8,9 +8,21 @@ from people.models import Employee
 class PhishReport(models.Model):
     objects = OrganizationObjectsManager()
 
+    STATUS_REPORTED = 'reported'
+    STATUS_PHISH = 'phish'
+    STATUS_NOT_PHISH = 'not_phish'
+    STATUS_CHOICES = [
+        (STATUS_REPORTED, 'Reported'),
+        (STATUS_PHISH, 'Phish'),
+        (STATUS_NOT_PHISH, 'Not Phish'),
+    ]
+
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     message = models.JSONField()
+    status = models.CharField(
+        max_length=255, choices=STATUS_CHOICES, default=STATUS_REPORTED
+    )
     processed = models.BooleanField(default=False)
 
 

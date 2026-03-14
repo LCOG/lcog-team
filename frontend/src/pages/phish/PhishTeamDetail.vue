@@ -283,24 +283,36 @@
     <!-- Report details dialog -->
     <q-dialog v-model="showReportDialog">
       <q-card style="min-width: 50vw; max-width: 90vw;">
-        <q-card-section>
-          <div class="text-h6">Report Details</div>
-          <div class="text-subtitle2">
-            Submitted: {{ selectedReport?.created_at ? formatDate(selectedReport.created_at) : '' }}
+        <q-card-section class="row">
+          <div class="col">
+            <div class="text-h6">Report Details</div>
+            <div class="text-subtitle2">
+              Submitted: {{ selectedReport?.created_at ? formatDate(selectedReport.created_at) : '' }}
+            </div>
           </div>
+          <q-toggle
+            class="col col-3"
+            v-model="showRawJson"
+            label="Show raw JSON"
+            color="primary"
+            dense
+          />
         </q-card-section>
 
         <q-separator />
 
         <q-card-section>
-          <div class="text-subtitle2 q-mb-sm">Report Type</div>
-          <!-- <q-badge 
+          <!-- <div class="text-subtitle2 q-mb-sm">Report Type</div>
+          <q-badge 
             :label="selectedReport?.organic ? 'Organic' : 'Synthetic'" 
             :color="selectedReport?.organic ? 'primary' : 'orange'"
           /> -->
 
           <div class="text-subtitle2 q-mt-md q-mb-sm">Message Content</div>
-          <pre style="white-space: pre-wrap; word-break: break-word; background: #f6f8fa; padding: 12px; border-radius: 4px;" v-html="highlightedMessage"></pre>
+          <phish-report-message-viewer
+            :message="selectedReport?.message ?? null"
+            :show-raw-json="showRawJson"
+          />
         </q-card-section>
 
         <q-card-actions align="right">
@@ -312,17 +324,11 @@
 </q-page>
 </template>
 
-<style lang="scss">
-.json-key { color: #9c27b0; font-weight: 600; }
-.json-string { color: #1976d2; }
-.json-number { color: #d32f2f; }
-.json-boolean { color: #ff9800; font-weight: 600; }
-.json-null { color: #757575; font-style: italic; }
-</style>
-
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import PhishReportMessageViewer from
+  'src/components/phish/PhishReportMessageViewer.vue'
 import PhishTemplateSelect from 'src/components/phish/PhishTemplateSelect.vue'
 import TrainingTemplateSelect from 
   'src/components/phish/TrainingTemplateSelect.vue'
@@ -330,7 +336,9 @@ import PhishTrainingAssignmentsTable from
   'src/components/phish/PhishTrainingAssignmentsTable.vue'
 import { usePhishStore } from 'src/stores/phish'
 import { usePeopleStore } from 'src/stores/people'
-import { PhishReport, SyntheticPhishTemplate, TrainingTemplate, TrainingAssignment } from 'src/types'
+import {
+  PhishReport, SyntheticPhishTemplate, TrainingTemplate, TrainingAssignment
+} from 'src/types'
 import { QTableProps } from 'quasar'
 
 const router = useRouter()
@@ -341,6 +349,7 @@ const peopleStore = usePeopleStore()
 const loading = ref(false)
 const activeTab = ref('organic')
 const showReportDialog = ref(false)
+const showRawJson = ref(false)
 const selectedReport = ref<PhishReport | null>(null)
 const selectedPhishTemplate = ref<SyntheticPhishTemplate | null>(null)
 const selectedTrainingTemplate = ref<TrainingTemplate | null>(null)
@@ -465,34 +474,6 @@ function getRiskColor(riskLevel: string): string {
   }
 }
 
-function escapeHtml(unsafe: string) {
-  return unsafe
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-}
-
-function syntaxHighlight(json: any) {
-  let str = typeof json !== 'string' ? JSON.stringify(json, undefined, 2) : json
-  str = escapeHtml(str)
-  return str.replace(/("(\\u[a-fA-F0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, (match: string) => {
-    let cls = 'number'
-    if (/^"/.test(match)) {
-      cls = /:$/.test(match) ? 'key' : 'string'
-    } else if (/true|false/.test(match)) {
-      cls = 'boolean'
-    } else if (/null/.test(match)) {
-      cls = 'null'
-    }
-    return `<span class="json-${cls}">${match}</span>`
-  })
-}
-
-const highlightedMessage = computed(() => 
-  selectedReport.value?.message ? syntaxHighlight(selectedReport.value.message) : ''
-)
-
 async function loadTeamMemberData() {
   loading.value = true
   try {
@@ -533,6 +514,7 @@ function updateGroups(newGroups: string[]) {
 
 function viewReportDetails(report: PhishReport) {
   selectedReport.value = report
+  showRawJson.value = false
   showReportDialog.value = true
 }
 
