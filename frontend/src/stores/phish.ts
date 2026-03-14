@@ -10,7 +10,7 @@ import {
 export const usePhishStore = defineStore('phish', {
 
 state: () => ({
-  // TODO: Probably going to defunct these at some point in favor of just using phishReports, but still using them on the main dashboard for now
+  // Phish Admin Dashboard
   submittedReports: [] as Array<PhishReport>,
   processedReports: [] as Array<PhishReport>,
   
@@ -75,38 +75,62 @@ actions: {
     })
   },
 
-  // Mark one or more reports complete.
-  // Accepts an array of report ids or objects with `pk`/`id` properties.
-  markReportsProcessed(reports: Array<number | { pk?: number; id?: number }>) {
+  markReportVerdict(
+    reportId: number, verdict: 'phish' | 'not_phish'
+  ) {
     return new Promise((resolve, reject) => {
-      const ids = reports.map(r => (typeof r === 'number' ? r : (r.pk ?? r.id)))
-      // Find matching reports in submittedReports
-      const toMove = this.submittedReports.filter(
-        (r: any) => ids.includes(r.pk ?? r.id)
-      )
-
-      // Send PATCH requests to mark processed=true for each report
-      const ops = toMove.map((r: any) => {
-        const id = r.pk ?? r.id
-        return axios({
-          url: `${ apiURL }api/v1/phishreport/${ id }`,
-          method: 'PATCH',
-          data: { processed: true }
-        })
+      let data = { status: verdict, processed: false }
+      if (verdict === 'not_phish') {
+        data = { status: verdict, processed: true }
+      }
+      axios({
+        url: `${ apiURL }api/v1/phishreport/${ reportId }`,
+        method: 'PATCH',
+        data: data
       })
-
-      Promise.all(ops)
-        .then(() => {
+        .then(resp => {
           // Update local state
-          const moved = toMove.map((r: any) => ({ ...r, processed: true }))
-          this.processedReports.push(...moved)
-          this.submittedReports = this.submittedReports.filter(
-            (r: any) => !ids.includes(r.pk ?? r.id)
+          const reportIndex = this.submittedReports.findIndex(
+            (r: any) => (r.pk ?? r.id) === reportId
           )
-          resolve(moved)
+          if (reportIndex !== -1) {
+            const report = {
+              ...this.submittedReports[reportIndex], status: verdict
+            }
+            this.submittedReports.splice(reportIndex, 1)
+            this.processedReports.push(report)
+          }
+          resolve(resp.data)
         })
         .catch(e => {
-          handlePromiseError(reject, 'Error marking phish reports processed', e)
+          handlePromiseError(reject, 'Error marking report verdict', e)
+        })
+    })
+  },
+
+  markReportProcessed(reportId: number) {
+    return new Promise((resolve, reject) => {
+      axios({
+        url: `${ apiURL }api/v1/phishreport/${ reportId }`,
+        method: 'PATCH',
+        data: { processed: true }
+      })
+        .then(resp => {
+          // Update local state
+          const reportIndex = this.submittedReports.findIndex(
+            (r: any) => (r.pk ?? r.id) === reportId
+          )
+          if (reportIndex !== -1) {
+            const report = {
+              ...this.submittedReports[reportIndex], processed: true
+            }
+            this.submittedReports.splice(reportIndex, 1)
+            this.processedReports.push(report)
+          }
+          resolve(resp.data)
+        })
+        .catch(e => {
+          handlePromiseError(reject, 'Error marking report processed', e)
         })
     })
   },

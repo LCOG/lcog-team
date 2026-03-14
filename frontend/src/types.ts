@@ -347,6 +347,7 @@ export interface PhishReport {
   created_at: Date
   message: JSON
   processed: boolean
+  status: 'reported' | 'phish' | 'not_phish'
 }
 
 export interface SyntheticPhishTemplate {

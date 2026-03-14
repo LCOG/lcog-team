@@ -4,12 +4,12 @@ from .models import PhishReport, SyntheticPhish, SyntheticPhishTemplate, Trainin
 
 @admin.register(PhishReport)
 class PhishReportAdmin(admin.ModelAdmin):
-    list_display = ('employee', 'created_at', 'processed')
+    list_display = ('employee', 'created_at', 'status', 'processed')
     readonly_fields = ('employee', 'created_at', 'message')
     search_fields = (
         'employee__first_name', 'employee__last_name', 'employee__email'
     )
-    list_filter = ('created_at', 'processed')
+    list_filter = ('created_at', 'status')
 
 
 @admin.register(SyntheticPhishTemplate)
