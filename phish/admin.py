@@ -1,7 +1,16 @@
 from django.contrib import admin
 
-from .models import PhishReport, SyntheticPhish, SyntheticPhishTemplate, TrainingAssignment, TrainingTemplate
+from .models import (
+    PhishReport, PhishReportTask, PhishTask, SyntheticPhish,
+    SyntheticPhishTemplate, TrainingAssignment, TrainingTemplate
+)
 
+class PhishReportTaskInline(admin.TabularInline):
+    model = PhishReportTask
+    extra = 0
+    readonly_fields = ('task', 'completed_at', 'completed_by')
+
+    
 @admin.register(PhishReport)
 class PhishReportAdmin(admin.ModelAdmin):
     list_display = ('employee', 'created_at', 'status', 'processed')
@@ -10,6 +19,14 @@ class PhishReportAdmin(admin.ModelAdmin):
         'employee__first_name', 'employee__last_name', 'employee__email'
     )
     list_filter = ('created_at', 'status')
+    inlines = [PhishReportTaskInline]
+
+
+@admin.register(PhishTask)
+class PhishTaskAdmin(admin.ModelAdmin):
+    list_display = ('order', 'name', 'organization')
+    search_fields = ('name',)
+    list_filter = ('organization',)
 
 
 @admin.register(SyntheticPhishTemplate)

@@ -6,6 +6,11 @@ from people.models import Employee
 
 
 class PhishReport(models.Model):
+    class Meta:
+        verbose_name = 'Phish Report'
+        verbose_name_plural = 'Phish Reports'
+        ordering = ['-created_at']
+
     objects = OrganizationObjectsManager()
 
     STATUS_REPORTED = 'reported'
@@ -24,6 +29,26 @@ class PhishReport(models.Model):
         max_length=255, choices=STATUS_CHOICES, default=STATUS_REPORTED
     )
     processed = models.BooleanField(default=False)
+
+
+class PhishTask(models.Model):
+    def __str__(self):
+        return self.name
+
+    organization = models.ForeignKey(
+        'mainsite.Organization', on_delete=models.CASCADE
+    )
+    name = models.CharField(max_length=255)
+    order = models.IntegerField(default=0)
+
+
+class PhishReportTask(models.Model):
+    report = models.ForeignKey(PhishReport, on_delete=models.CASCADE)
+    task = models.ForeignKey(PhishTask, on_delete=models.CASCADE)
+    completed_at = models.DateTimeField(auto_now_add=True)
+    completed_by = models.ForeignKey(
+        'people.Employee', on_delete=models.SET_NULL, null=True, blank=True
+    )
 
 
 class SyntheticPhishTemplate(models.Model):

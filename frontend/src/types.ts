@@ -350,6 +350,20 @@ export interface PhishReport {
   status: 'reported' | 'phish' | 'not_phish'
 }
 
+export interface PhishTask {
+  pk: number
+  name: string
+  order: number
+}
+
+export interface PhishReportTask {
+  pk: number
+  report_pk: number
+  task_pk: number
+  completed_at: Date
+  completed_by: SimpleEmployeeRetrieve | null
+}
+
 export interface SyntheticPhishTemplate {
   pk: number
   name: string

@@ -2,8 +2,8 @@ from rest_framework import serializers
 
 from people.serializers import SimpleEmployeeSerializer
 from phish.models import (
-    PhishReport, SyntheticPhish, SyntheticPhishTemplate, TrainingAssignment,
-    TrainingTemplate
+    PhishReport, PhishReportTask, PhishTask, SyntheticPhish,
+    SyntheticPhishTemplate, TrainingAssignment, TrainingTemplate
 )
     
 
@@ -16,6 +16,33 @@ class PhishReportSerializer(serializers.HyperlinkedModelSerializer):
         ]
 
     employee = SimpleEmployeeSerializer(required=False)
+
+
+class PhishTaskSerializer(serializers.HyperlinkedModelSerializer):
+
+    class Meta:
+        model = PhishTask
+        fields = ['pk', 'name', 'order']
+
+
+class PhishReportTaskSerializer(serializers.HyperlinkedModelSerializer):
+
+    completed_by = SimpleEmployeeSerializer(read_only=True)
+    report_pk = serializers.IntegerField(source='report_id', read_only=True)
+    task_pk = serializers.IntegerField(source='task_id', read_only=True)
+    report = serializers.PrimaryKeyRelatedField(
+        queryset=PhishReport.objects.all(), write_only=True
+    )
+    task = serializers.PrimaryKeyRelatedField(
+        queryset=PhishTask.objects.all(), write_only=True
+    )
+
+    class Meta:
+        model = PhishReportTask
+        fields = [
+            'pk', 'report_pk', 'task_pk', 'report', 'task',
+            'completed_at', 'completed_by'
+        ]
 
 
 class SyntheticPhishTemplateSerializer(serializers.HyperlinkedModelSerializer):

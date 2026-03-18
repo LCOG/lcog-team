@@ -116,22 +116,15 @@
 
       <q-card-section v-if="dialogReport?.status === 'phish'">
         <div class="text-h6">Phish Checklist</div>
-        <div>
-          <q-checkbox
-            v-model="didThingA"
-            label="Run Message Trace"
-          />
+        <div v-if="phishTasks.length === 0" class="text-grey-7 q-mt-sm">
+          No checklist tasks configured for your organization.
         </div>
-        <div>
+        <div v-for="task in phishTasks" :key="task.pk">
           <q-checkbox
-            v-model="didThingB"
-            label="Notify impacted users"
-          />
-        </div>
-        <div>
-          <q-checkbox
-            v-model="didThingC"
-            label="Send standard message to the user"
+            :model-value="isTaskCompleted(task.pk)"
+            :label="task.name"
+            :disable="loading || checklistLoading[task.pk] === true"
+            @update:model-value="(value) => onTaskToggle(task.pk, !!value)"
           />
         </div>
       </q-card-section>
@@ -178,10 +171,10 @@
 </style>
 
 <script setup lang="ts">
-import { ref, onMounted, Ref } from 'vue'
+import { computed, ref, onMounted, Ref } from 'vue'
 import PhishReportMessageViewer from 'src/components/phish/PhishReportMessageViewer.vue'
 import { usePhishStore } from 'src/stores/phish'
-import { PhishReport } from 'src/types'
+import { PhishReport, PhishTask } from 'src/types'
 import { QTableProps } from 'quasar'
 
 const phishStore = usePhishStore()
@@ -250,10 +243,13 @@ const showMessageDialog = ref(false)
 const showRawJson = ref(false)
 const dialogMessage = ref<unknown | null>(null)
 const dialogReport = ref<PhishReport | null>(null)
+const checklistLoading = ref<{ [taskPk: number]: boolean }>({})
 
-const didThingA = ref(false)
-const didThingB = ref(false)
-const didThingC = ref(false)
+const phishTasks = computed<Array<PhishTask>>(() => phishStore.allPhishTasks)
+const currentReportTasks = computed(() => {
+  if (!dialogReport.value?.pk) return []
+  return phishStore.getReportTasks(dialogReport.value.pk)
+})
 
 interface StatusDisplay {
   label: string
@@ -299,6 +295,15 @@ function formatDate(date: Date | string): string {
   })
 }
 
+function isTaskCompleted(taskPk: number): boolean {
+  return currentReportTasks.value.some((reportTask) => reportTask.task_pk === taskPk)
+}
+
+async function loadChecklistDataForReport(reportPk: number) {
+  await phishStore.getPhishTasks()
+  await phishStore.getPhishReportTasks(reportPk, true)
+}
+
 async function refreshReports() {
   loading.value = true
   try {
@@ -312,11 +317,36 @@ async function refreshReports() {
   }
 }
 
-function onRowClick(evt: Event, row: PhishReport) {
+async function onRowClick(_evt: Event, row: PhishReport) {
   dialogReport.value = row
   dialogMessage.value = row.message
   showRawJson.value = false
   showMessageDialog.value = true
+  if (row.status === 'phish' && row.pk) {
+    await loadChecklistDataForReport(row.pk)
+  }
+}
+
+async function onTaskToggle(taskPk: number, checked: boolean) {
+  if (!dialogReport.value?.pk) return
+  const reportPk = dialogReport.value.pk
+  checklistLoading.value[taskPk] = true
+
+  try {
+    if (checked) {
+      await phishStore.createPhishReportTask(reportPk, taskPk)
+      return
+    }
+
+    const reportTask = currentReportTasks.value.find(
+      (item) => item.task_pk === taskPk
+    )
+    if (reportTask) {
+      await phishStore.deletePhishReportTask(reportTask.pk, reportPk)
+    }
+  } finally {
+    checklistLoading.value[taskPk] = false
+  }
 }
 
 async function markAsPhish() {
@@ -337,6 +367,7 @@ async function markAsPhish() {
     if (refreshedDialogReport) {
       dialogReport.value = refreshedDialogReport
     }
+    await loadChecklistDataForReport(reportPk)
   } finally {
     loading.value = false
   }
