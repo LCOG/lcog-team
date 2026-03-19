@@ -62,6 +62,7 @@ class PhishReportViewSet(viewsets.ModelViewSet):
 
         employee_email = request.data.get('employee_email')
         email_message = request.data.get('email_message')
+        additional_info = request.data.get('additional_info')
         
         if not employee_email or not email_message:
             return Response(
@@ -126,7 +127,8 @@ class PhishReportViewSet(viewsets.ModelViewSet):
         # No synthetic phish found - create a PhishReport for organic report
         phish_report = PhishReport.objects.create(
             employee=employee,
-            message=email_message
+            message=email_message,
+            additional_info=additional_info
         )
         
         serializer = self.get_serializer(phish_report)

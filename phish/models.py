@@ -25,6 +25,7 @@ class PhishReport(models.Model):
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     message = models.JSONField()
+    additional_info = models.TextField(blank=True, null=True)
     status = models.CharField(
         max_length=255, choices=STATUS_CHOICES, default=STATUS_REPORTED
     )
