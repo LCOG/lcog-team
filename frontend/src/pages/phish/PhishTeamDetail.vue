@@ -287,7 +287,15 @@
           <div class="col">
             <div class="text-h6">Report Details</div>
             <div class="text-subtitle2">
-              Submitted: {{ selectedReport?.created_at ? formatDate(selectedReport.created_at) : '' }}
+              Employee: {{ selectedReport?.employee?.name || '' }} — Submitted:
+              {{ selectedReport?.created_at ? formatDate(selectedReport.created_at) : '' }}
+            </div>
+            <div
+              v-if="selectedReport?.additional_info"
+              class="text-body2 q-mt-sm"
+            >
+              <span class="text-bold">Message from User:</span>
+              <span class="text-italic">"{{ selectedReport.additional_info }}"</span>
             </div>
           </div>
           <q-toggle
@@ -307,8 +315,6 @@
             :label="selectedReport?.organic ? 'Organic' : 'Synthetic'" 
             :color="selectedReport?.organic ? 'primary' : 'orange'"
           /> -->
-
-          <div class="text-subtitle2 q-mt-md q-mb-sm">Message Content</div>
           <phish-report-message-viewer
             :message="selectedReport?.message ?? null"
             :show-raw-json="showRawJson"
