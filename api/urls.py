@@ -19,8 +19,9 @@ from people.api_views import (
     UserViewSet, ViewedSecurityMessageViewSet
 )
 from phish.api_views import (
-    PhishReportViewSet, PhishAssignmentViewSet, PhishTemplateViewSet,
-    TrainingAssignmentViewSet, TrainingTemplateViewSet
+    PhishReportTaskViewSet, PhishReportViewSet, PhishAssignmentViewSet,
+    PhishTaskViewSet, PhishTemplateViewSet, TrainingAssignmentViewSet,
+    TrainingTemplateViewSet
 )
 from purchases.api_views import (
     ExpenseGLViewSet, ExpenseMonthViewSet, ExpenseMonthLockViewSet,
@@ -75,6 +76,11 @@ router.register('v1/signature', SignatureViewSet)
 router.register('v1/reviewnote', ReviewNoteViewSet)
 # Phishing
 router.register('v1/phishreport', PhishReportViewSet, basename='phishreport')
+router.register('v1/phishtask', PhishTaskViewSet, basename='phishtask')
+router.register(
+    'v1/phish-report-task', PhishReportTaskViewSet,
+    basename='phish-report-task'
+)
 router.register(
     'v1/phish-template', PhishTemplateViewSet, basename='phish-template'
 )

@@ -3,8 +3,8 @@ import { defineStore } from 'pinia'
 
 import { apiURL, handlePromiseError } from 'src/stores/index'
 import {
-  PhishReport, SyntheticPhish, SyntheticPhishTemplate, TrainingAssignment,
-  TrainingTemplate
+  PhishReport, PhishReportTask, PhishTask, SyntheticPhish,
+  SyntheticPhishTemplate, TrainingAssignment, TrainingTemplate
 } from 'src/types'
 
 export const usePhishStore = defineStore('phish', {
@@ -13,6 +13,8 @@ state: () => ({
   // Phish Admin Dashboard
   submittedReports: [] as Array<PhishReport>,
   processedReports: [] as Array<PhishReport>,
+  phishTasks: [] as Array<PhishTask>,
+  reportTasks: {} as { [reportId: number]: Array<PhishReportTask> },
   
   phishReports: {} as { [employeeId: number]: Array<PhishReport> },
   phishTemplates: [] as Array<SyntheticPhishTemplate>,
@@ -34,9 +36,118 @@ state: () => ({
   }
 }),
 
-getters: {},
+getters: {
+  allPhishTasks: (state) => {
+    return [...state.phishTasks].sort((a, b) => {
+      if (a.order === b.order) {
+        return a.name.localeCompare(b.name)
+      }
+      return a.order - b.order
+    })
+  },
+
+  getReportTasks: (state) => {
+    return (reportId: number): Array<PhishReportTask> => {
+      return state.reportTasks[reportId] || []
+    }
+  }
+},
 
 actions: {
+  getPhishTasks(forceRefresh = false) {
+    return new Promise<Array<PhishTask>>((resolve, reject) => {
+      if (!forceRefresh && this.phishTasks.length > 0) {
+        resolve(this.phishTasks)
+        return
+      }
+
+      axios({ url: `${ apiURL }api/v1/phishtask` })
+        .then(resp => {
+          const results = resp.data.results || resp.data
+          this.phishTasks = results
+          resolve(results)
+        })
+        .catch(e => {
+          handlePromiseError(reject, 'Error getting phish tasks', e)
+        })
+    })
+  },
+
+  getPhishReportTasks(reportId: number, forceRefresh = false) {
+    return new Promise<Array<PhishReportTask>>((resolve, reject) => {
+      if (!forceRefresh && this.reportTasks[reportId]) {
+        resolve(this.reportTasks[reportId])
+        return
+      }
+
+      axios({
+        url: `${ apiURL }api/v1/phish-report-task?report=${ reportId }`
+      })
+        .then(resp => {
+          const results = resp.data.results || resp.data
+          this.reportTasks[reportId] = results
+          resolve(results)
+        })
+        .catch(e => {
+          handlePromiseError(reject, 'Error getting phish report tasks', e)
+        })
+    })
+  },
+
+  createPhishReportTask(reportId: number, taskId: number) {
+    return new Promise<PhishReportTask>((resolve, reject) => {
+      axios({
+        url: `${ apiURL }api/v1/phish-report-task`,
+        method: 'POST',
+        data: {
+          report: reportId,
+          task: taskId
+        }
+      })
+        .then(resp => {
+          const reportTask = resp.data
+          const existingTasks = this.reportTasks[reportId] || []
+          const hasTask = existingTasks.some(
+            (item) => item.task_pk === taskId
+          )
+
+          if (hasTask) {
+            this.reportTasks[reportId] = existingTasks.map(item => {
+              if (item.task_pk === taskId) {
+                return reportTask
+              }
+              return item
+            })
+          } else {
+            this.reportTasks[reportId] = [...existingTasks, reportTask]
+          }
+          resolve(reportTask)
+        })
+        .catch(e => {
+          handlePromiseError(reject, 'Error creating phish report task', e)
+        })
+    })
+  },
+
+  deletePhishReportTask(reportTaskId: number, reportId: number) {
+    return new Promise((resolve, reject) => {
+      axios({
+        url: `${ apiURL }api/v1/phish-report-task/${ reportTaskId }`,
+        method: 'DELETE'
+      })
+        .then(() => {
+          const existingTasks = this.reportTasks[reportId] || []
+          this.reportTasks[reportId] = existingTasks.filter(
+            (item) => item.pk !== reportTaskId
+          )
+          resolve(true)
+        })
+        .catch(e => {
+          handlePromiseError(reject, 'Error deleting phish report task', e)
+        })
+    })
+  },
+
   // Fetch all PhishReport objects from the Django API
   getAllReports() {
     return new Promise((resolve, reject) => {

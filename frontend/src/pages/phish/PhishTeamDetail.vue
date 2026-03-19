@@ -425,7 +425,7 @@ const syntheticTestColumns: QTableProps['columns'] = [
   {
     name: 'reportedAt',
     label: 'Reported Date',
-    field: 'reportedAt',
+    field: 'reported_at',
     align: 'left'
   }
 ]

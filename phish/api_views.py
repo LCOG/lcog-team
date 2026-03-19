@@ -10,13 +10,13 @@ from rest_framework.response import Response
 from mainsite.helpers import send_email
 from people.models import Employee
 from phish.models import (
-    PhishReport, SyntheticPhish, SyntheticPhishTemplate, TrainingAssignment,
-    TrainingTemplate
+    PhishReport, PhishReportTask, PhishTask, SyntheticPhish,
+    SyntheticPhishTemplate, TrainingAssignment, TrainingTemplate
 )
 from phish.serializers import (
-    PhishReportSerializer, SyntheticPhishSerializer,
-    SyntheticPhishTemplateSerializer, TrainingAssignmentSerializer,
-    TrainingTemplateSerializer
+    PhishReportSerializer, PhishReportTaskSerializer, PhishTaskSerializer,
+    SyntheticPhishSerializer, SyntheticPhishTemplateSerializer,
+    TrainingAssignmentSerializer, TrainingTemplateSerializer
 )
 
 
@@ -62,6 +62,7 @@ class PhishReportViewSet(viewsets.ModelViewSet):
 
         employee_email = request.data.get('employee_email')
         email_message = request.data.get('email_message')
+        additional_info = request.data.get('additional_info')
         
         if not employee_email or not email_message:
             return Response(
@@ -126,7 +127,8 @@ class PhishReportViewSet(viewsets.ModelViewSet):
         # No synthetic phish found - create a PhishReport for organic report
         phish_report = PhishReport.objects.create(
             employee=employee,
-            message=email_message
+            message=email_message,
+            additional_info=additional_info
         )
         
         serializer = self.get_serializer(phish_report)
@@ -303,6 +305,109 @@ class PhishAssignmentViewSet(viewsets.ModelViewSet):
         ).order_by('name')
         
         return Response(list(team_stats))
+
+
+class PhishTaskViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = PhishTask.objects.all().order_by('order', 'name')
+    serializer_class = PhishTaskSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        if not user.is_authenticated:
+            return PhishTask.objects.none()
+        if user.is_superuser:
+            return super().get_queryset()
+
+        employee = getattr(user, 'employee', None)
+        if employee and employee.can_view_phish():
+            return PhishTask.objects.filter(
+                organization=employee.organization
+            ).order_by('order', 'name')
+        return PhishTask.objects.none()
+
+
+class PhishReportTaskViewSet(viewsets.ModelViewSet):
+    queryset = PhishReportTask.objects.all().order_by('-completed_at')
+    serializer_class = PhishReportTaskSerializer
+    http_method_names = ['get', 'post', 'delete', 'head', 'options']
+
+    def get_queryset(self):
+        user = self.request.user
+        report_pk = self.request.query_params.get('report')
+
+        if not user.is_authenticated:
+            return PhishReportTask.objects.none()
+
+        if user.is_superuser:
+            queryset = super().get_queryset()
+        else:
+            employee = getattr(user, 'employee', None)
+            if not employee or not employee.can_view_phish():
+                return PhishReportTask.objects.none()
+            queryset = PhishReportTask.objects.filter(
+                report__employee__organization=employee.organization
+            ).order_by('-completed_at')
+
+        if report_pk:
+            queryset = queryset.filter(report_id=report_pk)
+        return queryset
+
+    def create(self, request, *args, **kwargs):
+        report_pk = request.data.get('report')
+        task_pk = request.data.get('task')
+        user = request.user
+        employee = getattr(user, 'employee', None)
+
+        if not report_pk or not task_pk:
+            return Response(
+                {'error': 'report and task are required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if not user.is_superuser and (
+            not employee or not employee.can_view_phish()
+        ):
+            return Response(
+                {'error': 'You do not have permission to update checklist tasks'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        try:
+            report = PhishReport.objects.get(pk=report_pk)
+            task = PhishTask.objects.get(pk=task_pk)
+        except (PhishReport.DoesNotExist, PhishTask.DoesNotExist):
+            return Response(
+                {'error': 'Report or task not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        if report.employee.organization_id != task.organization_id:
+            return Response(
+                {'error': 'Report and task must belong to the same organization'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if (
+            not user.is_superuser
+            and employee.organization_id != report.employee.organization_id
+        ):
+            return Response(
+                {'error': 'You do not have permission to update this report'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        report_task, _ = PhishReportTask.objects.get_or_create(
+            report=report,
+            task=task,
+            defaults={'completed_by': employee if employee else None}
+        )
+
+        if not report_task.completed_by and employee:
+            report_task.completed_by = employee
+            report_task.save(update_fields=['completed_by'])
+
+        serializer = self.get_serializer(report_task)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 class TrainingTemplateViewSet(viewsets.ModelViewSet):
