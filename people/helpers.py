@@ -1,9 +1,10 @@
-from datetime import timedelta
+from datetime import datetime, timedelta
+from django.apps import apps
 from django.contrib.auth.models import Group
 from django.contrib.sites.models import Site
 from django.utils import timezone
 
-from mainsite.helpers import send_email_multiple
+from mainsite.helpers import MANAGER_SIGNATURE_REMINDER, send_email_multiple
 from people.models import PerformanceReview
 
 
@@ -65,5 +66,30 @@ def send_manager_pr_notices():
             body,
             html_body
         )
+        count += 1
+    return count
+
+
+def send_pr_signature_reminders():
+    # Notification #11
+    SignatureReminder = apps.get_model('people.SignatureReminder')
+    current_site = Site.objects.get_current()
+    unsigned_reminders = SignatureReminder.objects.filter(
+        signed=False, next_date__lte=timezone.now()
+    )
+    count = 0
+    for reminder in unsigned_reminders:
+        review = reminder.review
+        manager = reminder.employee
+        url = current_site.domain + '/pr/' + str(review.pk)
+        send_email_multiple(
+            [manager.user.email],
+            [],
+            f'Follow-Up Reminder: Signature required for {review.employee.name}\'s performance review',
+            f'{review.employee.manager.name} has completed an evaluation for {review.employee.name}, which requires your signature. View and sign here: {url}',
+            f'{review.employee.manager.name} has completed an evaluation for {review.employee.name}, which requires your signature. View and sign here: <a href="{url}">{url}</a>'
+        )
+        reminder.next_date = datetime.today() + timedelta(days=MANAGER_SIGNATURE_REMINDER)
+        reminder.save()
         count += 1
     return count

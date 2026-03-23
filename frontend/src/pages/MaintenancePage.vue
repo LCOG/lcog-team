@@ -8,7 +8,7 @@
         class="q-mb-lg"
         style="max-width: 300px;"
       />
-      <h3 class="text-h3 text-weight-bold q-mt-none q-mb-md">
+      <h3 class="text-h3 text-weight-bold q-mt-none q-mb-none">
         Site Maintenance
       </h3>
       <q-spinner-dots

@@ -346,6 +346,7 @@ export interface PhishReport {
   employee: SimpleEmployeeRetrieve
   created_at: Date
   message: JSON
+  additional_info: string
   processed: boolean
   status: 'reported' | 'phish' | 'not_phish'
 }

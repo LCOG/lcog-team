@@ -95,6 +95,13 @@
             Employee: {{ dialogReport?.employee?.name || '' }} — Submitted:
             {{ dialogReport?.created_at ? formatDate(dialogReport.created_at) : '' }}
           </div>
+          <div
+            v-if="dialogReport?.additional_info"
+            class="text-body2 q-mt-sm"
+          >
+            <span class="text-bold">Message from User:</span>
+            <span class="text-italic">"{{ dialogReport.additional_info }}"</span>
+          </div>
         </div>
         <q-toggle
           class="col col-3"
