@@ -85,7 +85,7 @@ def send_pr_signature_reminders():
         send_email_multiple(
             [manager.user.email],
             [],
-            f'Signature required: Performance evaluation for {review.employee.name}',
+            f'Follow-Up Reminder: Signature required for {review.employee.name}\'s performance review',
             f'{review.employee.manager.name} has completed an evaluation for {review.employee.name}, which requires your signature. View and sign here: {url}',
             f'{review.employee.manager.name} has completed an evaluation for {review.employee.name}, which requires your signature. View and sign here: <a href="{url}">{url}</a>'
         )
