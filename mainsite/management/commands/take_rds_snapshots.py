@@ -1,3 +1,4 @@
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timedelta, timezone
 
 import boto3
@@ -53,11 +54,15 @@ class Command(BaseCommand):
     def _build_snapshot_identifier(self, prefix, now_utc):
         return f"{prefix}-{now_utc.strftime('%Y%m%d-%H%M')}"
 
-    def _create_snapshot(self, rds_client, instance_id, snapshot_identifier):
+    def _initiate_snapshot(self, rds_client, instance_id, snapshot_identifier):
         rds_client.create_db_snapshot(
             DBSnapshotIdentifier=snapshot_identifier,
             DBInstanceIdentifier=instance_id,
         )
+
+    def _wait_for_snapshot(self, rds_client, snapshot_identifier):
+        waiter = rds_client.get_waiter('db_snapshot_available')
+        waiter.wait(DBSnapshotIdentifier=snapshot_identifier)
 
     def _delete_old_manual_snapshots(self, rds_client, instance_id, cutoff_datetime):
         deleted_snapshot_ids = []
@@ -108,25 +113,38 @@ class Command(BaseCommand):
             if aws_profile:
                 self.stdout.write(f'Using AWS profile: {aws_profile}')
 
+            # Kick off all snapshots before waiting on any of them
+            snapshot_jobs = {}
             for target_name in selected_targets:
                 target = self.TARGETS[target_name]
                 snapshot_identifier = self._build_snapshot_identifier(
                     target['snapshot_prefix'],
                     now_utc,
                 )
+                self.stdout.write(f'Creating {target_name} snapshot: {snapshot_identifier}...')
+                self._initiate_snapshot(rds_client, target['instance_id'], snapshot_identifier)
+                snapshot_jobs[target_name] = snapshot_identifier
 
-                self._create_snapshot(
-                    rds_client,
-                    target['instance_id'],
-                    snapshot_identifier,
-                )
+            # Poll each snapshot concurrently
+            if snapshot_jobs:
                 self.stdout.write(
-                    self.style.SUCCESS(
-                        f"Created {target_name} snapshot: {snapshot_identifier}"
-                    )
+                    f'Waiting for {len(snapshot_jobs)} snapshot(s) to become available...'
                 )
+                with ThreadPoolExecutor(max_workers=len(snapshot_jobs)) as executor:
+                    futures = {
+                        executor.submit(self._wait_for_snapshot, rds_client, snap_id): target_name
+                        for target_name, snap_id in snapshot_jobs.items()
+                    }
+                    for future in as_completed(futures):
+                        target_name = futures[future]
+                        future.result()  # re-raises any exception from the waiter
+                        self.stdout.write(self.style.SUCCESS(
+                            f'Snapshot {snapshot_jobs[target_name]} is now available.'
+                        ))
 
-                if options['prune']:
+            if options['prune']:
+                for target_name in selected_targets:
+                    target = self.TARGETS[target_name]
                     deleted_snapshot_ids = self._delete_old_manual_snapshots(
                         rds_client,
                         target['instance_id'],
