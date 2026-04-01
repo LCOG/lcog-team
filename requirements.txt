@@ -15,7 +15,7 @@ psycopg2-binary==2.9.10      # Postgres driver - binary to install correctly
 python-dateutil==2.8.2
 python-dotenv==0.18.0        # Secrets manager
 pytz==2021.1                 # Timezone support
-requests==2.32.4             # HTTP requests
+requests==2.33.1             # HTTP requests
 sqlparse==0.5.5              # Required by Django for parsing SQL
 supervisor==4.2.4            # Process control system for running Daphne on production
 watchtower==3.0.1            # AWS CloudWatch logging
