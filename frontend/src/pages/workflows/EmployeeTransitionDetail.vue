@@ -507,14 +507,14 @@
               id="computer-new"
               v-model="computerType"
               val="New"
-              label="New"
+              label="Purchase new"
               :disable="!canEditOtherFields()"
             />
             <q-radio
               id="computer-repurposed"
               v-model="computerType"
               val="Repurposed"
-              label="Existing Equipment"
+              label="Use existing"
               :disable="!canEditOtherFields()"
             />
           </div>
