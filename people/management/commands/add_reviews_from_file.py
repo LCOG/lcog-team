@@ -4,6 +4,7 @@ import datetime
 from django.core.management.base import BaseCommand
 from django.core.exceptions import MultipleObjectsReturned
 
+from mainsite.models import Organization
 from people.models import Employee, PerformanceReview, PRForm
 
 
@@ -136,7 +137,10 @@ class Command(BaseCommand):
                     
                 evaluation_type = PerformanceReview.ANNUAL_EVALUATION
                 probationary_evaluation_type = None
-                form = PRForm.objects.get(name='All - 180 - Annual PR')
+                lcog = Organization.objects.get(name='LCOG')
+                form = PRForm.objects.filter(
+                    name='All - 180 - Annual PR', organization=lcog
+                ).order_by('-version').first()
                 
                 # Create the new PR
                 PerformanceReview.objects.create(
@@ -162,12 +166,14 @@ class Command(BaseCommand):
                     if employee.is_sds_employee:
                         probationary_evaluation_type = \
                             PerformanceReview.SEIU_PROBATIONARY_EVALUATION
-                        form_60 = PRForm.objects.get(
-                            name='SEIU - 60 - Probation Feedback'
-                        )
-                        form_120 = PRForm.objects.get(
-                            name='SEIU - 120 - Probation Progress'
-                        )
+                        form_60 = PRForm.objects.filter(
+                            name='SEIU - 60 - Probation Feedback',
+                            organization=lcog
+                        ).order_by('-version').first()
+                        form_120 = PRForm.objects.filter(
+                            name='SEIU - 120 - Probation Progress',
+                            organization=lcog
+                        ).order_by('-version').first()
                         PerformanceReview.objects.create(
                             employee=employee,
                             period_start_date=review_date,
@@ -218,9 +224,10 @@ class Command(BaseCommand):
                     else:
                         probationary_evaluation_type = \
                             PerformanceReview.NON_SEIU_PROBATIONARY_EVALUATION
-                        form_90 = PRForm.objects.get(
-                            name='EA - 90 - Probation Progress'
-                        )
+                        form_90 = PRForm.objects.filter(
+                            name='EA - 90 - Probation Progress',
+                            organization=lcog
+                        ).order_by('-version').first()
                         PerformanceReview.objects.create(
                             employee=employee,
                             period_start_date=review_date,
