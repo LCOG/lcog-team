@@ -4,6 +4,20 @@
 
 export const releases = [
   {
+    version: '1.7.0',
+    date: new Date(2026, 3, 8),
+    changes: [
+      {
+        type: 'improved',
+        description: 'Add ability to duplicate Performance Review forms.'
+      },
+      {
+        type: 'improved',
+        description: 'Minor content cleanup.'
+      },
+    ]
+  },
+  {
     version: '1.6.1',
     date: new Date(2026, 2, 23),
     changes: [
