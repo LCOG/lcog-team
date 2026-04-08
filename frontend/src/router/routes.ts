@@ -573,7 +573,12 @@ if (maintenanceMode) {
     ////////////////////
     // MARKETING PAGE //
     ////////////////////
-    { path: '/about', component: () => import('pages/MarketingPage.vue') },
+    { path: '/about',
+      redirect: () => {
+        window.location.href = 'https://summitsuite.org/'
+        return ''
+      }
+    },
 
     ///////////////
     // ZOOM TEST //
