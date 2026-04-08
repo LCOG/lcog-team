@@ -891,6 +891,12 @@ class PerformanceReview(models.Model):
 
 
 class PRForm(models.Model):
+    organization = models.ForeignKey(
+        "mainsite.Organization",
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True
+    )
     name = models.CharField(max_length=255)
     version = models.IntegerField(default=1)
     factors_response_set = models.ForeignKey(

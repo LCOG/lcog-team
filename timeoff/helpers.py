@@ -5,7 +5,7 @@ from django.contrib.sites.models import Site
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 
-from mainsite.helpers import next_weekday, send_email
+from mainsite.helpers import next_weekday, send_email, send_email_multiple
 from people.models import Employee
 from timeoff.models import TimeOffRequest, TimeOffRequestTemporaryApprover
 
@@ -35,13 +35,13 @@ def send_manager_new_timeoff_request_notification(tor):
     for approver in temporary_approvers:
         emails.append(approver.employee_in_stead.user.email)
 
-    for email in emails:
-        send_email(
-            email,
-            f'New time off request: {tor.employee.name}',
-            message,
-            message
-        )
+    send_email_multiple(
+        emails,
+        [],
+        f'New time off request: {tor.employee.name}',
+        message,
+        message
+    )
 
 
 def send_employee_manager_acknowledged_timeoff_request_notification(
@@ -138,16 +138,20 @@ def send_team_timeoff_next_week_report(manager_username: str, team_name: str):
     # file1 = open('email.html', 'w')
     # file1.write(html_message)
 
+    emails = []
     for recipient in team:
         if recipient.should_receive_email_of_type('timeoff', 'weekly'):
-            send_email(
-                recipient.user.email,
-                f'{team_name} Time Off Next Week: {next_monday:%A} ' +
-                    f'{next_monday:%B} {next_monday.day} - {next_friday:%A} ' +
-                    f'{next_friday:%B} {next_friday.day}, {next_friday.year}',
-                plaintext_message,
-                html_message
-            )
+            emails.append(recipient.user.email)
+
+    send_email_multiple(
+        emails,
+        [],
+        f'{team_name} Time Off Next Week: {next_monday:%A} ' +
+            f'{next_monday:%B} {next_monday.day} - {next_friday:%A} ' +
+            f'{next_friday:%B} {next_friday.day}, {next_friday.year}',
+        plaintext_message,
+        html_message
+    )
     
     return num_tors, len(team)
 
@@ -155,7 +159,7 @@ def send_test_timeoff_next_week_report():
     return send_team_timeoff_next_week_report('programmanager', 'Test Unit')
 
 def send_is_timeoff_next_week_report():
-    return send_team_timeoff_next_week_report('hleyba', 'IS')
+    return send_team_timeoff_next_week_report('hleyba@lcog-or.gov', 'IS')
 
 def send_daily_helpdesk_timeoff_today_report():
     current_site = Site.objects.get_current()
@@ -181,14 +185,18 @@ def send_daily_helpdesk_timeoff_today_report():
     }, })
     plaintext_message = strip_tags(html_message)
 
+    emails = []
     for recipient in help_desk:
         if recipient.should_receive_email_of_type('timeoff', 'daily'):
-            send_email(
-                recipient.user.email,
-                f'{team_name} Time Off Today: {today:%A} {today:%B} ' +
-                    f'{today.day}, {today.year}',
-                plaintext_message,
-                html_message
-            )
-    
+            emails.append(recipient.user.email)
+            
+    send_email_multiple(
+        emails,
+        [],
+        f'{team_name} Time Off Today: {today:%A} {today:%B} ' +
+            f'{today.day}, {today.year}',
+        plaintext_message,
+        html_message
+    )
+
     return num_tors, len(help_desk)

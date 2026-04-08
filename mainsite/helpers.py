@@ -192,8 +192,8 @@ def send_pay_change_notification(review):
     send_email_multiple(
         to_addresses=pr_completed_employees.values_list('user__email', flat=True),
         subject='PR ready for pay change',
-        text_body=f'A performance evaluation for {review.employee.name} has been signed by a Deputy Director. Please print it here: {url}',
-        html_body=f'A performance evaluation for {review.employee.name} has been signed by a Deputy Director. Please print it here: <a href="{url}">{url}</a>'
+        text_body=f'A performance evaluation for {review.employee.name} has been signed by a Deputy Director. View it here: {url}',
+        html_body=f'A performance evaluation for {review.employee.name} has been signed by a Deputy Director. View it here: <a href="{url}">{url}</a>'
     )
 
 

@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.db import transaction
 from django.forms import ModelForm
 from django.urls import reverse
 from django.utils.safestring import mark_safe
@@ -158,12 +159,32 @@ class PRFactorInline(admin.TabularInline):
     extra = 0
 
 
+@admin.action(description="Duplicate selected PR Forms")
+@transaction.atomic
+def duplicate_pr_form(modeladmin, request, queryset):
+    for pr_form in queryset:
+        original_pr_form_id = pr_form.pk
+        pr_form.pk = None
+        pr_form.version += 1
+        pr_form.save()
+
+        # Duplicate PRFactors
+        original_factors = PRForm.objects.get(id=original_pr_form_id) \
+            .factors.all()
+        for factor in original_factors:
+            factor.pk = None
+            factor.form = pr_form
+            factor.save()
+
+
 @admin.register(PRForm)
 class PRFormAdmin(admin.ModelAdmin):
-    list_display = ("name", "version")
+    list_display = ("name", "version", "organization")
     search_fields = ("name", )
+    list_filter = ("organization",)
     # exclude = ("factors",)
     inlines = (PRFactorInline,)
+    actions = [duplicate_pr_form]
 
 
 @admin.register(PRFactorResponseSet)
