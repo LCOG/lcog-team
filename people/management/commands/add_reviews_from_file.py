@@ -95,7 +95,7 @@ class Command(BaseCommand):
         filtered_rows = filter(lambda row: row[4] != '' and row[9] != '', rows)
         sorted_rows = sorted(
             filtered_rows,
-            key=lambda row: datetime.datetime.strptime(row[9], '%m/%d/%Y')
+            key=lambda row: datetime.datetime.strptime(row[4], '%m/%d/%Y')
         )
         most_recent_row = sorted_rows[-1]
         row_before_that = sorted_rows[-2] if len(sorted_rows) > 1 else None
