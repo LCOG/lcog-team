@@ -162,8 +162,52 @@ class Command(BaseCommand):
                 )
 
                 if add_probationary_evaluations:
-                    # For SEIU employees, add 60 and 120 day probationary evals
-                    if employee.is_sds_employee:
+                    # Add 90 day probationary eval for non-SEIU employees, 
+                    # OR if they have one of the following managers:
+                    # - Sandy Norton (1832)
+                    # - Micah Goodman (1816)
+                    # - Jordan Crowder (1441)
+                    # - Corey Suratt (1928)
+                    # - Leah Chisholm (2031)
+                    # - Stephanie Sheelar (1552)
+                    # - Brenda Moore (1430)
+                    if not employee.is_sds_employee or \
+                    employee.manager.number in [
+                        1832, 1816, 1441, 1928, 2031, 1552, 1430
+                    ]:
+                        probationary_evaluation_type = \
+                            PerformanceReview.NON_SEIU_PROBATIONARY_EVALUATION
+                        form_90 = PRForm.objects.filter(
+                            name='EA - 90 - Probation Progress',
+                            organization=lcog
+                        ).order_by('-version').first()
+                        PerformanceReview.objects.create(
+                            employee=employee,
+                            period_start_date=review_date,
+                            period_end_date=\
+                                review_date + datetime.timedelta(days=90),
+                            effective_date=\
+                                review_date + datetime.timedelta(days=91),
+                            evaluation_type=\
+                                PerformanceReview.PROBATIONARY_EVALUATION,
+                            probationary_evaluation_type=\
+                                probationary_evaluation_type,
+                            form=form_90
+                        )
+                        self.stdout.write(
+                            'Created 90 day PROBATIONARY review for employee'\
+                            ' {} {} for period {} - {}'
+                                .format(
+                                    employee.user.first_name,
+                                    employee.user.last_name,
+                                    review_date,
+                                    review_date + datetime.timedelta(days=90)
+                                )
+                        )
+                    # For everyone else (SDS employees who do not have one of
+                    # the specified managers), add 60 and 120 day probationary
+                    # evals.
+                    else:
                         probationary_evaluation_type = \
                             PerformanceReview.SEIU_PROBATIONARY_EVALUATION
                         form_60 = PRForm.objects.filter(
@@ -220,37 +264,7 @@ class Command(BaseCommand):
                                     review_date + datetime.timedelta(days=120)
                                 )
                         )
-                    # For non-SEIU employees, add 90 day probationary eval
-                    else:
-                        probationary_evaluation_type = \
-                            PerformanceReview.NON_SEIU_PROBATIONARY_EVALUATION
-                        form_90 = PRForm.objects.filter(
-                            name='EA - 90 - Probation Progress',
-                            organization=lcog
-                        ).order_by('-version').first()
-                        PerformanceReview.objects.create(
-                            employee=employee,
-                            period_start_date=review_date,
-                            period_end_date=\
-                                review_date + datetime.timedelta(days=90),
-                            effective_date=\
-                                review_date + datetime.timedelta(days=91),
-                            evaluation_type=\
-                                PerformanceReview.PROBATIONARY_EVALUATION,
-                            probationary_evaluation_type=\
-                                probationary_evaluation_type,
-                            form=form_90
-                        )
-                        self.stdout.write(
-                            'Created 90 day PROBATIONARY review for employee'\
-                            ' {} {} for period {} - {}'
-                                .format(
-                                    employee.user.first_name,
-                                    employee.user.last_name,
-                                    review_date,
-                                    review_date + datetime.timedelta(days=90)
-                                )
-                        )
+                    
         except PerformanceReview.DoesNotExist:
             pass
 
