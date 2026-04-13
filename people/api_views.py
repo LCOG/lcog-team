@@ -352,6 +352,7 @@ class PerformanceReviewViewSet(viewsets.ModelViewSet):
                         )
                         if is_true_string(complete):
                             return PerformanceReview.objects\
+                                .filter(employee__active=True)\
                                 .filter(effective_date__gte=\
                                     timezone.now() - timedelta(days=365))\
                                 .filter(
@@ -361,6 +362,7 @@ class PerformanceReviewViewSet(viewsets.ModelViewSet):
                                 .order_by('-period_end_date')
                         elif is_true_string(incomplete):
                             return PerformanceReview.objects\
+                                .filter(employee__active=True)\
                                 .filter(effective_date__gte=\
                                     timezone.now() - timedelta(days=365))\
                                 .exclude(
@@ -396,7 +398,8 @@ class PerformanceReviewViewSet(viewsets.ModelViewSet):
                     is_hre = e.is_hr_employee
                     if any([is_ed, is_dir, is_hre]):
                         # EDs, Directors, and HR employees can see all reviews
-                        queryset = PerformanceReview.objects.for_employee(e)
+                        queryset = PerformanceReview.objects.for_employee(e)\
+                            .filter(employee__active=True)
                     else:
                         # All PRs for the current user and their descendants
                         employees = e.get_direct_reports_descendants(
