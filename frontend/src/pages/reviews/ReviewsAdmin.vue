@@ -40,7 +40,7 @@
   />
   <div class="text-h5">Recent Complete Reviews</div>
 </div>
-<ReviewTable :allComplete="true" />
+<ReviewTable :allComplete="true" :highlightEDSigned="true" />
 
 <!-- ALL INCOMPLETE REVIEWS -->
 <div class="row items-center q-mb-sm q-mt-md">

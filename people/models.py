@@ -786,6 +786,10 @@ class PerformanceReview(models.Model):
 
     def employee_has_signed(self, employee):
         return Signature.objects.filter(review=self, employee=employee).count()
+    
+    def ed_has_signed(self):
+        ed = Employee.objects.filter(is_executive_director=True).first()
+        return Signature.objects.filter(review=self, employee=ed).count() > 0
 
     def all_required_signatures(self):
         """

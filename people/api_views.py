@@ -353,6 +353,7 @@ class PerformanceReviewViewSet(viewsets.ModelViewSet):
                         if is_true_string(complete):
                             return PerformanceReview.objects\
                                 .filter(employee__active=True)\
+                                .exclude(data=None)\
                                 .filter(effective_date__gte=\
                                     timezone.now() - timedelta(days=365))\
                                 .filter(
