@@ -33,6 +33,8 @@ class Command(BaseCommand):
             new_title = 'Case Manager'
         elif title in ['Case Manager - Housing Navigator Focus']:
             new_title = 'Case Manager: Housing Navigator Focus'
+        elif title in ['Diversion/ Transition']:
+            new_title = 'Diversion/Transition Case Manager'
         elif title in ['Health Promotion Disease Prevention Program Coord.']:
             new_title = 'Disease Prevention & Health Promotion Program Coordinator'
         elif title in ['Senior and Disability Services Director']:
@@ -272,9 +274,11 @@ class Command(BaseCommand):
             if department_col_pieces[-1] == 'Admin':
                 department_col_pieces = department_col_pieces[0:-1]
             if len(department_col_pieces) > 1:
-                if (department_col_pieces[1] == 'Panduro' and department_col_pieces[2] == 'Melendez'):
+                if department_col_pieces[1] == 'Panduro' and department_col_pieces[2] == 'Melendez':
                     # Deal with two last names
                     manager_last_name = " ".join(department_col_pieces[-2:])
+                elif department_col_pieces[1] == 'Magana' and department_col_pieces[2] == 'Jr.':
+                    manager_last_name = department_col_pieces[1]
                 else:
                     manager_last_name = department_col_pieces[-1]
             else:
@@ -282,36 +286,38 @@ class Command(BaseCommand):
 
             if manager_last_name:
                 try:
-                    if manager_last_name == 'Moore':
-                        manager = Employee.objects.get(organization__name="LCOG", is_executive_director=True)
-                    elif manager_last_name == 'Johnson':
-                        manager = Employee.objects.get(user__last_name=manager_last_name, user__first_name='Lynn')
-                    elif manager_last_name == 'Goodman':
-                        manager = Employee.objects.get(user__last_name=manager_last_name, user__first_name='Micah')
-                    elif manager_last_name == 'Davies':
-                        manager = Employee.objects.get(user__last_name=manager_last_name, user__first_name='Nancy')
-                    elif manager_last_name == 'Sheelar2': # ???
-                        manager = Employee.objects.get(user__last_name='Sheelar', user__first_name='Stephanie')
-                    elif manager_last_name == 'Newall': # Nicole Wilbur changed last name
-                        manager = Employee.objects.get(user__last_name='Wilbur', user__first_name='Nicole')
-                    elif manager_last_name == 'Crowder':
-                        manager = Employee.objects.get(user__last_name='Crowder', user__first_name='Jordan')
-                    elif manager_last_name == 'Wright':
-                        manager = Employee.objects.get(user__last_name='Wright', user__first_name='Vicki')
-                    elif manager_last_name == 'Sowards': # Sowards doesn't exist
-                        manager = Employee.objects.get(user__last_name='Sheelar', user__first_name='Stephanie')
-                    elif manager_last_name == 'Harris':
-                        manager = Employee.objects.get(user__last_name='Harris', user__first_name='Marian')
-                    elif manager_last_name == 'Thompson':
-                        manager = Employee.objects.get(user__last_name='Thompson', user__first_name='Paul')
-                    elif manager_last_name == 'Blair':
+                    if manager_last_name == 'Blair':
                         manager = Employee.objects.get(user__last_name='Blair', user__first_name='Deborah')
                     elif manager_last_name == 'Campbell':
                         manager = Employee.objects.get(user__last_name='Campbell', user__first_name='Laura')
                     elif manager_last_name == 'Callister':
                         manager = Employee.objects.get(user__last_name='Callister', user__first_name='Jacob')
+                    elif manager_last_name == 'Crowder':
+                        manager = Employee.objects.get(user__last_name='Crowder', user__first_name='Jordan')
+                    elif manager_last_name == 'Davies':
+                        manager = Employee.objects.get(user__last_name=manager_last_name, user__first_name='Nancy')
+                    elif manager_last_name == 'Goodman':
+                        manager = Employee.objects.get(user__last_name=manager_last_name, user__first_name='Micah')
+                    elif manager_last_name == 'Harris':
+                        manager = Employee.objects.get(user__last_name='Harris', user__first_name='Marian')
+                    elif manager_last_name == 'Johnson':
+                        manager = Employee.objects.get(user__last_name=manager_last_name, user__first_name='Lynn')
+                    elif manager_last_name == 'Moore':
+                        manager = Employee.objects.get(organization__name="LCOG", is_executive_director=True)
+                    elif manager_last_name == 'Newall': # Nicole Wilbur changed last name
+                        manager = Employee.objects.get(user__last_name='Wilbur', user__first_name='Nicole')
+                    elif manager_last_name == 'Quaempts':
+                        manager = Employee.objects.get(user__last_name='Quaempts', user__first_name='Joan')
+                    elif manager_last_name == 'Sheelar2': # ???
+                        manager = Employee.objects.get(user__last_name='Sheelar', user__first_name='Stephanie')
+                    elif manager_last_name == 'Sowards': # Sowards doesn't exist
+                        manager = Employee.objects.get(user__last_name='Sheelar', user__first_name='Stephanie')
+                    elif manager_last_name == 'Thompson':
+                        manager = Employee.objects.get(user__last_name='Thompson', user__first_name='Paul')
                     elif manager_last_name == 'Wilson':
                         manager = Employee.objects.get(user__last_name='Wilson', user__first_name='Daniel')
+                    elif manager_last_name == 'Wright':
+                        manager = Employee.objects.get(user__last_name='Wright', user__first_name='Vicki')
                     else:
                         try:
                             manager = Employee.active_objects.get(user__last_name=manager_last_name)
@@ -330,5 +336,11 @@ class Command(BaseCommand):
                         )
                 except Employee.DoesNotExist:
                     pass
+            else:
+                self.stdout.write("vvvvvvvvvvvv WARNING vvvvvvvvvvv")
+                self.stdout.write(
+                    'No manager found for employee {} {}'.format(employee.user.first_name, employee.user.last_name)
+                )
+                self.stdout.write("^^^^^^^^^^^^ WARNING ^^^^^^^^^^^^")
         
         self.stdout.write(self.style.SUCCESS('Successfully imported users.'))

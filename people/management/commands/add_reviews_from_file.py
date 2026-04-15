@@ -43,7 +43,8 @@ class Command(BaseCommand):
                     'Principal Attorney position is being moved retroactively from GSAM Range 31 to GSAM Range 37.\n\nEffective this pay period (May 26 – June 8, 2024), James Chaney (2088) has been reclassified from GSAM Range 31 to Range 37.  At his last review, on 3/16/24, he received a step increase, to go from GSAM Range 31 Step 9 to Range 31 Step 10.  Since you now are asking that he retroactively be moved from GSAM Range 31 to GSAM Range 37, I put him in this pay period for GSAM Range 37 Step 4 (the dollar equivalent of GSAM Range 31 Step 10).  There is no change in pay connected to this; this is just for your documentation and the auditors.\n\nJosh\n\n06/09/2024 12:03 PM - clid1559',
                     'Payroll,\n\nIn addition to the usual Pay Changes, there is an unusual situation with three employees, so I wanted to send a separate email for each one.  The Principal Attorney position is being moved retroactively from GSAM Range 31 to GSAM Range 37.\n\nEffective this pay period (May 26 – June 8, 2024), James Chaney (2088) has been reclassified from GSAM Range 31 to Range 37.  At his last review, on 3/16/24, he received a step increase, to go from GSAM Range 31 Step 9 to Range 31 Step 10.  Since you now are asking that he retroactively be moved from GSAM Range 31 to GSAM Range 37, I put him in this pay period for GSAM Range 37 Step 4 (the dollar equivalent of GSAM Range 31 Step 10).  There is no change in pay connected to this; this is just for your documentation and the auditors.\n\nJosh\n\n06/09/2024 12:03 PM - clid1559',
                     '(representing the time from November 21, 2023 to January 22, 2024) from July 12, 2024 to September 12, 2024.',
-                    'bonus\n\n04/12/2024 03:06 PM - clid1559'
+                    'bonus\n\n04/12/2024 03:06 PM - clid1559',
+                    'once.\n\n03/16/2025 01:55 PM - clid1559'
                 ]:
                     continue
                 if row[0]:
@@ -171,6 +172,8 @@ class Command(BaseCommand):
                     # - Leah Chisholm (2031)
                     # - Stephanie Sheelar (1552)
                     # - Brenda Moore (1430)
+                    if not employee.manager:
+                        import pdb; pdb.set_trace();
                     if not employee.is_sds_employee or \
                     employee.manager.number in [
                         1832, 1816, 1441, 1928, 2031, 1552, 1430
