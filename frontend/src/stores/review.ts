@@ -28,12 +28,6 @@ export const useReviewStore = defineStore('review', {
     // All PRs (admin)
     allCompletePRs: [] as Array<ReviewRetrieve>,
     allIncompletePRs: [] as Array<ReviewRetrieve>,
-    NRDNotificationData: {} as {
-      [key: number]: {
-        manager: Record<string, unknown>;
-        reviews: Record<string, unknown>;
-      };
-    },
   }),
 
   getters: {},
@@ -363,21 +357,6 @@ export const useReviewStore = defineStore('review', {
           })
           .catch(e => {
             handlePromiseError(reject, 'Error deleting a review note', e)
-          })
-      })
-    },
-
-    getNRDNotificationData() {
-      return new Promise((resolve, reject) => {
-        axios({ url: `${ apiURL }api/v1/review/nrd_notifications` })
-          .then(resp => {
-            this.NRDNotificationData = resp.data
-            resolve(true)
-          })
-          .catch(e => {
-            handlePromiseError(
-              reject, 'Error getting NRD notification data', e
-            )
           })
       })
     },

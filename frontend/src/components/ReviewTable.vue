@@ -51,8 +51,8 @@
           {{ props.row.status }}
         </q-td>
       </template>
-      <template v-slot:body-cell-actions="props">
-        <q-td :props="props">
+      <template v-slot:body-cell-actions="slotProps">
+        <q-td :props="slotProps">
           <div class="row items-center justify-center q-gutter-xs">
             <!-- Edit/detail button -->
             <q-btn
@@ -60,7 +60,7 @@
               round
               flat
               color="grey"
-              @click="editEvaluation(props)"
+              @click="editEvaluation(slotProps)"
               icon="assignment"
             >
               <q-tooltip content-style="font-size: 16px">
@@ -69,13 +69,13 @@
             </q-btn>
             <!-- Feedback link button: Only show to managers -->
             <q-btn
-              v-if="managerPk && props.row.manager_pk == managerPk"
+              v-if="managerPk && slotProps.row.manager_pk == managerPk"
               class="feedback-link"
               dense
               round
               flat
               color="grey"
-              @click="copyFeedbackLinkToClipboard(props)"
+              @click="copyFeedbackLinkToClipboard(slotProps)"
               icon="link"
             >
               <q-tooltip content-style="font-size: 16px">
@@ -88,7 +88,7 @@
               round
               flat
               color="grey"
-              @click="printEvaluation(props)"
+              @click="printEvaluation(slotProps)"
               icon="print"
             >
               <q-tooltip content-style="font-size: 16px">
@@ -97,13 +97,24 @@
             </q-btn>
             <!-- Alert icon: Show if employee action is required -->
             <q-icon
-              v-if="props.row.employee_action_required[0]"
+              v-if="slotProps.row.employee_action_required[0]"
               color="orange"
               name="warning"
               size="md"
             >
               <q-tooltip content-style="font-size: 16px">
-                <div>{{ props.row.employee_action_required[1]}}</div>
+                <div>{{ slotProps.row.employee_action_required[1]}}</div>
+              </q-tooltip>
+            </q-icon>
+            <!-- ED signed icon: Show if ED has signed -->
+            <q-icon
+              v-if="highlightEDSigned && slotProps.row.ed_signed"
+              color="green"
+              name="check_circle"
+              size="md"
+            >
+              <q-tooltip content-style="font-size: 16px">
+                <div>Executive Director has signed</div>
               </q-tooltip>
             </q-icon>
           </div>
@@ -111,14 +122,14 @@
       </template>
       <!-- For grid mode, we need to specify everything in order for our action
         buttons to render -->
-      <template v-slot:item="props">
+      <template v-slot:item="slotProps">
         <div
           class="q-pa-xs col-xs-12 col-sm-6 col-md-4 col-lg-3
             grid-style-transition"
         >
           <q-card class="q-py-sm">
             <q-list dense>
-              <q-item v-for="col in props.cols" :key="col.name">
+              <q-item v-for="col in slotProps.cols" :key="col.name">
                 <div class="q-table__grid-item-row">
                   <div class="q-table__grid-item-title">{{ col.label }}</div>
                   <div
@@ -126,7 +137,7 @@
                     v-if="col.label == 'Employee'"
                   >
                     <q-btn
-                      @click="navigateToEmployeeDetail(props)"
+                      @click="navigateToEmployeeDetail(slotProps)"
                       class="employee-name"
                       padding="none"
                       flat
@@ -139,14 +150,14 @@
                     class="q-table__grid-item-value"
                     v-else-if="col.label == 'Performance Period'"
                   >
-                    {{ readableDateNEW(props.row.period_start_date) }} -
-                    {{ readableDateNEW(props.row.period_end_date) }}
+                    {{ readableDateNEW(slotProps.row.period_start_date) }} -
+                    {{ readableDateNEW(slotProps.row.period_end_date) }}
                   </div>
                   <div class="q-table__grid-item-value"
                     v-else-if="col.label == 'Days Until Review'"
-                    :class="lateReviewClass(props.row.days_until_review)"
+                    :class="lateReviewClass(slotProps.row.days_until_review)"
                   >
-                    {{ props.row.days_until_review }}
+                    {{ slotProps.row.days_until_review }}
                   </div>
                   <div
                     class="q-table__grid-item-value row q-gutter-sm items-center
@@ -159,7 +170,7 @@
                       round
                       flat
                       color="grey"
-                      @click="editEvaluation(props)"
+                      @click="editEvaluation(slotProps)"
                       icon="assignment"
                     >
                       <q-tooltip content-style="font-size: 16px">
@@ -168,12 +179,12 @@
                     </q-btn>
                     <!-- Feedback link button: Only show to managers -->
                     <q-btn
-                      v-if="managerPk && props.row.manager_pk == managerPk"
+                      v-if="managerPk && slotProps.row.manager_pk == managerPk"
                       dense
                       round
                       flat
                       color="grey"
-                      @click="copyFeedbackLinkToClipboard(props)"
+                      @click="copyFeedbackLinkToClipboard(slotProps)"
                       icon="link"
                     >
                       <q-tooltip content-style="font-size: 16px">
@@ -186,7 +197,7 @@
                       round
                       flat
                       color="grey"
-                      @click="printEvaluation(props)"
+                      @click="printEvaluation(slotProps)"
                       icon="print"
                     >
                       <q-tooltip content-style="font-size: 16px">
@@ -195,13 +206,24 @@
                     </q-btn>
                     <!-- Alert icon: Show if employee action is required -->
                     <q-icon
-                      v-if="props.row.employee_action_required[0]"
+                      v-if="slotProps.row.employee_action_required[0]"
                       color="orange"
                       name="warning"
                       size="md"
                     >
                       <q-tooltip content-style="font-size: 16px">
-                        <div>{{ props.row.employee_action_required[1]}}</div>
+                        <div>{{ slotProps.row.employee_action_required[1]}}</div>
+                      </q-tooltip>
+                    </q-icon>
+                    <!-- ED signed icon: Show if ED has signed -->
+                    <q-icon
+                      v-if="highlightEDSigned && slotProps.row.ed_signed"
+                      color="green"
+                      name="check_circle"
+                      size="md"
+                    >
+                      <q-tooltip content-style="font-size: 16px">
+                        <div>Executive Director has signed</div>
                       </q-tooltip>
                     </q-icon>
                   </div>
@@ -260,6 +282,8 @@ const props = defineProps<{
 
   allComplete?: boolean, // Show all complete PRs
   allIncomplete?: boolean, // Show all incomplete PRs
+
+  highlightEDSigned?: boolean, // If true, highlight PRs signed by ED in green
 }>()
 
 const router = useRouter()

@@ -352,6 +352,8 @@ class PerformanceReviewViewSet(viewsets.ModelViewSet):
                         )
                         if is_true_string(complete):
                             return PerformanceReview.objects\
+                                .filter(employee__active=True)\
+                                .exclude(data=None)\
                                 .filter(effective_date__gte=\
                                     timezone.now() - timedelta(days=365))\
                                 .filter(
@@ -361,6 +363,7 @@ class PerformanceReviewViewSet(viewsets.ModelViewSet):
                                 .order_by('-period_end_date')
                         elif is_true_string(incomplete):
                             return PerformanceReview.objects\
+                                .filter(employee__active=True)\
                                 .filter(effective_date__gte=\
                                     timezone.now() - timedelta(days=365))\
                                 .exclude(
@@ -396,7 +399,8 @@ class PerformanceReviewViewSet(viewsets.ModelViewSet):
                     is_hre = e.is_hr_employee
                     if any([is_ed, is_dir, is_hre]):
                         # EDs, Directors, and HR employees can see all reviews
-                        queryset = PerformanceReview.objects.for_employee(e)
+                        queryset = PerformanceReview.objects.for_employee(e)\
+                            .filter(employee__active=True)
                     else:
                         # All PRs for the current user and their descendants
                         employees = e.get_direct_reports_descendants(
@@ -498,48 +502,6 @@ class PerformanceReviewViewSet(viewsets.ModelViewSet):
         serialized_review = PerformanceReviewSerializer(pr,
             context={'request': request})
         return Response(serialized_review.data)
-    
-    @action(detail=False, methods=['get'])
-    def nrd_notifications(self, request):
-        """
-        Get data for NRD notifications.
-        """
-        user = self.request.user
-        if not user.is_authenticated:
-            return Response(status=403)
-        
-        one_year_from_now = timezone.now() + timedelta(days=365)
-        upcoming_reviews = PerformanceReview.objects.filter(
-            period_end_date__lte=one_year_from_now,
-            period_end_date__gte=timezone.now(),
-            employee__active=True
-        ).exclude(
-            status=PerformanceReview.EVALUATION_HR_PROCESSED,
-
-        ).order_by('period_end_date')
-        
-        # Group reviews by manager
-        manager_dict = {}
-        for review in upcoming_reviews:
-            manager = review.employee.manager
-            try:
-                if manager.pk not in manager_dict:
-                    manager_dict[manager.pk] = {
-                        'manager': SimpleEmployeeSerializer(
-                            manager, context={'request': request}
-                        ).data,
-                        'reviews': []
-                    }
-                manager_dict[manager.pk]['reviews'].append(
-                    PerformanceReviewSimpleSerializer(
-                        review, context={'request': request}
-                    ).data
-                )
-            except AttributeError:
-                # Handle case where manager is None
-                continue
-        
-        return Response(manager_dict)
 
 
 class TeleworkApplicationFileUploadViewSet(viewsets.ModelViewSet):
