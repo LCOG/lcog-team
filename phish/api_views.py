@@ -10,8 +10,8 @@ from rest_framework.response import Response
 from mainsite.helpers import send_email
 from people.models import Employee
 from phish.models import (
-    PhishReport, PhishReportTask, PhishTask, SyntheticPhish,
-    SyntheticPhishTemplate, TrainingAssignment, TrainingTemplate
+    PhishConfiguration, PhishReport, PhishReportTask, PhishTask,
+    SyntheticPhish, SyntheticPhishTemplate, TrainingAssignment, TrainingTemplate
 )
 from phish.serializers import (
     PhishReportSerializer, PhishReportTaskSerializer, PhishTaskSerializer,
@@ -124,13 +124,43 @@ class PhishReportViewSet(viewsets.ModelViewSet):
                 # If synthetic phish not found or invalid ID, treat as organic
                 pass
         
-        # No synthetic phish found - create a PhishReport for organic report
+        # No synthetic phish found - create a PhishReport and send email for
+        # organic reports
         phish_report = PhishReport.objects.create(
             employee=employee,
             message=email_message,
             additional_info=additional_info
         )
-        
+
+        # Send notification email if configured for this organization
+        try:
+            config = employee.organization.phish_configuration
+            if config.phish_report_notification_email:
+                reporter_name = (
+                    f'{employee.first_name} {employee.last_name}'
+                ).strip() or employee_email
+                subject = 'Phishing Report Submitted'
+                body = (
+                    f'{reporter_name} ({employee_email}) has submitted a '
+                    f'phishing report.\n\n'
+                    f'Report Date: {phish_report.created_at}'
+                )
+                html_body = (
+                    f'<p><strong>{reporter_name}</strong> '
+                    f'(<a href="mailto:{employee_email}">{employee_email}</a>)'
+                    f' has submitted a phishing report.</p>'
+                    f'<p><a href="/phish/admin/reports">Report Date: '
+                    f'{phish_report.created_at}</a></p>'
+                )
+                send_email(
+                    config.phish_report_notification_email,
+                    subject,
+                    body,
+                    html_body,
+                )
+        except PhishConfiguration.DoesNotExist:
+            pass
+
         serializer = self.get_serializer(phish_report)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 

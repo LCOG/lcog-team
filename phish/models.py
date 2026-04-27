@@ -127,3 +127,26 @@ class TrainingAssignment(models.Model):
     assigned_at = models.DateTimeField(auto_now_add=True)
     completed = models.BooleanField(default=False)
     completed_at = models.DateTimeField(blank=True, null=True)
+
+
+class PhishConfiguration(models.Model):
+    class Meta:
+        verbose_name = 'Phish Configuration'
+        verbose_name_plural = 'Phish Configurations'
+
+    def __str__(self):
+        return f'Phish Configuration for {self.organization}'
+
+    organization = models.OneToOneField(
+        'mainsite.Organization',
+        on_delete=models.CASCADE,
+        related_name='phish_configuration',
+    )
+    phish_report_notification_email = models.EmailField(
+        blank=True,
+        null=True,
+        help_text=(
+            'Email address that receives a notification when a genuine '
+            'phishing report is submitted.'
+        ),
+    )
