@@ -266,7 +266,7 @@ if (maintenanceMode) {
           meta: { requiresAuth: true },
           children: [
             {
-              path: 'reports',
+              path: 'reports/:pk?',
               name: 'phish-reports',
               component: () => import('src/pages/phish/PhishReports.vue'),
             },

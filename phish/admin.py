@@ -1,8 +1,8 @@
 from django.contrib import admin
 
 from .models import (
-    PhishReport, PhishReportTask, PhishTask, SyntheticPhish,
-    SyntheticPhishTemplate, TrainingAssignment, TrainingTemplate
+    PhishConfiguration, PhishReport, PhishReportTask, PhishTask,
+    SyntheticPhish, SyntheticPhishTemplate, TrainingAssignment, TrainingTemplate
 )
 
 class PhishReportTaskInline(admin.TabularInline):
@@ -67,3 +67,10 @@ class TrainingAssignmentAdmin(admin.ModelAdmin):
         'template__name'
     )
     list_filter = ('template', 'completed', 'assigned_at')
+
+
+class PhishConfigurationInline(admin.StackedInline):
+    model = PhishConfiguration
+    extra = 0
+    max_num = 1
+    can_delete = False

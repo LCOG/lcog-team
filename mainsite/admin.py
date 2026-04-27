@@ -9,7 +9,6 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
 
 from mainsite.models import ImageUpload, SecurityMessage, TrustedIPAddress
-from people.admin import EmployeeInline
 
 from .models import (
     City, ImageUpload, Organization, SecurityMessage, State, ZipCode
@@ -18,13 +17,23 @@ from .models import (
 
 @admin.register(Organization)
 class OrganizationAdmin(admin.ModelAdmin):
-    list_display = ("pk", "name", "description")
+    list_display = ("pk", "name", "description", "employees_link")
     search_fields = ("name",)
     ordering = ("pk",)
     list_filter = ("active",)
-    fields = ("pk", "name", "description", "active")
-    readonly_fields = ("pk",)
-    inlines = [EmployeeInline]
+    fields = ("pk", "name", "description", "active", "employees_link")
+    readonly_fields = ("pk", "employees_link")
+
+    def employees_link(self, obj):
+        if not obj or not obj.pk:
+            return "-"
+        url = reverse('admin:people_employee_changelist')
+        return mark_safe(
+            f'<a href="{url}?organization__id__exact={obj.pk}">'
+            'View employees for this organization</a>'
+        )
+
+    employees_link.short_description = "Employees"
 
 
 @admin.register(ImageUpload)
