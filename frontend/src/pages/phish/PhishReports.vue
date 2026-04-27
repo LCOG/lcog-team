@@ -178,11 +178,14 @@
 </style>
 
 <script setup lang="ts">
-import { computed, ref, onMounted, Ref } from 'vue'
+import { QTableProps } from 'quasar'
 import PhishReportMessageViewer from 'src/components/phish/PhishReportMessageViewer.vue'
 import { usePhishStore } from 'src/stores/phish'
 import { PhishReport, PhishTask } from 'src/types'
-import { QTableProps } from 'quasar'
+import { computed, ref, onMounted, Ref } from 'vue'
+import { useRoute } from 'vue-router'
+
+const route = useRoute()
 
 const phishStore = usePhishStore()
 
@@ -404,8 +407,24 @@ async function markAsProcessed() {
   }
 }
 
+function launchDialogWithReportPk(reportPk: number) {
+  const report = submittedReports.value.find(r => r.pk === reportPk) ||
+    processedReports.value.find(r => r.pk === reportPk)
+  if (report) {
+    onRowClick(new Event('click'), report)
+  }
+}
+
 onMounted(() => {
-  refreshReports()
+  refreshReports().then(() => {
+    // Check if there's a report pk in the route params and open the dialog for that report
+    if (route.params.pk) {
+      const reportPk = parseInt(route.params.pk as string, 10)
+      if (!isNaN(reportPk)) {
+        launchDialogWithReportPk(reportPk)
+      }
+    }
+  })
 })
 
 </script>

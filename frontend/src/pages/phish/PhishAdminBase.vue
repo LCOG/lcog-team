@@ -12,7 +12,7 @@
     </div>
     <div v-if="userHasPhishRoles()">
       <q-btn-toggle
-        :model-value="$route.path"
+        :model-value="currentTab"
         @update:model-value="router.push($event)"
         spread
         no-caps
@@ -29,18 +29,24 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { onMounted, computed } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 
 import { useUserStore } from 'src/stores/user'
 import { getCurrentUser } from 'src/utils'
 
 const router = useRouter()
+const route = useRoute()
 const userStore = useUserStore()
 
 function userHasPhishRoles() {
   return userStore.getEmployeeProfile.can_view_phish
 }
+
+const currentTab = computed(() => {
+  const match = route.path.match(/\/phish\/admin\/(reports|team)/)
+  return match ? `/phish/admin/${match[1]}` : '/phish/admin/reports'
+})
 
 onMounted(() => {
   getCurrentUser()
