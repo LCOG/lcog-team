@@ -1,4 +1,5 @@
 import re
+import traceback
 
 from django.db.models import Count, F, Q, Value
 from django.db.models.functions import Concat
@@ -7,7 +8,7 @@ from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from mainsite.helpers import send_email
+from mainsite.helpers import record_error, send_email
 from people.models import Employee
 from phish.models import (
     PhishConfiguration, PhishReport, PhishReportTask, PhishTask,
@@ -135,10 +136,13 @@ class PhishReportViewSet(viewsets.ModelViewSet):
         # Send notification email if configured for this organization
         try:
             config = employee.organization.phish_configuration
+            record_error(f'PHISH_REPORT_TEST: {employee_email} - {phish_report.pk} - {config} - {config.phish_report_notification_email}')
             if config.phish_report_notification_email:
+                record_error(f'PHISH_REPORT_TEST: 1')
                 reporter_name = (
                     f'{employee.first_name} {employee.last_name}'
                 ).strip() or employee_email
+                record_error(f'PHISH_REPORT_TEST: {reporter_name}')
                 subject = 'Phishing Report Submitted'
                 body = (
                     f'{reporter_name} ({employee_email}) has submitted a '
@@ -152,14 +156,18 @@ class PhishReportViewSet(viewsets.ModelViewSet):
                     f'<p><a href="/phish/admin/reports/{phish_report.pk}/">'
                     f'Report ID: {phish_report.pk}</a></p>'
                 )
+                record_error(f'PHISH_REPORT_TEST: 2')
                 send_email(
                     config.phish_report_notification_email,
                     subject,
                     body,
                     html_body,
                 )
+                record_error(f'PHISH_REPORT_TEST: 3')
         except PhishConfiguration.DoesNotExist:
             pass
+        except Exception as e:
+            record_error('Error sending phishing report notification email', e, request, traceback.format_exc())
 
         serializer = self.get_serializer(phish_report)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
