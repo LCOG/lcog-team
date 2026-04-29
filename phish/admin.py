@@ -2,7 +2,8 @@ from django.contrib import admin
 
 from .models import (
     PhishConfiguration, PhishReport, PhishReportTask, PhishTask,
-    SyntheticPhish, SyntheticPhishTemplate, TrainingAssignment, TrainingTemplate
+    SyntheticPhish, SyntheticPhishTemplate, TrainingAssignment,
+    TrainingTemplate
 )
 
 class PhishReportTaskInline(admin.TabularInline):
@@ -16,7 +17,8 @@ class PhishReportAdmin(admin.ModelAdmin):
     list_display = ('employee', 'created_at', 'status', 'processed')
     readonly_fields = ('employee', 'created_at', 'message')
     search_fields = (
-        'employee__first_name', 'employee__last_name', 'employee__email'
+        'employee__user__first_name', 'employee__user__last_name',
+        'employee__user__email'
     )
     list_filter = ('created_at', 'status')
     inlines = [PhishReportTaskInline]
@@ -43,8 +45,8 @@ class SyntheticPhishAdmin(admin.ModelAdmin):
         'employee', 'template', 'sent_at', 'clicked', 'reported', 'reported_at'
     )
     search_fields = (
-        'employee__first_name', 'employee__last_name', 'employee__email',
-        'template__name'
+        'employee__user__first_name', 'employee__user__last_name',
+        'employee__user__email', 'template__name'
     )
     list_filter = ('clicked', 'reported', 'sent_at')
 
@@ -63,8 +65,8 @@ class TrainingAssignmentAdmin(admin.ModelAdmin):
         'employee', 'template', 'assigned_at', 'completed', 'completed_at'
     )
     search_fields = (
-        'employee__first_name', 'employee__last_name', 'employee__email',
-        'template__name'
+        'employee__user__first_name', 'employee__user__last_name',
+        'employee__user__email', 'template__name'
     )
     list_filter = ('template', 'completed', 'assigned_at')
 
