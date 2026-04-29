@@ -106,9 +106,17 @@
         <q-toggle
           class="col col-3"
           v-model="showRawJson"
-          label="Show raw JSON"
+          label="Raw JSON"
           color="primary"
           dense
+        />
+        <q-btn
+          class="col col-2"
+          label="Copy URL"
+          color="primary"
+          icon="content_copy"
+          dense
+          @click="copyReportUrl"
         />
       </q-card-section>
 
@@ -179,7 +187,8 @@
 
 <script setup lang="ts">
 import { QTableProps } from 'quasar'
-import PhishReportMessageViewer from 'src/components/phish/PhishReportMessageViewer.vue'
+import PhishReportMessageViewer from
+  'src/components/phish/PhishReportMessageViewer.vue'
 import { usePhishStore } from 'src/stores/phish'
 import { PhishReport, PhishTask } from 'src/types'
 import { computed, ref, onMounted, Ref } from 'vue'
@@ -335,6 +344,9 @@ async function onRowClick(_evt: Event, row: PhishReport) {
   if (row.status === 'phish' && row.pk) {
     await loadChecklistDataForReport(row.pk)
   }
+  if (row.pk) {
+    window.history.replaceState(null, '', `/phish/admin/reports/${row.pk}`)
+  }
 }
 
 async function onTaskToggle(taskPk: number, checked: boolean) {
@@ -415,9 +427,24 @@ function launchDialogWithReportPk(reportPk: number) {
   }
 }
 
+function copyReportUrl() {
+  if (!dialogReport.value?.pk) return
+  const url =
+    `${window.location.origin}/phish/admin/reports/${dialogReport.value.pk}`
+  navigator.clipboard.writeText(url)
+    .then(() => {
+      // Optionally show a success message
+      console.log('Report URL copied to clipboard')
+    })
+    .catch((err) => {
+      // Optionally show an error message
+      console.error('Failed to copy report URL: ', err)
+    })
+}
+
 onMounted(() => {
   refreshReports().then(() => {
-    // Check if there's a report pk in the route params and open the dialog for that report
+    // Open dialog for report if there's a route param
     if (route.params.pk) {
       const reportPk = parseInt(route.params.pk as string, 10)
       if (!isNaN(reportPk)) {
