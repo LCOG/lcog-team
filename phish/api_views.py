@@ -1,6 +1,7 @@
 import re
 import traceback
 
+from django.contrib.sites.models import Site
 from django.db.models import Count, F, Q, Value
 from django.db.models.functions import Concat
 from django.utils import timezone
