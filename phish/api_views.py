@@ -133,7 +133,7 @@ class PhishReportViewSet(viewsets.ModelViewSet):
             message=email_message,
             additional_info=additional_info
         )
-        report_url = f'https://{Site.objects.get_current().domain}/phish/' + \
+        report_url = f'{Site.objects.get_current().domain}/phish/' + \
                      f'admin/reports/{phish_report.pk}'
 
         # Send notification email if configured for this organization
