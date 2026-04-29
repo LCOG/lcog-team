@@ -132,6 +132,8 @@ class PhishReportViewSet(viewsets.ModelViewSet):
             message=email_message,
             additional_info=additional_info
         )
+        report_url = f'https://{Site.objects.get_current().domain}/phish/' + \
+                     f'admin/reports/{phish_report.pk}'
 
         # Send notification email if configured for this organization
         try:
@@ -141,14 +143,14 @@ class PhishReportViewSet(viewsets.ModelViewSet):
                 body = (
                     f'{employee.name} ({employee_email}) has submitted a '
                     f'phishing report.\n\n'
-                    f'Report ID: {phish_report.pk}\n'
+                    f'Report URL: {report_url}\n'
                 )
                 html_body = (
                     f'<p><strong>{employee.name}</strong> '
                     f'(<a href="mailto:{employee_email}">{employee_email}</a>)'
                     f' has submitted a phishing report.</p>'
-                    f'<p><a href="/phish/admin/reports/{phish_report.pk}/">'
-                    f'Report ID: {phish_report.pk}</a></p>'
+                    f'<p>Report URL: <a href="{report_url}">'
+                    f'{report_url}</a></p>'
                 )
                 send_email(
                     config.phish_report_notification_email,
