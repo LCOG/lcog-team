@@ -136,13 +136,13 @@ class PhishReportViewSet(viewsets.ModelViewSet):
         # Send notification email if configured for this organization
         try:
             config = employee.organization.phish_configuration
-            record_error(f'PHISH_REPORT_TEST: {employee_email} - {phish_report.pk} - {config} - {config.phish_report_notification_email}')
+            record_error(f'PHISH_REPORT_TEST: {employee_email} - {phish_report.pk} - {config} - {config.phish_report_notification_email}', None, None, None)
             if config.phish_report_notification_email:
-                record_error(f'PHISH_REPORT_TEST: 1')
+                record_error(f'PHISH_REPORT_TEST: 1', None, None, None)
                 reporter_name = (
                     f'{employee.first_name} {employee.last_name}'
                 ).strip() or employee_email
-                record_error(f'PHISH_REPORT_TEST: {reporter_name}')
+                record_error(f'PHISH_REPORT_TEST: {reporter_name}', None, None, None)
                 subject = 'Phishing Report Submitted'
                 body = (
                     f'{reporter_name} ({employee_email}) has submitted a '
@@ -156,14 +156,14 @@ class PhishReportViewSet(viewsets.ModelViewSet):
                     f'<p><a href="/phish/admin/reports/{phish_report.pk}/">'
                     f'Report ID: {phish_report.pk}</a></p>'
                 )
-                record_error(f'PHISH_REPORT_TEST: 2')
+                record_error(f'PHISH_REPORT_TEST: 2', None, None, None)
                 send_email(
                     config.phish_report_notification_email,
                     subject,
                     body,
                     html_body,
                 )
-                record_error(f'PHISH_REPORT_TEST: 3')
+                record_error(f'PHISH_REPORT_TEST: 3', None, None, None)
         except PhishConfiguration.DoesNotExist:
             pass
         except Exception as e:
