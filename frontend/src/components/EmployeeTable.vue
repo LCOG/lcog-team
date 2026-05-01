@@ -50,7 +50,7 @@ function retrieveDirectReports(): void {
     lastPk.value = props.pk
     peopleStore.getDirectReports(props.pk)
       .catch(e => {
-        console.error('Error retrieving simple employee list', e)
+        console.error('Error retrieving direct reports', e)
       })
   }
 }
@@ -58,7 +58,7 @@ function retrieveDirectReports(): void {
 function navigateToEmployeeDetail(evt: Event, row: EmployeeRetrieve): void {
   router.push({ name: 'profile', params: { pk: row.pk } })
     .catch(e => {
-      console.error('Error navigating to employee PRs:', e)
+      console.error('Error navigating to employee profile:', e)
     })
 }
 

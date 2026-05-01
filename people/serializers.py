@@ -248,9 +248,14 @@ class EmployeeSerializer(serializers.HyperlinkedModelSerializer):
 class SimpleEmployeeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Employee
-        fields = ['pk', 'name', 'legal_name', 'title', 'is_expense_approver']
+        fields = [
+            'pk', 'name', 'legal_name', 'title', 'manager_name', 'manager_pk',
+            'is_expense_approver'
+        ]
 
     title = serializers.CharField(source='job_title')
+    manager_name = serializers.CharField(source='manager.name', default='')
+    manager_pk = serializers.IntegerField(source='manager.pk', default=None)
     is_expense_approver = serializers.SerializerMethodField()
 
     @staticmethod

@@ -139,15 +139,12 @@ class EmployeeViewSet(viewsets.ModelViewSet):
             if user.is_staff:
                 queryset = Employee.active_objects.all()
             else:
-                # Filter to just direct reports, or else them and all their
-                # descendants
-                direct_reports = self.request.query_params.get(
-                    'direct-reports', None
-                )
-                if direct_reports is not None and direct_reports == "True":
-                    queryset = Employee.active_objects.filter(
-                        manager__user=user
-                    )
+                # Return all employees if we're just getting direct reports
+                # (SimpleEmployeeRetrieve with limited fields).
+                # Otherwise filter to just direct reports and their descendants
+                # as this contains sensitive information.
+                if self.request.path.split('/')[-1] == "direct_reports":
+                    queryset = Employee.active_objects.all()
                 else:
                     queryset = user.employee.get_direct_reports_descendants(
                         include_self=True
@@ -219,8 +216,8 @@ class EmployeeViewSet(viewsets.ModelViewSet):
             context={'request': request})
         return Response(serialized_review.data)
     
-    # A simple list of employees for populating dropdowns. Intended to be
-    # readable by all authenticated users as well as from trusted IPs.
+    # A simple list of employees for populating dropdowns and tables. Intended
+    # to be readable by all authenticated users as well as from trusted IPs.
     # TODO: We have this endpoint open because we couldn't get the employee
     # dropdown in the desk reservation app to work, but we should solve the
     # problem and lock it down again.
@@ -380,11 +377,25 @@ class PerformanceReviewViewSet(viewsets.ModelViewSet):
                             signaturereminder__signed=False
                         )
                 elif employee is not None:
+                    # Employee must be up the chain of the manager to see their
+                    # reviews.
+                    if int(employee) not in e.get_direct_reports_descendants(
+                        include_self=True
+                    ).values_list('pk', flat=True):
+                        return PerformanceReview.objects.none()
+                    
                     # Your reviews: All PRs for a given employee
                     employee = Employee.objects.get(pk=int(employee))
                     queryset = PerformanceReview.objects\
                         .for_employee(employee).filter(employee=employee)
                 elif manager is not None:
+                    # Employee must be up the chain of the manager to see their
+                    # reviews.
+                    if int(manager) not in e.get_direct_reports_descendants(
+                        include_self=True
+                    ).values_list('pk', flat=True):
+                        return PerformanceReview.objects.none()
+                    
                     # All PRs for the manager's direct reports
                     manager_employee = Employee.objects.get(
                         pk=int(manager)

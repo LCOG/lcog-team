@@ -155,6 +155,8 @@ export interface SimpleEmployeeRetrieve {
   name: string
   legal_name: string
   title: string
+  manager_name: string
+  manager_pk: number
   is_expense_approver: boolean
 }
 

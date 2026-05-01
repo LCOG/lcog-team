@@ -1,16 +1,18 @@
 <template>
   <q-page class="q-pa-md">
-    <div class="text-h4 q-mb-md">{{ peopleStore.fullEmployeeDetail.name }}</div>
+    <div class="text-h4 q-mb-md">
+      {{ peopleStore.simpleEmployeeDetail.name }}
+    </div>
     <div class="q-mb-md">
       <div class="text-h5 q-mb-sm">Basic Info</div>
-      <div>Legal Name: {{ peopleStore.fullEmployeeDetail.legal_name }}</div>
-      <div>Title: {{ peopleStore.fullEmployeeDetail.title }}</div>
+      <div>Legal Name: {{ peopleStore.simpleEmployeeDetail.legal_name }}</div>
+      <div>Title: {{ peopleStore.simpleEmployeeDetail.title }}</div>
       <div>
         Manager: <router-link
-          v-if="peopleStore.fullEmployeeDetail.manager_pk"
-          :to="`/profile/${peopleStore.fullEmployeeDetail.manager_pk}`"
+          v-if="peopleStore.simpleEmployeeDetail.manager_pk"
+          :to="`/profile/${peopleStore.simpleEmployeeDetail.manager_pk}`"
         >
-          {{ peopleStore.fullEmployeeDetail.manager_name }}
+          {{ peopleStore.simpleEmployeeDetail.manager_name }}
         </router-link>
         <span v-else>None</span>
       </div>
@@ -43,7 +45,7 @@ import { useRoute } from 'vue-router';
 import EmployeeTable from 'src/components/EmployeeTable.vue'
 import ReviewTable from 'src/components/ReviewTable.vue'
 import { usePeopleStore } from 'src/stores/people'
-import { EmployeeRetrieve } from 'src/types'
+import { SimpleEmployeeRetrieve } from 'src/types'
 
 const peopleStore = usePeopleStore()
 const route = useRoute()
@@ -56,10 +58,10 @@ function pk(): number {
   }
 }
 
-function retrieveProfile(): Promise<EmployeeRetrieve> {
+function retrieveProfile(): Promise<SimpleEmployeeRetrieve> {
   return new Promise((resolve, reject) => {
 
-    peopleStore.getFullEmployeeDetail({pk: pk()})
+    peopleStore.getSimpleEmployeeDetail({pk: pk()})
       .then((employee) => {
         resolve(employee)
       })
