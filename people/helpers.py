@@ -17,6 +17,12 @@ def send_manager_pr_notices():
         employee__active=True
     ).exclude(
         status=PerformanceReview.EVALUATION_HR_PROCESSED,
+    ).select_related(
+        'employee',
+        'employee__manager',
+        'employee__manager__user',
+        'employee__manager__manager',
+        'employee__manager__manager__user',
     ).order_by('period_end_date')
 
     # CC 'PR Completed Employees' group on all emails
