@@ -60,6 +60,9 @@ def send_manager_pr_notices():
             body += f'- {review.employee.name}: {review.period_end_date.strftime("%m/%d/%Y")}{suffix}\n'
             html_body += f'<li>{review.employee.name}: {review.period_end_date.strftime("%m/%d/%Y")}{suffix}</li>'
         html_body += '</ul>'
+        # Add a note that recent changes may not be reflected in the data
+        body += '\nPlease note that recent changes may not yet be reflected in the data.'
+        html_body += '<p>Please note that recent changes may not yet be reflected in the data.</p>'
         # Add a note to email me if there are any errors with the review data
         body += '\nIf you notice any errors, please send an email to webupdates@lcog-or.gov.'
         html_body += '<p>If you notice any errors, please send an email to <a href="mailto:webupdates@lcog-or.gov">webupdates@lcog-or.gov</a>.</p>'
