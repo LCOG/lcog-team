@@ -85,7 +85,7 @@ export const usePeopleStore = defineStore('people', {
       })
     },
     // Get employee direct reports
-    getDirectReports(pk: number): Promise<Array<EmployeeRetrieve>> {
+    getDirectReports(pk: number): Promise<Array<SimpleEmployeeRetrieve>> {
       return new Promise((resolve, reject) => {
         axios({ url: `${ apiURL }api/v1/employee/${ pk }/direct_reports` })
           .then(resp => {

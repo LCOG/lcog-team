@@ -1,5 +1,13 @@
 # Summit Suite Backend Readme
 
+## License
+
+This project is licensed under the [Elastic License 2.0](https://www.elastic.co/licensing/elastic-license).
+
+You are free to use, modify, and distribute this software. You may **not** provide 
+it to third parties as a hosted or managed service. That right is reserved exclusively 
+to Lane Council of Governments (LCOG).
+
 Python 3.12.2 
 
 # Run the backend locally

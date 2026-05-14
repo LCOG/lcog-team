@@ -310,6 +310,8 @@ const performanceReviews = computed((): Array<ReviewRetrieve> => {
       prs = reviewStore.employeePRs.filter(pr => pr.complete === true)
     } else if (props.incomplete && props.incomplete === true) {
       prs = reviewStore.employeePRs.filter(pr => pr.complete === false)
+    } else {
+      prs = reviewStore.employeePRs
     }
   } else if (props.managerPk) {
     if (props.complete && props.complete === true) {

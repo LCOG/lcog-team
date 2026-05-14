@@ -86,7 +86,7 @@
     </q-card-section>
   </q-card>
     
-  <q-dialog v-model="showMessageDialog">
+  <q-dialog v-model="showMessageDialog" @hide="onDialogClose()">
     <q-card style="min-width: 50vw; max-width: 90vw;">
       <q-card-section class="row">
         <div class="col">
@@ -347,6 +347,10 @@ async function onRowClick(_evt: Event, row: PhishReport) {
   if (row.pk) {
     window.history.replaceState(null, '', `/phish/admin/reports/${row.pk}`)
   }
+}
+
+function onDialogClose() {
+  window.history.replaceState(null, '', `/phish/admin/reports`)
 }
 
 async function onTaskToggle(taskPk: number, checked: boolean) {
