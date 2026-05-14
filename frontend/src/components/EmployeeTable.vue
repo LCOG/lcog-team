@@ -7,6 +7,7 @@
       no-data-label="Nothing to show."
       row-key="name"
       @row-click="navigateToEmployeeDetail"
+      :rows-per-page-options="[0]"
     />
   </div>
 </template>
