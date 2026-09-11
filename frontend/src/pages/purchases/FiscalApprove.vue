@@ -55,6 +55,14 @@
             <q-td key="date" :props="props">
               {{ dateLabel(props.row) }}
             </q-td>
+            <q-td key="ready_to_approve" :props="props">
+              <q-icon
+                v-if="expenseMonthReadyToApprove(props.row)"
+                color="warning"
+                name="warning"
+                size="lg"
+              />
+            </q-td>
             <q-td key="approved" :props="props">
               <q-icon
                 v-if="expenseMonthFiscalApproved(props.row)"
@@ -406,6 +414,10 @@ const columns = [
     name: 'date', label: 'Date', align: 'center'
   },
   {
+    name: 'ready_to_approve', label: 'Ready to Approve', field: 'ready_to_approve',
+    sortable: true, align: 'center'
+  },
+  {
     name: 'approved', label: 'Fiscal Approved', field: 'approved',
     sortable: true, align: 'center'
   }
@@ -449,6 +461,20 @@ function selectedMonthStatementsLoaded() {
   return purchaseStore.expenseStatements[purchaseStore.yearInt] &&
     purchaseStore.expenseStatements[purchaseStore.yearInt]
     [purchaseStore.monthInt]
+}
+
+function expenseMonthReadyToApprove(expenseMonth: ExpenseMonth) {
+  // If expense monnth is not shared, return if it is approver approved.
+  // If it is shared, return if all expense months for that card are approver approved.
+  if (!expenseMonth.card?.shared) {
+    return expenseMonth.status === 'approver_approved'
+  }
+  const allSharedMonths = purchaseStore.fiscalExpenseMonths[expenseMonth.year][expenseMonth.month]
+    .filter((m: ExpenseMonth) => {
+      if (!m.card?.pk) return false
+      return m.card.pk == expenseMonth.card.pk
+    })
+  return allSharedMonths.every((m: ExpenseMonth) => m.status === 'approver_approved')
 }
 
 function expenseMonthFiscalApproved(expenseMonth: ExpenseMonth) {

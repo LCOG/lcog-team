@@ -4,6 +4,21 @@
 
 export const releases = [
   {
+    version: '1.21.0',
+    date: new Date(2026, 8, 11),
+    changes: [
+      {
+        type: 'improved',
+        description: 'Display more info in submitted Phish Report table.'
+      },
+      {
+        type: 'improved',
+        description: 'Display warning flag to fiscal when ready to approve ' +
+          'an expense month.'
+      }
+    ]
+  },
+  {
     version: '1.20.1',
     date: new Date(2026, 8, 2),
     changes: [
