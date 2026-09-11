@@ -63,7 +63,15 @@
             {{ formatDate(props.value) }}
           </q-td>
         </template>
-
+        <template v-slot:body-cell-has_attachments="props">
+          <q-td :props="props">
+            <q-icon 
+              :name="props.value ? 'check_circle' : 'cancel'" 
+              :color="props.value ? 'negative' : 'primary'"
+              size="sm"
+            />
+          </q-td>
+        </template>
         <template v-slot:body-cell-status="props">
           <q-td :props="props">
             <q-chip
@@ -243,6 +251,20 @@ const submittedColumns: QTableProps['columns'] = [
     label: 'Date of Submission',
     field: 'created_at',
     align: 'left',
+    sortable: true
+  },
+  {
+    name: 'sender',
+    label: 'Sender',
+    field: 'sender',
+    align: 'left',
+    sortable: true
+  },
+  {
+    name: 'has_attachments',
+    label: 'Has Attachments',
+    field: 'has_attachments',
+    align: 'center',
     sortable: true
   },
   {

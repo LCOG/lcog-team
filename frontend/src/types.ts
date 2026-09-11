@@ -375,6 +375,8 @@ export interface PhishReport {
   pk: number
   employee: SimpleEmployeeRetrieve
   created_at: Date
+  sender: string
+  has_attachments: boolean
   message: JSON
   additional_info: string
   processed: boolean

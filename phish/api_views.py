@@ -149,8 +149,18 @@ class PhishReportViewSet(viewsets.ModelViewSet):
         
         # No synthetic phish found - create a PhishReport and send email for
         # organic reports
+        
+        address = None
+        sender = email_message.get('sender', {})
+        if sender: 
+            email_address = sender.get('emailAddress')
+            if email_address:
+                address = email_address.get('address')
+            
         phish_report = PhishReport.objects.create(
             employee=employee,
+            sender=address,
+            has_attachments=email_message.get('hasAttachments', False),
             message=email_message,
             additional_info=additional_info
         )

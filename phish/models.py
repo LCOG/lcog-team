@@ -30,12 +30,23 @@ class PhishReport(models.Model):
 
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
+    sender = models.CharField(max_length=255, blank=True, null=True)
+    has_attachments = models.BooleanField(default=False)
     message = models.JSONField()
     additional_info = models.TextField(blank=True, null=True)
     status = models.CharField(
         max_length=255, choices=STATUS_CHOICES, default=STATUS_REPORTED
     )
     processed = models.BooleanField(default=False)
+
+
+class PhishReportAttachment(models.Model):
+    report = models.ForeignKey(
+        PhishReport, related_name="attachments", on_delete=models.CASCADE
+    )
+    attachments = models.FileField(
+        upload_to="uploads/phish-attachments", blank=True, null=True
+    )
 
 
 class PhishTask(models.Model):
